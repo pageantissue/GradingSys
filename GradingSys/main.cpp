@@ -2,12 +2,11 @@
 #include<cstdlib>
 #include <iostream>
 #include"os.h"
-#include<unistd.h>
 #include<limits>
+#include <unistd.h>
 
-
-const int Superblock_Start_Addr=0;     
-const int InodeBitmap_Start_Addr = 1 * BLOCK_SIZE;	
+const int Superblock_Start_Addr=0;     //512B*1
+const int InodeBitmap_Start_Addr = 1 * BLOCK_SIZE; //
 const int BlockBitmap_Start_Addr = InodeBitmap_Start_Addr + 2 * BLOCK_SIZE;
 const int Inode_Start_Addr = BlockBitmap_Start_Addr + 20 * BLOCK_SIZE;
 const int Block_Start_Addr = Inode_Start_Addr + INODE_NUM / (BLOCK_SIZE / INODE_SIZE) * BLOCK_SIZE;
@@ -17,7 +16,7 @@ const int File_Max_Size = 10 * BLOCK_SIZE;
 
 
 int Root_Dir_Addr;							//根目录inode地址
-int Cur_Dir_Addr;							//当前目录
+int Cur_Dir_Addr;							//当前目录:存inode地址
 char Cur_Dir_Name[310];						//当前目录名
 char Cur_Host_Name[110];					//当前主机名
 char Cur_User_Name[110];					//当前登陆用户名
@@ -52,12 +51,14 @@ int main()
         }
         fr = fopen(GRADE_SYS_NAME, "rb");
         printf("虚拟磁盘文件打开成功！\n");
+
         //初始化变量
         nextUID = 0;
         nextGID = 0;
         isLogin = false;
         strcpy(Cur_User_Name, "root");
         strcpy(Cur_Group_Name, "root");
+
         //获取主机名
         memset(Cur_Host_Name, 0, sizeof(Cur_Host_Name));
         if (gethostname(Cur_Host_Name, sizeof(Cur_Host_Name)) != 0) {
@@ -72,26 +73,26 @@ int main()
         
         //系统格式化
         if (!Format()) {
-            printf("格式化失败");
+            printf("格式化失败\n");
             return 0;
         }
-        printf("格式化完成");
-        printf("按'Enter'键登录\n");
-        cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        printf("格式化完成\n\n");
         
         //Install
-
+        if (!Install()) {
+            printf("文件系统安装失败！\n");
+            return 0;
+        }
     }
     else {
-        fread(buffer, Disk_Size, 1, fr);
-        fw = fopen(GRADE_SYS_NAME, "wb");
+        fw = fopen(GRADE_SYS_NAME, "rb+"); //在原来的基础上修改文件
 
         if (fw == NULL) {
             printf("磁盘文件打开失败！/n");
             return false;
         }
-
-        fwrite(buffer, Disk_Size, 1, fw);
+        
+        //初始化变量
         nextUID = 0;
         nextGID = 0;
         isLogin = false;
@@ -104,35 +105,50 @@ int main()
             perror("Error getting hostname");
             return 1;
         }
-        printf("%s\n", Cur_Host_Name);
 
         //获取根目录
         Root_Dir_Addr = Inode_Start_Addr;
         Cur_Dir_Addr = Root_Dir_Addr;
         strcpy(Cur_Dir_Name, "/");
 
+        //是否需要格式化
+        printf("是否需要格式化：[y/n]\n");
+        char a = getchar();
+        if (a == 'y') {
+            if (!Format()) {
+                printf("格式化失败！\n");
+                return 0;
+            }
+        }
+        fflush(stdin);
+        printf("格式化完成！\n\n");
+
         //Install
+        if (!Install()) {
+            printf("文件系统安装失败！\n");
+            return 0;
+        }
     }
+    //Cur_User_Dir_Name还没有定义
 
     while (1) {
         if (isLogin) {
             char str[100];
             char* p;
-            if ((p = strstr(Cur_Dir_Name, Cur_User_Dir_Name)) == NULL)	//没找到
-                printf("[%s@%s %s]# ", Cur_Host_Name, Cur_User_Name, Cur_Dir_Name);
+            if ((p = strstr(Cur_Dir_Name, Cur_User_Dir_Name)) == NULL)	//当前是否在用户目录下
+                printf("[%s@%s %s]# ", Cur_Host_Name, Cur_User_Name, Cur_Dir_Name); //[Linux@yhl /etc]
             else
-                printf("[%s@%s ~%s]# ", Cur_Host_Name, Cur_User_Name, Cur_Dir_Name + strlen(Cur_User_Dir_Name));
+                printf("[%s@%s ~%s]# ", Cur_Host_Name, Cur_User_Name, Cur_Dir_Name + strlen(Cur_User_Dir_Name));//[Linux@yhl ~/app]
             gets(str);
             //cmd(str);
             
         }
         else {
-            printf("欢迎来到MingOS，请先登录\n");
+            printf("欢迎来到GradingSysOS，请先登录\n");
             while (!login());	//登陆
             printf("登陆成功！\n");
-            //system("pause");
-            //system("cls");
         }
+
         fclose(fw);		//释放文件指针
         fclose(fr);		//释放文件指针
 

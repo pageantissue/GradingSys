@@ -7,14 +7,14 @@
 
 #define BLOCK_SIZE 512	//一个块大小 512 Byte
 #define INODE_SIZE 128  //一个inode entry的大小是128Byte
+#define DirItem_Size 16 //一个块最多能装16个DirItem
 #define FILE_NAME_MAX_SIZE	32	//文件名最长32Byte
 
 #define BLOCK_NUM 10240		//10240个block
 #define INODE_NUM 1024	//一个inode可以存10个block->要用1024个inode存信息
-#define BLOCK_PER_GROUP //UNKNOWN
 
-#define MODE_DIR 01000	//目录标识（八进制）
-#define MODE_FILE 00000	//文件标识（八进制）
+#define MODE_DIR 01000	//目录标识（八进制）: 001 000 000 000
+#define MODE_FILE 00000	//文件标识（八进制）: 000 000 000 000
 
 #define OWNER_R	4<<6						//本用户读权限
 #define OWNER_W	2<<6						//本用户写权限
@@ -25,14 +25,21 @@
 #define OTHERS_R	4						//其它用户读权限
 #define OTHERS_W	2						//其它用户写权限
 #define OTHERS_X	1						//其它用户执行权限
-#define FILE_DEF_PERMISSION 0664			//文件默认权限
-#define DIR_DEF_PERMISSION	0755			//目录默认权限
+#define FILE_DEF_PERMISSION 0664			//文件默认权限 owner,group:读写 other:读 
+#define DIR_DEF_PERMISSION	0755			//目录默认权限 owner：读写执行 group,other:读
+
+#define ROOT 0	  //管理员
+#define TEACHER 1 //老师
+#define STUDENT 2 //学生
 
 #define GRADE_SYS_NAME "grading_sys.sys"	//文件系统名
 
 struct SuperBlock {
 	unsigned short s_INODE_NUM;				//inode节点数，最多 65535
 	unsigned int s_BLOCK_NUM;				//磁盘块块数，最多 4294967294
+
+	unsigned short s_free_INODE_NUM;		//空闲inode节点数
+	unsigned int s_free_BLOCK_NUM;			//空闲磁盘块数
 
 	unsigned short s_BLOCK_SIZE;			//磁盘块大小
 	unsigned short s_INODE_SIZE;			//inode大小
@@ -50,11 +57,11 @@ struct inode {
 	unsigned short inode_id;					//inode标识（编号）
 	unsigned short inode_mode;					//存取权限:r--读取，w--写，x--执行
 	unsigned short inode_file_count;				//文件夹里有多少文件
-	unsigned short i_uid;					//文件所属用户id
-	unsigned short i_gid;					//文件所属用户组id
-	//char i_uname[20];						//文件所属用户
-	//char i_gname[20];						//文件所属用户组
-	unsigned int inode_file_size;					//文件大小是多少Byte
+	//unsigned short i_uid;					//文件所属用户id
+	//unsigned short i_gid;					//文件所属用户组id
+	char i_uname[20];						//文件所属用户
+	char i_gname[20];						//文件所属用户组
+	unsigned int inode_file_size;					//文件大小是多少Byte（文件：Byte 目录：block）
 	time_t  inode_change_time;						//inode上一次变动的时间
 	time_t  file_change_time;						//文件内容上一次变动的时间
 	time_t  file_modified_time;						//文件上一次修改的时间
@@ -78,13 +85,13 @@ extern const int Disk_Size;					//虚拟磁盘文件大小
 
 
 //全局变量声明
+extern char Cur_Host_Name[110];				//当前主机名
 extern int Root_Dir_Addr;					//根目录inode地址
 extern int Cur_Dir_Addr;					//当前目录
 extern char Cur_Dir_Name[310];				//当前目录名
-extern char Cur_Host_Name[110];				//当前主机名
 extern char Cur_User_Name[110];				//当前登陆用户名
 extern char Cur_Group_Name[110];			//当前登陆用户组名
-//extern char Cur_User_Dir_Name[310];			//当前登陆用户目录名
+extern char Cur_User_Dir_Name[310];			//当前登陆用户目录名
 
 extern int nextUID;							//下一个要分配的用户标识号
 extern int nextGID;							//下一个要分配的用户组标识号
@@ -99,10 +106,13 @@ extern bool block_bitmap[BLOCK_NUM];		//磁盘块位图
 
 extern char buffer[10000000];				//10M，缓存整个虚拟磁盘文件
 
-
+//启动函数&提示函数
 void help();
 void Ready();
-bool Format();
+bool Format();								//文件系统格式化
+bool Install();								//安装文件系统
+
+//用户&用户组函数
 void inUsername(char username[]);								//输入用户名
 void inPasswd(char passwd[]);
 bool login();
