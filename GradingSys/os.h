@@ -106,3 +106,6 @@ bool Format();
 void inUsername(char username[]);								//输入用户名
 void inPasswd(char passwd[]);
 bool login();
+void cmd(char cmd[]);
+void ls(int parinodeAddr);
+bool mkdir(int parinodeAddr, char name[]);

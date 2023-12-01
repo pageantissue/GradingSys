@@ -123,21 +123,21 @@ int main()
             else
                 printf("[%s@%s ~%s]# ", Cur_Host_Name, Cur_User_Name, Cur_Dir_Name + strlen(Cur_User_Dir_Name));
             gets(str);
-            //cmd(str);
+            cmd(str);
             
         }
         else {
             printf("欢迎来到MingOS，请先登录\n");
             while (!login());	//登陆
-            printf("登陆成功！\n");
+            cout << "登陆成功" << endl;
+            help();
             //system("pause");
-            //system("cls");
+            system("cls");
         }
-        fclose(fw);		//释放文件指针
-        fclose(fr);		//释放文件指针
-
-        return 0;
+        
     }
-    help();
+    fclose(fw);		//释放文件指针
+    fclose(fr);		//释放文件指针
+    
     return 0;
 }
