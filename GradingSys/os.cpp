@@ -420,10 +420,25 @@ int ialloc() { //分配inode，满了返回-1
 	fwrite(inode_bitmap, sizeof(inode_bitmap), 1, fw);
 	return iaddr;
 }
-int ifree(int iaddr) {
+void ifree(int iaddr) {
 	if ((iaddr % INODE_SIZE) != 0) {
-
+		printf("当前inode位置错误\n");
+		return;
 	}
+	int index = (iaddr - InodeBitmap_Start_Addr) / INODE_SIZE;
+	if (inode_bitmap[index] == 0) {
+		printf("未使用当前inode，无需释放\n");
+		return;
+	}
+	inode_bitmap[index] = 0;
+	fseek(fw, InodeBitmap_Start_Addr, SEEK_SET);
+	fwrite(inode_bitmap, sizeof(inode_bitmap), 1, fw);
+	inode ino;
+	fseek(fw, iaddr, SEEK_SET);
+	fwrite(&ino, sizeof(INODE_SIZE), 1, fw);
+	superblock->s_free_INODE_NUM -= 1;
+	fseek(fw, Superblock_Start_Addr, SEEK_SET);
+	fwrite(superblock, sizeof(superblock), 1, fw);
 }
 int balloc() { //分配block，满了返回-1
 	int baddr = -1;
@@ -444,6 +459,23 @@ int balloc() { //分配block，满了返回-1
 	fseek(fw, BlockBitmap_Start_Addr, SEEK_SET);
 	fwrite(block_bitmap, sizeof(block_bitmap), 1, fw);
 	return baddr;
+}
+void bfree(int baddr) {
+	if ((baddr % BLOCK_SIZE) != 0) {
+		printf("当前block位置错误\n");
+		return;
+	}
+	int index = (baddr - BlockBitmap_Start_Addr) / BLOCK_SIZE;
+	if (block_bitmap[index] == 0) {
+		printf("未使用当前block，无需释放\n");
+		return;
+	}
+	block_bitmap[index] = 0;
+	fseek(fw, BlockBitmap_Start_Addr, SEEK_SET);
+	fwrite(block_bitmap, sizeof(block_bitmap), 1, fw);
+	superblock->s_free_BLOCK_NUM -= 1;
+	fseek(fw, Superblock_Start_Addr, SEEK_SET);
+	fwrite(superblock, sizeof(superblock), 1, fw);
 }
 bool Install() {
 	return true;
@@ -477,6 +509,37 @@ bool login()	//登陆界面
 		isLogin = false;
 		return false;
 	}
+}
+bool logout() {	//用户注销
+	gotoRoot();
+	strcmp(Cur_User_Name, "");
+	strcmp(Cur_Group_Name, "");
+	strcmp(Cur_User_Dir_Name, "");
+	isLogin = false;
+	return true;
+	//pause
+}
+bool useradd(char username[], char passwd[], char group[]) {	//用户注册
+	//权限判断
+	if (strcmp(Cur_User_Name, "root") != 0) {
+		printf("权限不足，无法添加用户！\n");
+		return false;
+	}
+	//保护现场并更改信息
+	int pro_cur_dir_addr = Cur_Dir_Addr;
+	char pro_cur_dir_name[310], pro_cur_user_name[110], pro_cur_group_name[110], pro_cur_user_dir_name[310];
+	strcpy(pro_cur_dir_name, Cur_Dir_Name);
+	strcpy(pro_cur_user_name, Cur_User_Name);
+	strcpy(pro_cur_group_name, Cur_Group_Name);
+	strcpy(pro_cur_user_dir_name, Cur_User_Dir_Name);
+	
+	strcpy(Cur_User_Name, username);
+	strcpy(Cur_Group_Name, group);
+	
+	gotoRoot();
+	cd(Cur_Dir_Addr, "home");
+	// 未完待续。。
+
 }
 void chmod(int PIAddr, char name[], int pmode) {//修改文件or目录权限（假定文件和目录也不能重名）
 	if (strlen(name) > FILENAME_MAX) {
