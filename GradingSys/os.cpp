@@ -1,10 +1,9 @@
 #include"os.h"
 #include<iomanip>
-
 using namespace std;
 
-void help() {
-	
+void help()
+{
 	cout.setf(ios::left); //设置对齐方式为left 
 	cout.width(30); //设置宽度，不足用空格填充 
 	//cout << setiosflags(ios::left);

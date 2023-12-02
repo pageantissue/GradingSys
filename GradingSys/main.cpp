@@ -4,6 +4,7 @@
 #include"os.h"
 #include<unistd.h>
 #include<limits>
+#include"server.h"
 
 
 const int Superblock_Start_Addr=0;     
@@ -123,8 +124,8 @@ int main()
             else
                 printf("[%s@%s ~%s]# ", Cur_Host_Name, Cur_User_Name, Cur_Dir_Name + strlen(Cur_User_Dir_Name));
             gets(str);
+            run_server();
             //cmd(str);
-            
         }
         else {
             printf("欢迎来到MingOS，请先登录\n");
