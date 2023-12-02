@@ -108,11 +108,31 @@ extern char buffer[10000000];				//10M，缓存整个虚拟磁盘文件
 
 //启动函数&提示函数
 void help();
-void Ready();
+
+//大类函数
 bool Format();								//文件系统格式化
 bool Install();								//安装文件系统
+bool mkdir(int PIAddr, char name[]);
+bool rmdir(int CHIAddr, char name[]);
+bool mkfile(int PIAddr, char name[], char buf[]);
+bool rmfile(int CHIAddr, char name[]);
+void writefile(inode fileinode, int iaddr, char buf[]);
+void cd(int PIAddr, char name[]);
+void gotoRoot();
+void ls();
+
+//工具函数
+int ialloc();
+void ifree(int iaddr);
+int balloc();
+void bfree(int baddr);
 
 //用户&用户组函数
-void inUsername(char username[]);								//输入用户名
-void inPasswd(char passwd[]);
+void inUsername(char* username);								//输入用户名
+void inPasswd(char* passwd);
 bool login();
+bool logout();
+bool useradd(char username[], char passwd[], char group[]);
+bool userdel(char username[]);
+bool check(char username[], char passwd[]);
+void chmod(int PIAddr, char name[], int pmode);
