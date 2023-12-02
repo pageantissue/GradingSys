@@ -8,7 +8,7 @@
 #define BLOCK_SIZE 512	//一个块大小 512 Byte
 #define INODE_SIZE 128  //一个inode entry的大小是128Byte
 #define DirItem_Size 16 //一个块最多能装16个DirItem
-#define FILE_NAME_MAX_SIZE	32	//文件名最长32Byte
+#define FILE_NAME_MAX_SIZE	28	//文件名最长28Byte
 
 #define BLOCK_NUM 10240		//10240个block
 #define INODE_NUM 1024	//一个inode可以存10个block->要用1024个inode存信息
@@ -53,7 +53,7 @@ struct SuperBlock {
 	int s_Block_Start_Addr;
 };
 
-struct inode {
+struct inode {//不要动此处变量，刚好128B
 	unsigned short inode_id;					//inode标识（编号）
 	unsigned short inode_mode;					//存取权限:r--读取，w--写，x--执行
 	unsigned short inode_file_count;				//文件夹里有多少文件
@@ -66,6 +66,8 @@ struct inode {
 	time_t  file_change_time;						//文件内容上一次变动的时间
 	time_t  file_modified_time;						//文件上一次修改的时间
 	int i_dirBlock[10];						//10个直接块：总共能存储的大小是10*512B = 5120B = 5KB
+	int i_indirect_1;						//一级间接块
+	int i_indirect_2;						//二级间接块
 };
 
 //文件目录
@@ -116,7 +118,7 @@ bool mkdir(int PIAddr, char name[]);
 bool rmdir(int CHIAddr, char name[]);
 bool mkfile(int PIAddr, char name[], char buf[]);
 bool rmfile(int CHIAddr, char name[]);
-void writefile(inode fileinode, int iaddr, char buf[]);
+bool writefile(inode fileinode, int iaddr, char buf[]);
 void cd(int PIAddr, char name[]);
 void gotoRoot();
 void ls();
@@ -128,7 +130,7 @@ int balloc();
 void bfree(int baddr);
 
 //用户&用户组函数
-void inUsername(char* username);								//输入用户名
+void inUsername(char* username);							//输入用户名
 void inPasswd(char* passwd);
 bool login();
 bool logout();
@@ -136,3 +138,6 @@ bool useradd(char username[], char passwd[], char group[]);
 bool userdel(char username[]);
 bool check(char username[], char passwd[]);
 void chmod(int PIAddr, char name[], int pmode);
+
+
+//一点一点debug~加油！！！（今天能够做完当然最好）
