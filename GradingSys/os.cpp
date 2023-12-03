@@ -771,9 +771,6 @@ bool useradd(char username[], char passwd[], char group[]) {	//用户注册
 	strcpy(pro_cur_group_name, Cur_Group_Name);
 	strcpy(pro_cur_user_dir_name, Cur_User_Dir_Name);
 	
-	strcpy(Cur_User_Name, username);
-	strcpy(Cur_Group_Name, group);
-	
 	//创建用户目录
 	gotoRoot();
 	cd(Cur_Dir_Addr, "home");
@@ -820,13 +817,13 @@ bool useradd(char username[], char passwd[], char group[]) {	//用户注册
 	char buf[BLOCK_SIZE * 10]; //1char:1B
 	char temp[BLOCK_SIZE];
 	int g = -1;
-	if (strcpy(group, "root")) {
+	if (strcmp(group, "root")==0) {
 		g = 0;
 	}
-	else if (strcpy(group, "teacher")) {
+	else if (strcmp(group, "teacher")==0) {
 		g = 1;
 	}
-	else if (strcpy(group, "student")) {
+	else if (strcmp(group, "student")==0) {
 		g = 2;
 	}
 	else {
