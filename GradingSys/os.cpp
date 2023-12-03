@@ -6,43 +6,10 @@
 
 //using namespace std;
 
-void help() {
-	
-	//cout.setf(ios::left); //ÉèÖÃ¶ÔÆë·½Ê½Îªleft 
-	//cout.width(30); //ÉèÖÃ¿í¶È£¬²»×ãÓÃ¿Õ¸ñÌî³ä 
-	////cout << setiosflags(ios::left);
-	//cout << "ls" << "Display the current directory listing" << endl;	//ÁĞ³öµ±Ç°Ä¿Â¼Çåµ¥
-	//cout.width(30);
-	//cout << "cd" << "Enter the specific directory " << endl;		//Ç°ÍùÖ¸¶¨Ä¿Â¼
-	//cout.width(30);
-	//cout << "mkdir" << "Create directory" << endl;					//´´½¨Ä¿Â¼
-	//cout.width(30);
-	//cout << "rm" << "Delete the file or directory" << endl;			//É¾³ıÎÄ¼şºÍÄ¿Â¼ 
-	//cout.width(30);
-	//cout << "touch" << "Create new file" << endl;				//´´½¨ĞÂÎÄ¼ş
-	//cout.width(30);
-	//cout << "read" << "Read the content of file" << endl;		//¶ÁÎÄ¼ş
-	//cout.width(30);
-	//cout << "write" << "Write the file" << endl;			//Ğ´ÎÄ¼ş
-	//cout.width(30);
-	//cout << "chmod" << "Modify the access right" << endl;		//ĞŞ¸ÄÎÄ¼şÈ¨ÏŞ
-	//cout.width(30);
-	//cout << "adduser" << "Add user" << endl;		//ĞÂÔöÓÃ»§
-	//cout.width(30);
-	//cout << "deluser" << "Delete user" << endl;		//É¾³ıÓÃ»§
-	//cout.width(30);
-	//cout << "addusergrp" << "Add user group" << endl;		//ĞÂÔöÓÃ»§×é
-	//cout.width(30);
-	//cout << "delusergrp" << "Delete user group" << endl;		//É¾³ıÓÃ»§×é
-	//cout.width(30);
-	//cout << "snapshot" << "Back up the system" << endl;			//±¸·İÏµÍ³
-	//cout.width(30);
-	//cout << "recover" << "Recover the system" << endl;			//»Ö¸´ÏµÍ³
-}
 
-//****´óÀàº¯Êı****
+//****å¤§ç±»å‡½æ•°****
 bool Format() { //ok
-	//³õÊ¼»¯:³¬¼¶¿é,Î»Í¼
+	//åˆå§‹åŒ–:è¶…çº§å—,ä½å›¾
 	superblock->s_INODE_NUM = INODE_NUM;
 	superblock->s_BLOCK_NUM = BLOCK_NUM;
 	superblock->s_free_INODE_NUM = INODE_NUM;
@@ -66,10 +33,10 @@ bool Format() { //ok
 	fseek(fw, BlockBitmap_Start_Addr, SEEK_SET);
 	fwrite(block_bitmap, sizeof(block_bitmap), 1, fw);
 
-	//inodeºÍblock°å¿éÔİÊ±²»ĞèÒªÄÚÈİ
-	fflush(fw);//½«ÉÏÃæÄÚÈİ·ÅÈëfwÖĞ
+	//inodeå’Œblockæ¿å—æš‚æ—¶ä¸éœ€è¦å†…å®¹
+	fflush(fw);//å°†ä¸Šé¢å†…å®¹æ”¾å…¥fwä¸­
 
-	//´´½¨¸ùÄ¿Â¼
+	//åˆ›å»ºæ ¹ç›®å½•
 	int iaddr = ialloc();
 	int baddr = balloc();
 	if (iaddr == -1 || baddr==-1) {
@@ -79,14 +46,14 @@ bool Format() { //ok
 	inode ino;
 	ino.inode_id = iaddr;
 	ino.inode_mode = MODE_DIR | DIR_DEF_PERMISSION;
-	ino.inode_file_count = 1; //"."Ò²Ëã
+	ino.inode_file_count = 1; //"."ä¹Ÿç®—
 	strcpy(ino.i_uname , "root");
 	strcpy(ino.i_gname , "root");
 	ino.inode_file_size = 1 * BLOCK_SIZE;
 	time(&ino.inode_change_time);
 	time(&ino.file_change_time);
 	time(&ino.file_modified_time);
-	// printf("%s", asctime(localtime(&time)));×ª³ÉºÏÊÊ¸ñÊ½
+	// printf("%s", asctime(localtime(&time)));è½¬æˆåˆé€‚æ ¼å¼
 	memset(ino.i_dirBlock, -1, sizeof(ino.i_dirBlock));
 	ino.i_dirBlock[0] = baddr;
 	fseek(fw, iaddr, SEEK_SET);
@@ -103,7 +70,7 @@ bool Format() { //ok
 	fwrite(ditem, sizeof(ditem), 1, fw);
 
 	fflush(fw);
-	//´´½¨Ä¿Â¼¼°ÅäÖÃÎÄ¼ş
+	//åˆ›å»ºç›®å½•åŠé…ç½®æ–‡ä»¶
 	mkdir(Cur_Dir_Addr, "home");
 	cd(Cur_Dir_Addr, "home");
 	mkdir(Cur_Dir_Addr, "root");
@@ -116,7 +83,7 @@ bool Format() { //ok
 	sprintf(buf, "root:%d:%d\n", nextUID, nextGID);//root:uid-0,gid-0
 	mkfile(Cur_Dir_Addr, "passwd", buf);
 
-	int pmode = 0400;//owner:¿É¶Á
+	int pmode = 0400;//owner:å¯è¯»
 	sprintf(buf, "root:root\n");
 	mkfile(Cur_Dir_Addr, "shadow", buf);
 	chmod(Cur_Dir_Addr, "shadow", pmode,0);
@@ -129,7 +96,7 @@ bool Format() { //ok
 	gotoRoot();
 	return true;
 }
-bool Install() {	//°²×°ÎÄ¼şÏµÍ³ ok
+bool Install() {	//å®‰è£…æ–‡ä»¶ç³»ç»Ÿ ok
 	fseek(fr, Superblock_Start_Addr, SEEK_SET);
 	fread(superblock, sizeof(superblock), 1, fr);
 
@@ -142,14 +109,15 @@ bool Install() {	//°²×°ÎÄ¼şÏµÍ³ ok
 	fflush(fr);
 	return true;
 }
-bool mkdir(int PIAddr, char name[]) {	//Ä¿Â¼´´½¨º¯Êı(¸¸Ä¿Â¼È¨ÏŞ:Ğ´)(ok
-	//ÀíÂÛÉÏCur_Dir_AddrÊÇÏµÍ³·ÖÅäµÄ£¬Ó¦¸ÃÊÇÕıÈ·µÄ
+bool mkdir(int PIAddr, char name[]) {	//ç›®å½•åˆ›å»ºå‡½æ•°(çˆ¶ç›®å½•æƒé™:å†™)(ok
+	//ç†è®ºä¸ŠCur_Dir_Addræ˜¯ç³»ç»Ÿåˆ†é…çš„ï¼Œåº”è¯¥æ˜¯æ­£ç¡®çš„
 	if (strlen(name) > FILE_NAME_MAX_SIZE) {
-		printf("ÎÄ¼şÃû³Æ³¬¹ı×î´ó³¤¶È\n");
+		printf("æ–‡ä»¶åç§°è¶…è¿‡æœ€å¤§é•¿åº¦\n");
 		return false;
 	}
 
-	//²éÕÒ¸¸Ä¿Â¼µÄ¿ÕÎ»ÖÃ
+FELIN
+	//æŸ¥æ‰¾çˆ¶ç›®å½•çš„ç©ºä½ç½®
 	int bpos = -1;
 	int dpos = -1;
 	int empty_b = -1;
@@ -157,7 +125,7 @@ bool mkdir(int PIAddr, char name[]) {	//Ä¿Â¼´´½¨º¯Êı(¸¸Ä¿Â¼È¨ÏŞ:Ğ´)(ok
 	fseek(fr, PIAddr, SEEK_SET);
 	fread(&parino, sizeof(parino), 1, fr);
 
-	//ÅĞ¶ÏÉí·İ
+	//åˆ¤æ–­èº«ä»½
 	int role = 0;	//other 0
 	if (strcmp(Cur_Group_Name, parino.i_gname) == 0) {
 		role = 3;	//group 3
@@ -166,27 +134,27 @@ bool mkdir(int PIAddr, char name[]) {	//Ä¿Â¼´´½¨º¯Êı(¸¸Ä¿Â¼È¨ÏŞ:Ğ´)(ok
 		role = 6;
 	}
 	if (((parino.inode_mode >> role >> 1) & 1 == 0) ||( strcmp(Cur_User_Name, "root" )!= 0)){
-		printf("È¨ÏŞ²»×ã£¬ÎŞ·¨ĞÂ½¨Ä¿Â¼\n");
+		printf("æƒé™ä¸è¶³ï¼Œæ— æ³•æ–°å»ºç›®å½•\n");
 		return false;
 	}
 
 	for (int i = 0; i < 10; ++i) {
 		int baddr = parino.i_dirBlock[i];
-		if (baddr != -1) {//blockÒÑ±»Ê¹ÓÃ 
+		if (baddr != -1) {//blockå·²è¢«ä½¿ç”¨ 
 			DirItem ditem[DirItem_Size];
 			fseek(fr, baddr, SEEK_SET);
 			fread(ditem, sizeof(ditem), 1, fr);
 			for (int j = 0; j < DirItem_Size; ++j) {
-				if (ditem[j].inodeAddr==-1) {//Î´Ê¹ÓÃ¹ıµÄÏî
+				if (ditem[j].inodeAddr==-1) {//æœªä½¿ç”¨è¿‡çš„é¡¹
 					bpos = i;
 					dpos = j;
 				}
-				if (strcmp(ditem[j].itemName, name)==0) {//ÅĞ¶Ï£º´æÔÚÍ¬ÃûÄ¿Â¼
+				if (strcmp(ditem[j].itemName, name)==0) {//åˆ¤æ–­ï¼šå­˜åœ¨åŒåç›®å½•
 					inode temp;
 					fseek(fr, ditem[j].inodeAddr, SEEK_SET);
 					fread(&temp, sizeof(inode), 1, fr);
-					if (((temp.inode_mode >> 9) & 1) == 1) {//ÊÇÄ¿Â¼
-						printf("¸ÃÄ¿Â¼ÏÂÒÑ°üº¬Í¬ÃûÄ¿Â¼\n");
+					if (((temp.inode_mode >> 9) & 1) == 1) {//æ˜¯ç›®å½•
+						printf("è¯¥ç›®å½•ä¸‹å·²åŒ…å«åŒåç›®å½•\n");
 						return false;
 					}
 				}
@@ -194,16 +162,16 @@ bool mkdir(int PIAddr, char name[]) {	//Ä¿Â¼´´½¨º¯Êı(¸¸Ä¿Â¼È¨ÏŞ:Ğ´)(ok
 		}
 	}
 	fflush(fr);
-	//¿ÕÏĞ¿éµ¹Ğò´æ´¢
+	//ç©ºé—²å—å€’åºå­˜å‚¨
 
-	if (bpos == -1 || dpos == -1) {	//block²»×ãÒªĞÂ¿ª
+	if (bpos == -1 || dpos == -1) {	//blockä¸è¶³è¦æ–°å¼€
 		for (int i = 0; i < 10; ++i) {
 			if (parino.i_dirBlock[i] == -1) {
 				empty_b = i;
 			}
 		}
 		if (empty_b == -1) {
-			printf("¸ÃÄ¿Â¼ÒÑÂú£¬ÎŞ·¨Ìí¼Ó¸ü¶àÎÄ¼ş");
+			printf("è¯¥ç›®å½•å·²æ»¡ï¼Œæ— æ³•æ·»åŠ æ›´å¤šæ–‡ä»¶");
 			return false;
 		}
 		int baddr = balloc();
@@ -227,11 +195,11 @@ bool mkdir(int PIAddr, char name[]) {	//Ä¿Â¼´´½¨º¯Êı(¸¸Ä¿Â¼È¨ÏŞ:Ğ´)(ok
 		dpos = 0;
 	}
 
-	//´´½¨×ÓÄ¿Â¼£ºbpos,dpos
+	//åˆ›å»ºå­ç›®å½•ï¼šbpos,dpos
 	int chiiaddr = ialloc();
 	int chibaddr = balloc();
 
-	//¸¸½ÚµãinodeºÍblock¸üĞÂ
+	//çˆ¶èŠ‚ç‚¹inodeå’Œblockæ›´æ–°
 	parino.inode_file_count += 1;
 	fseek(fw, PIAddr, SEEK_SET);
 	fwrite(&parino, sizeof(parino), 1, fw);
@@ -245,11 +213,11 @@ bool mkdir(int PIAddr, char name[]) {	//Ä¿Â¼´´½¨º¯Êı(¸¸Ä¿Â¼È¨ÏŞ:Ğ´)(ok
 	fseek(fw, parino.i_dirBlock[bpos], SEEK_SET);
 	fwrite(paritem, sizeof(paritem), 1, fw);
 
-	//×Ó½Úµã¸üĞÂ
+	//å­èŠ‚ç‚¹æ›´æ–°
 	inode chiino;
 	chiino.inode_id = chiiaddr;
 	chiino.inode_mode = MODE_DIR | DIR_DEF_PERMISSION;
-	chiino.inode_file_count = 2; //"."ºÍ".."
+	chiino.inode_file_count = 2; //"."å’Œ".."
 	strcpy(chiino.i_uname, Cur_User_Name);
 	strcpy(chiino.i_gname, Cur_Group_Name);
 	chiino.inode_file_size = 1 * BLOCK_SIZE;
@@ -275,15 +243,21 @@ bool mkdir(int PIAddr, char name[]) {	//Ä¿Â¼´´½¨º¯Êı(¸¸Ä¿Â¼È¨ÏŞ:Ğ´)(ok
 
 	fflush(fw);
 	return true;
+
+void inPasswd(char passwd[])	//è¾“å…¥å¯†ç 
+{
+	printf("passwd:");
+	scanf("%s", passwd);
+ master
 }
-bool mkfile(int PIAddr, char name[],char buf[]) {	//ÎÄ¼ş´´½¨º¯Êı
-	//ÀíÂÛÉÏCur_Dir_AddrÊÇÏµÍ³·ÖÅäµÄ£¬Ó¦¸ÃÊÇÕıÈ·µÄ
+bool mkfile(int PIAddr, char name[],char buf[]) {	//æ–‡ä»¶åˆ›å»ºå‡½æ•°
+	//ç†è®ºä¸ŠCur_Dir_Addræ˜¯ç³»ç»Ÿåˆ†é…çš„ï¼Œåº”è¯¥æ˜¯æ­£ç¡®çš„
 	if (strlen(name) > FILE_NAME_MAX_SIZE) {
-		printf("ÎÄ¼şÃû³Æ³¬¹ı×î´ó³¤¶È\n");
+		printf("æ–‡ä»¶åç§°è¶…è¿‡æœ€å¤§é•¿åº¦\n");
 		return false;
 	}
 
-	//²éÕÒ¸¸Ä¿Â¼µÄ¿ÕÎ»ÖÃ
+	//æŸ¥æ‰¾çˆ¶ç›®å½•çš„ç©ºä½ç½®
 	int bpos = -1;
 	int dpos = -1;
 	int empty_b = -1;
@@ -291,7 +265,7 @@ bool mkfile(int PIAddr, char name[],char buf[]) {	//ÎÄ¼ş´´½¨º¯Êı
 	fseek(fr, PIAddr, SEEK_SET);
 	fread(&parino, sizeof(parino), 1, fr);
 
-	//ÅĞ¶ÏÉí·İ
+	//åˆ¤æ–­èº«ä»½
 	int role = 0;	//other 0
 	if (strcmp(Cur_Group_Name, parino.i_gname) == 0) {
 		role = 3;	//group 3
@@ -300,27 +274,27 @@ bool mkfile(int PIAddr, char name[],char buf[]) {	//ÎÄ¼ş´´½¨º¯Êı
 		role = 6;
 	}
 	if (((parino.inode_mode >> role >> 1) & 1 == 0) || (strcmp(Cur_User_Name, "root") != 0)) {
-		printf("È¨ÏŞ²»×ã£¬ÎŞ·¨ĞÂ½¨Ä¿Â¼\n");
+		printf("æƒé™ä¸è¶³ï¼Œæ— æ³•æ–°å»ºç›®å½•\n");
 		return false;
 	}
 	
 	for (int i = 0; i < 10; ++i) {
 		int baddr = parino.i_dirBlock[i];
-		if (baddr != -1) {//blockÒÑ±»Ê¹ÓÃ 
+		if (baddr != -1) {//blockå·²è¢«ä½¿ç”¨ 
 			DirItem ditem[DirItem_Size];
 			fseek(fr, baddr, SEEK_SET);
 			fread(ditem, sizeof(ditem), 1, fr);
 			for (int j = 0; j < DirItem_Size; ++j) {
-				if (ditem[j].inodeAddr == -1) {//Î´Ê¹ÓÃ¹ıµÄÏî
+				if (ditem[j].inodeAddr == -1) {//æœªä½¿ç”¨è¿‡çš„é¡¹
 					bpos = i;
 					dpos = j;
 				}
-				if (strcmp(ditem[j].itemName, name) == 0) {//ÅĞ¶Ï£º´æÔÚÍ¬ÃûÄ¿Â¼
+				if (strcmp(ditem[j].itemName, name) == 0) {//åˆ¤æ–­ï¼šå­˜åœ¨åŒåç›®å½•
 					inode temp;
 					fseek(fr, ditem[j].inodeAddr, SEEK_SET);
 					fread(&temp, sizeof(inode), 1, fr);
-					if (((temp.inode_mode >> 9) & 1) == 1) {//ÊÇÄ¿Â¼
-						printf("¸ÃÄ¿Â¼ÏÂÒÑ°üº¬Í¬ÃûÄ¿Â¼\n");
+					if (((temp.inode_mode >> 9) & 1) == 1) {//æ˜¯ç›®å½•
+						printf("è¯¥ç›®å½•ä¸‹å·²åŒ…å«åŒåç›®å½•\n");
 						return false;
 					}
 				}
@@ -329,14 +303,14 @@ bool mkfile(int PIAddr, char name[],char buf[]) {	//ÎÄ¼ş´´½¨º¯Êı
 	}
 	fflush(fr);
 
-	if (bpos == -1 || dpos == -1) {	//block²»×ãÒªĞÂ¿ª
+	if (bpos == -1 || dpos == -1) {	//blockä¸è¶³è¦æ–°å¼€
 		for (int i = 0; i < 10; ++i) {
 			if (parino.i_dirBlock[i] == -1) {
 				empty_b = i;
 			}
 		}
 		if (empty_b == -1) {
-			printf("¸ÃÄ¿Â¼ÒÑÂú£¬ÎŞ·¨Ìí¼Ó¸ü¶àÎÄ¼ş");
+			printf("è¯¥ç›®å½•å·²æ»¡ï¼Œæ— æ³•æ·»åŠ æ›´å¤šæ–‡ä»¶");
 			return false;
 		}
 		int baddr = balloc();
@@ -360,11 +334,11 @@ bool mkfile(int PIAddr, char name[],char buf[]) {	//ÎÄ¼ş´´½¨º¯Êı
 		dpos = 0;
 	}
 
-	//´´½¨×ÓÄ¿Â¼£ºbpos,dpos
+	//åˆ›å»ºå­ç›®å½•ï¼šbpos,dpos
 	int chiiaddr = ialloc();
 	int chibaddr = balloc();
 
-	//¸¸½ÚµãinodeºÍblock¸üĞÂ
+	//çˆ¶èŠ‚ç‚¹inodeå’Œblockæ›´æ–°
 	parino.inode_file_count += 1;
 	fseek(fw, PIAddr, SEEK_SET);
 	fwrite(&parino, sizeof(parino), 1, fw);
@@ -397,22 +371,22 @@ bool mkfile(int PIAddr, char name[],char buf[]) {	//ÎÄ¼ş´´½¨º¯Êı
 	memset(temp_file, '\0', BLOCK_SIZE);
 	fseek(fw, chibaddr, SEEK_SET);
 	fwrite(temp_file, BLOCK_SIZE, 1, fw);
-	writefile(chiino, chiiaddr, buf);//½«bufĞÅÏ¢Ğ´Èë
+	writefile(chiino, chiiaddr, buf);//å°†bufä¿¡æ¯å†™å…¥
 	
 	fflush(fw);
 	return true;
 }
-bool rmdir(int CHIAddr, char name[]) {//É¾³ıµ±Ç°Ä¿Â¼
+bool rmdir(int CHIAddr, char name[]) {//åˆ é™¤å½“å‰ç›®å½•
 	if (strlen(name) > FILE_NAME_MAX_SIZE) {
-		printf("ÎÄ¼şÃû³Æ³¬¹ı×î´ó³¤¶È\n");
+		printf("æ–‡ä»¶åç§°è¶…è¿‡æœ€å¤§é•¿åº¦\n");
 		return false;
 	}
 	if ((strcmp(name, ".") == 0) || strcmp(name, "..") == 0) {
-		printf("ÎÄ¼şÃû´íÎó£¬ÎŞ·¨É¾³ı\n");
+		printf("æ–‡ä»¶åé”™è¯¯ï¼Œæ— æ³•åˆ é™¤\n");
 		return false;
 	}
 
-	//ÅĞ¶ÏÈ¨ÏŞ
+	//åˆ¤æ–­æƒé™
 	inode ino;
 	fseek(fr, CHIAddr, SEEK_SET);
 	fread(&ino, sizeof(inode), 1, fr);
@@ -424,15 +398,15 @@ bool rmdir(int CHIAddr, char name[]) {//É¾³ıµ±Ç°Ä¿Â¼
 	if (strcmp(Cur_User_Name, ino.i_uname) == 0) {//owner
 		mode = 6;
 	}
-	if (((ino.inode_mode >> mode >> 1) & 1 == 0) || (strcmp(Cur_User_Name, "root") != 0)) {//ÊÇ·ñ¿ÉĞ´£º2
-		printf("Ã»ÓĞÈ¨ÏŞÉ¾³ı¸ÃÎÄ¼ş¼Ğ\n");
+	if (((ino.inode_mode >> mode >> 1) & 1 == 0) || (strcmp(Cur_User_Name, "root") != 0)) {//æ˜¯å¦å¯å†™ï¼š2
+		printf("æ²¡æœ‰æƒé™åˆ é™¤è¯¥æ–‡ä»¶å¤¹\n");
 		return false;
 	}
 
-	//É¾³ıÆä×ÓÎÄ¼ş¼Ğ
+	//åˆ é™¤å…¶å­æ–‡ä»¶å¤¹
 	for (int i = 0; i < 10; ++i) {
 		DirItem ditem[DirItem_Size];
-		if (ino.i_dirBlock[i] != -1) {//±»Ê¹ÓÃ¹ı
+		if (ino.i_dirBlock[i] != -1) {//è¢«ä½¿ç”¨è¿‡
 			fseek(fr, ino.i_dirBlock[i], SEEK_SET);
 			fread(ditem, sizeof(BLOCK_SIZE), 1, fr);
 			for (int j = 0; j < DirItem_Size; ++j) {
@@ -443,17 +417,17 @@ bool rmdir(int CHIAddr, char name[]) {//É¾³ıµ±Ç°Ä¿Â¼
 				if (strlen(ditem[j].itemName) != 0) {
 					fseek(fr, ditem[j].inodeAddr, SEEK_SET);
 					fread(&chiino, sizeof(inode), 1, fr);
-					if ((chiino.inode_mode >> 9) & 1 == 1) {	//Ä¿Â¼
+					if ((chiino.inode_mode >> 9) & 1 == 1) {	//ç›®å½•
 						rmdir(ditem[j].inodeAddr, ditem[j].itemName);
 					}
-					else {										//ÎÄ¼ş
+					else {										//æ–‡ä»¶
 						rmfile(ditem[j].inodeAddr, ditem[j].itemName);
 					}
 				}
 				ditem[j].inodeAddr = -1;
 				strcpy(ditem[j].itemName, "");
 			}
-			//blockÇåÀí&inode²ÎÊı¼õÉÙ
+			//blockæ¸…ç†&inodeå‚æ•°å‡å°‘
 			bfree(ino.i_dirBlock[i]);
 			ino.inode_file_count -= 16;
 			ino.inode_file_size -= BLOCK_SIZE;
@@ -464,13 +438,13 @@ bool rmdir(int CHIAddr, char name[]) {//É¾³ıµ±Ç°Ä¿Â¼
 	ifree(CHIAddr);
 	return true;
 }
-bool rmfile(int CHIAddr, char name[]) {	//É¾³ıµ±Ç°ÎÄ¼ş
+bool rmfile(int CHIAddr, char name[]) {	//åˆ é™¤å½“å‰æ–‡ä»¶
 	if (strlen(name) > FILE_NAME_MAX_SIZE) {
-		printf("ÎÄ¼şÃû³Æ³¬¹ı×î´ó³¤¶È\n");
+		printf("æ–‡ä»¶åç§°è¶…è¿‡æœ€å¤§é•¿åº¦\n");
 		return false;
 	}
 
-	//ÅĞ¶ÏÈ¨ÏŞ
+	//åˆ¤æ–­æƒé™
 	inode ino;
 	fseek(fr, CHIAddr, SEEK_SET);
 	fread(&ino, sizeof(inode), 1, fr);
@@ -482,15 +456,15 @@ bool rmfile(int CHIAddr, char name[]) {	//É¾³ıµ±Ç°ÎÄ¼ş
 	if (strcmp(Cur_User_Name, ino.i_uname) == 0) {//owner
 		mode = 6;
 	}
-	if (((ino.inode_mode >> mode >> 1) & 1 == 0) || (strcmp(Cur_User_Name, "root") != 0)) {//ÊÇ·ñ¿ÉĞ´£º2
-		printf("Ã»ÓĞÈ¨ÏŞÉ¾³ı¸ÃÎÄ¼ş\n");
+	if (((ino.inode_mode >> mode >> 1) & 1 == 0) || (strcmp(Cur_User_Name, "root") != 0)) {//æ˜¯å¦å¯å†™ï¼š2
+		printf("æ²¡æœ‰æƒé™åˆ é™¤è¯¥æ–‡ä»¶\n");
 		return false;
 	}
 
-	//É¾³ıÆäÄÚÈİ
+	//åˆ é™¤å…¶å†…å®¹
 	for (int i = 0; i < 10; ++i) {
-		if (ino.i_dirBlock[i] != -1) {//±»Ê¹ÓÃ¹ı
-			//blockÇåÀí&inode²ÎÊı¼õÉÙ
+		if (ino.i_dirBlock[i] != -1) {//è¢«ä½¿ç”¨è¿‡
+			//blockæ¸…ç†&inodeå‚æ•°å‡å°‘
 			bfree(ino.i_dirBlock[i]);
 			ino.i_dirBlock[i] = -1;
 		}
@@ -501,10 +475,10 @@ bool rmfile(int CHIAddr, char name[]) {	//É¾³ıµ±Ç°ÎÄ¼ş
 	return true;
 }
 
-bool writefile(inode fileinode, int iaddr, char buf[]) { //ÎÄ¼şĞ´Èë£¨ĞøĞ´£©ok
-	//Ç°Ìá£º¼ÙÉèÊÇ°´ÕÕblockË³Ğò´æ´¢
+bool writefile(inode fileinode, int iaddr, char buf[]) { //æ–‡ä»¶å†™å…¥ï¼ˆç»­å†™ï¼‰ok
+	//å‰æï¼šå‡è®¾æ˜¯æŒ‰ç…§blocké¡ºåºå­˜å‚¨
 	if ((fileinode.inode_file_size + strlen(buf)) > 10 * BLOCK_SIZE) {
-		printf("ÎÄ¼şÄÚ´æ²»×ã£¬ÎŞ·¨¼ÌĞøÌí¼ÓÄÚÈİ\n");
+		printf("æ–‡ä»¶å†…å­˜ä¸è¶³ï¼Œæ— æ³•ç»§ç»­æ·»åŠ å†…å®¹\n");
 		return false;
 	}
 
@@ -512,11 +486,11 @@ bool writefile(inode fileinode, int iaddr, char buf[]) { //ÎÄ¼şĞ´Èë£¨ĞøĞ´£©ok
 	fseek(fw, iaddr, SEEK_SET);
 	fwrite(&fileinode, sizeof(inode), 1, fw);
 
-	//Ğ´ÈëÎÄ¼ş
-	int start = fileinode.inode_file_size / BLOCK_SIZE; //Ê¹ÓÃµ½µÚ¼¸¿é£¨¿¼ÂÇblock[0])
+	//å†™å…¥æ–‡ä»¶
+	int start = fileinode.inode_file_size / BLOCK_SIZE; //ä½¿ç”¨åˆ°ç¬¬å‡ å—ï¼ˆè€ƒè™‘block[0])
 	char temp[BLOCK_SIZE];
 	for (int i = start; i < 10; ++i) {
-		if (fileinode.i_dirBlock[i] != -1) {	//ÕıÔÚÊ¹ÓÃ¿é(²¹È«£©
+		if (fileinode.i_dirBlock[i] != -1) {	//æ­£åœ¨ä½¿ç”¨å—(è¡¥å…¨ï¼‰
 			fseek(fr, fileinode.i_dirBlock[i], SEEK_SET);
 			fread(temp, BLOCK_SIZE, 1, fr);
 			fflush(fr);
@@ -540,7 +514,7 @@ bool writefile(inode fileinode, int iaddr, char buf[]) { //ÎÄ¼şĞ´Èë£¨ĞøĞ´£©ok
 			fseek(fw, fileinode.i_dirBlock[i], SEEK_SET);
 			fwrite(buf, BLOCK_SIZE, 1, fw);
 			fflush(fw);
-			if (strlen(buf) > BLOCK_SIZE) {	//»¹ÓĞÃ»·ÅÍêµÄ
+			if (strlen(buf) > BLOCK_SIZE) {	//è¿˜æœ‰æ²¡æ”¾å®Œçš„
 				buf += BLOCK_SIZE;
 			}
 			else {
@@ -552,12 +526,12 @@ bool writefile(inode fileinode, int iaddr, char buf[]) { //ÎÄ¼şĞ´Èë£¨ĞøĞ´£©ok
 	fflush(fw);
 	return true;
 }
-void cd(int PIAddr, char name[]) {//ÇĞ»»Ä¿Â¼(ok
+void cd(int PIAddr, char name[]) {//åˆ‡æ¢ç›®å½•(ok
 	inode pinode;
 	fseek(fr, PIAddr, SEEK_SET);
 	fread(&pinode, sizeof(inode), 1, fr);
 
-	//ÅĞ¶ÏÉí·İ
+	//åˆ¤æ–­èº«ä»½
 	int role = 0;	//other 0
 	if (strcmp(Cur_Group_Name, pinode.i_gname) == 0) {
 		role = 3;	//group 3
@@ -573,7 +547,7 @@ void cd(int PIAddr, char name[]) {//ÇĞ»»Ä¿Â¼(ok
 			fseek(fr, pinode.i_dirBlock[i], SEEK_SET);
 			fread(ditem, sizeof(ditem), 1, fr);
 			for (int j = 0; j < DirItem_Size; ++j) {
-				if (strcmp(ditem[j].itemName, name) == 0) { //ÕÒµ½Í¬Ãû
+				if (strcmp(ditem[j].itemName, name) == 0) { //æ‰¾åˆ°åŒå
 					if (strcmp(name, ".") == 0) {
 						return;
 					}
@@ -581,16 +555,16 @@ void cd(int PIAddr, char name[]) {//ÇĞ»»Ä¿Â¼(ok
 						if (strcmp(Cur_Dir_Name, "/") ){
 							return;
 						}
-						//char* p = strrchr(Cur_Dir_Addr, '/'); ÅÜ²»ÁË°¡
+						//char* p = strrchr(Cur_Dir_Addr, '/'); è·‘ä¸äº†å•Š
 						char* p = Cur_Dir_Name+strlen(Cur_Dir_Name);
 						while ((*p) != '/')p--;
-						*p = '\0'; //´ò¶ÏËü
+						*p = '\0'; //æ‰“æ–­å®ƒ
 						Cur_Dir_Addr = PIAddr;
 					}
 					inode chiino;
 					fseek(fr, ditem[j].inodeAddr, SEEK_SET);
 					fread(&chiino, sizeof(inode), 1, fr);
-					if (((chiino.inode_mode >> role) & 1) == 1) {	//ÊÇ·ñÓĞÖ´ĞĞÈ¨ÏŞ
+					if (((chiino.inode_mode >> role) & 1) == 1) {	//æ˜¯å¦æœ‰æ‰§è¡Œæƒé™
 						if (strcmp(Cur_Dir_Name, "/") != 0) {
 							strcat(Cur_Dir_Name, "/");
 						}
@@ -608,12 +582,12 @@ void gotoRoot() { //ok
 	Cur_Dir_Addr= Root_Dir_Addr;
 	strcpy(Cur_Dir_Name , "/");
 }
-void ls() {//ÏÔÊ¾µ±Ç°Ä¿Â¼ËùÓĞÎÄ¼ş
+void ls() {//æ˜¾ç¤ºå½“å‰ç›®å½•æ‰€æœ‰æ–‡ä»¶
 	inode ino;
 	fseek(fr, Cur_Dir_Addr, SEEK_SET);
 	fread(&ino, sizeof(inode), 1, fr);
 	
-	//²é¿´È¨ÏŞ
+	//æŸ¥çœ‹æƒé™
 	int mode = 0;//other
 	if (strcmp(Cur_Group_Name, ino.i_gname) == 0) {//group
 		mode = 3;
@@ -621,14 +595,15 @@ void ls() {//ÏÔÊ¾µ±Ç°Ä¿Â¼ËùÓĞÎÄ¼ş
 	if (strcmp(Cur_User_Name, ino.i_uname) == 0) {//owner
 		mode = 6;
 	}
-	if (((ino.inode_mode >> mode >> 2) & 1 == 0) || (strcmp(Cur_User_Name, "root") != 0)) {//ÊÇ·ñ¿É¶Á£º4
-		printf("Ã»ÓĞÈ¨ÏŞ²é¿´¸ÃÎÄ¼ş¼Ğ\n");
+	if (((ino.inode_mode >> mode >> 2) & 1 == 0) || (strcmp(Cur_User_Name, "root") != 0)) {//æ˜¯å¦å¯è¯»ï¼š4
+		printf("æ²¡æœ‰æƒé™æŸ¥çœ‹è¯¥æ–‡ä»¶å¤¹\n");
 		return;
 	}
 
+ FELIN
 	for (int i = 0; i < 10; ++i) {
 		DirItem ditem[DirItem_Size];
-		if (ino.i_dirBlock[i] != -1) {//±»Ê¹ÓÃ¹ı
+		if (ino.i_dirBlock[i] != -1) {//è¢«ä½¿ç”¨è¿‡
 			fseek(fr, ino.i_dirBlock[i], SEEK_SET);
 			fread(ditem, sizeof(BLOCK_SIZE), 1, fr);
 			for (int j = 0; j < DirItem_Size; ++j) {
@@ -641,8 +616,8 @@ void ls() {//ÏÔÊ¾µ±Ç°Ä¿Â¼ËùÓĞÎÄ¼ş
 	return;
 }
 
-//****¹¤¾ßº¯Êı****
-int ialloc() { //·ÖÅäinode£¬ÂúÁË·µ»Ø-1 ok
+//****å·¥å…·å‡½æ•°****
+int ialloc() { //åˆ†é…inodeï¼Œæ»¡äº†è¿”å›-1 ok
 	int iaddr = -1;
 	for (int i = 0; i < INODE_NUM; i++) {
 		if (inode_bitmap[i] == 0) {
@@ -652,7 +627,7 @@ int ialloc() { //·ÖÅäinode£¬ÂúÁË·µ»Ø-1 ok
 		}
 	}
 	if (iaddr == -1) {
-		printf("Ã»ÓĞinode¿Õ¼ä\n");
+		printf("æ²¡æœ‰inodeç©ºé—´\n");
 		return -1;
 	}
 	iaddr =Inode_Start_Addr + iaddr * INODE_SIZE;
@@ -665,12 +640,12 @@ int ialloc() { //·ÖÅäinode£¬ÂúÁË·µ»Ø-1 ok
 }
 void ifree(int iaddr) {
 	if ((iaddr % INODE_SIZE) != 0) {
-		printf("µ±Ç°inodeÎ»ÖÃ´íÎó\n");
+		printf("å½“å‰inodeä½ç½®é”™è¯¯\n");
 		return;
 	}
 	int index = (iaddr - InodeBitmap_Start_Addr) / INODE_SIZE;
 	if (inode_bitmap[index] == 0) {
-		printf("Î´Ê¹ÓÃµ±Ç°inode£¬ÎŞĞèÊÍ·Å\n");
+		printf("æœªä½¿ç”¨å½“å‰inodeï¼Œæ— éœ€é‡Šæ”¾\n");
 		return;
 	}
 	inode_bitmap[index] = 0;
@@ -683,7 +658,7 @@ void ifree(int iaddr) {
 	fseek(fw, Superblock_Start_Addr, SEEK_SET);
 	fwrite(superblock, sizeof(superblock), 1, fw);
 }
-int balloc() { //·ÖÅäblock£¬ÂúÁË·µ»Ø-1 ok
+int balloc() { //åˆ†é…blockï¼Œæ»¡äº†è¿”å›-1 ok
 	int baddr = -1;
 	for (int i = 0; i < BLOCK_NUM; i++) {
 		if (block_bitmap[i] == 0) {
@@ -693,7 +668,7 @@ int balloc() { //·ÖÅäblock£¬ÂúÁË·µ»Ø-1 ok
 		}
 	}
 	if (baddr == -1) {
-		printf("Ã»ÓĞblock¿Õ¼ä\n");
+		printf("æ²¡æœ‰blockç©ºé—´\n");
 		return -1;
 	}
 	baddr = Block_Start_Addr + baddr * BLOCK_SIZE;
@@ -706,12 +681,12 @@ int balloc() { //·ÖÅäblock£¬ÂúÁË·µ»Ø-1 ok
 }
 void bfree(int baddr) {
 	if ((baddr % BLOCK_SIZE) != 0) {
-		printf("µ±Ç°blockÎ»ÖÃ´íÎó\n");
+		printf("å½“å‰blockä½ç½®é”™è¯¯\n");
 		return;
 	}
 	int index = (baddr - BlockBitmap_Start_Addr) / BLOCK_SIZE;
 	if (block_bitmap[index] == 0) {
-		printf("Î´Ê¹ÓÃµ±Ç°block£¬ÎŞĞèÊÍ·Å\n");
+		printf("æœªä½¿ç”¨å½“å‰blockï¼Œæ— éœ€é‡Šæ”¾\n");
 		return;
 	}
 	block_bitmap[index] = 0;
@@ -722,24 +697,31 @@ void bfree(int baddr) {
 	fwrite(superblock, sizeof(superblock), 1, fw);
 }
 
-//****ÓÃ»§&ÓÃ»§×éº¯Êı****
-void inUsername(char* username)	//ÊäÈëÓÃ»§Ãû
+//****ç”¨æˆ·&ç”¨æˆ·ç»„å‡½æ•°****
+void inUsername(char* username)	//è¾“å…¥ç”¨æˆ·å
 {
 	printf("username:\n");
-	scanf("%s", username);	//ÓÃ»§Ãû
+	scanf("%s", username);	//ç”¨æˆ·å
 }
-void inPasswd(char *passwd)	//ÊäÈëÃÜÂë
+void inPasswd(char *passwd)	//è¾“å…¥å¯†ç 
 {
 	printf("password:\n");
 	scanf("%s", passwd);
 }
-bool login()	//µÇÂ½½çÃæ
+bool login()	//ç™»é™†ç•Œé¢
+
+bool login()	//ç™»é™†
+ master
 {
 	char username[100] = { 0 };
 	char passwd[100] = { 0 };
-	inUsername(username);	//ÊäÈëÓÃ»§Ãû
-	inPasswd(passwd);		//ÊäÈëÓÃ»§ÃÜÂë
+	inUsername(username);	//è¾“å…¥ç”¨æˆ·å
+	inPasswd(passwd);		//è¾“å…¥ç”¨æˆ·å¯†ç 
+ FELIN
 	if(check(username,passwd)){
+
+	if (strcmp(username,"root")==0&& strcmp(passwd, "root")==0) {	//æ ¸å¯¹ç”¨æˆ·åå’Œå¯†ç 
+ master
 		isLogin = true;
 		return true;
 	}
@@ -748,7 +730,8 @@ bool login()	//µÇÂ½½çÃæ
 		return false;
 	}
 }
-bool logout() {	//ÓÃ»§×¢Ïú
+ FELIN
+bool logout() {	//ç”¨æˆ·æ³¨é”€
 	gotoRoot();
 	strcmp(Cur_User_Name, "");
 	strcmp(Cur_Group_Name, "");
@@ -757,13 +740,13 @@ bool logout() {	//ÓÃ»§×¢Ïú
 	return true;
 	//pause
 }
-bool useradd(char username[], char passwd[], char group[]) {	//ÓÃ»§×¢²á
-	//È¨ÏŞÅĞ¶Ï
+bool useradd(char username[], char passwd[], char group[]) {	//ç”¨æˆ·æ³¨å†Œ
+	//æƒé™åˆ¤æ–­
 	if (strcmp(Cur_User_Name, "root") != 0) {
-		printf("È¨ÏŞ²»×ã£¬ÎŞ·¨Ìí¼ÓÓÃ»§£¡\n");
+		printf("æƒé™ä¸è¶³ï¼Œæ— æ³•æ·»åŠ ç”¨æˆ·ï¼\n");
 		return false;
 	}
-	//±£»¤ÏÖ³¡²¢¸ü¸ÄĞÅÏ¢
+	//ä¿æŠ¤ç°åœºå¹¶æ›´æ”¹ä¿¡æ¯
 	int pro_cur_dir_addr = Cur_Dir_Addr;
 	char pro_cur_dir_name[310], pro_cur_user_name[110], pro_cur_group_name[110], pro_cur_user_dir_name[310];
 	strcpy(pro_cur_dir_name, Cur_Dir_Name);
@@ -774,16 +757,16 @@ bool useradd(char username[], char passwd[], char group[]) {	//ÓÃ»§×¢²á
 	strcpy(Cur_User_Name, username);
 	strcpy(Cur_Group_Name, group);
 	
-	//´´½¨ÓÃ»§Ä¿Â¼
+	//åˆ›å»ºç”¨æˆ·ç›®å½•
 	gotoRoot();
 	cd(Cur_Dir_Addr, "home");
 	mkdir(Cur_Dir_Addr, username);
-	//»Ö¸´ÏÖ³¡
+	//æ¢å¤ç°åœº
 	strcpy(Cur_User_Name, pro_cur_user_name);
 	strcpy(Cur_User_Dir_Name, pro_cur_user_dir_name);
 	strcpy(Cur_Group_Name, pro_cur_group_name);
 
-	//»ñÈ¡etcÈıÎÄ¼ş
+	//è·å–etcä¸‰æ–‡ä»¶
 	inode etcino,shadowino,passwdino,groupino;
 	int shadowiddr, passwdiddr,groupiddr;
 	gotoRoot();
@@ -802,7 +785,7 @@ bool useradd(char username[], char passwd[], char group[]) {	//ÓÃ»§×¢²á
 					fseek(fr, passwdiddr, SEEK_SET);
 					fread(&passwdino, sizeof(inode), 1, fr);
 				}
-				if (strcmp(ditem[j].itemName, "shadow") == 0) {	//²»ÅĞ¶ÏÊÇ·ñÎªÎÄ¼şÁË
+				if (strcmp(ditem[j].itemName, "shadow") == 0) {	//ä¸åˆ¤æ–­æ˜¯å¦ä¸ºæ–‡ä»¶äº†
 					shadowiddr = ditem[j].inodeAddr;
 					fseek(fr, shadowiddr, SEEK_SET);
 					fread(&shadowino, sizeof(inode), 1, fr);
@@ -816,7 +799,7 @@ bool useradd(char username[], char passwd[], char group[]) {	//ÓÃ»§×¢²á
 		}
 	}
 
-	//¶ÁÈ¡ÈıÎÄ¼şÄÚÈİ²¢ĞŞ¸ÄÈıÎÄ¼ş
+	//è¯»å–ä¸‰æ–‡ä»¶å†…å®¹å¹¶ä¿®æ”¹ä¸‰æ–‡ä»¶
 	char buf[BLOCK_SIZE * 10]; //1char:1B
 	char temp[BLOCK_SIZE];
 	int g = -1;
@@ -830,7 +813,7 @@ bool useradd(char username[], char passwd[], char group[]) {	//ÓÃ»§×¢²á
 		g = 2;
 	}
 	else {
-		printf("ÓÃ»§×é±ğ²»ÕıÈ·£¬ÇëÖØĞÂÊäÈë");
+		printf("ç”¨æˆ·ç»„åˆ«ä¸æ­£ç¡®ï¼Œè¯·é‡æ–°è¾“å…¥");
 		return false;
 	}
 
@@ -840,13 +823,13 @@ bool useradd(char username[], char passwd[], char group[]) {	//ÓÃ»§×¢²á
 		if (passwdino.i_dirBlock[i] != -1) {
 			memset(temp, '\0', sizeof(temp));
 			fseek(fr, passwdino.i_dirBlock[i], SEEK_SET);
-			fread(&temp, BLOCK_SIZE, 1, fr);//²»ÖªµÀÄÜ·ñ³É¹¦
+			fread(&temp, BLOCK_SIZE, 1, fr);//ä¸çŸ¥é“èƒ½å¦æˆåŠŸ
 			strcpy(buf, temp);
 		}
 	}
-	//buf[strlen(buf)] = '\0'; (strcat¿ÉÄÜ»á×Ô¶¯Ìí¼Ó£¿£©
+	//buf[strlen(buf)] = '\0'; (strcatå¯èƒ½ä¼šè‡ªåŠ¨æ·»åŠ ï¼Ÿï¼‰
 	if (strstr(buf, username)!= NULL) {
-		printf("¸ÃÓÃ»§ÃûÒÑ´æÔÚ\n");
+		printf("è¯¥ç”¨æˆ·åå·²å­˜åœ¨\n");
 		return false;
 	}
 	sprintf(buf + strlen(buf), "%s:%d:%d\n", username, nextUID++, g);
@@ -859,7 +842,7 @@ bool useradd(char username[], char passwd[], char group[]) {	//ÓÃ»§×¢²á
 		if (shadowino.i_dirBlock[i] != -1) {
 			memset(temp, '\0', sizeof(temp));
 			fseek(fr, shadowino.i_dirBlock[i], SEEK_SET);
-			fread(&temp, BLOCK_SIZE, 1, fr);//²»ÖªµÀÄÜ·ñ³É¹¦
+			fread(&temp, BLOCK_SIZE, 1, fr);//ä¸çŸ¥é“èƒ½å¦æˆåŠŸ
 			strcat(buf, temp);
 		}
 	}
@@ -873,11 +856,11 @@ bool useradd(char username[], char passwd[], char group[]) {	//ÓÃ»§×¢²á
 		if (groupino.i_dirBlock[i] != -1) {
 			memset(temp, '\0', sizeof(temp));
 			fseek(fr, groupino.i_dirBlock[i], SEEK_SET);
-			fread(&temp, BLOCK_SIZE, 1, fr);//²»ÖªµÀÄÜ·ñ³É¹¦
+			fread(&temp, BLOCK_SIZE, 1, fr);//ä¸çŸ¥é“èƒ½å¦æˆåŠŸ
 			strcat(buf, temp);
 		}
 	}
-	//Æ´½Ó×´Ôö¼Ó
+	//æ‹¼æ¥çŠ¶å¢åŠ 
 	if (g == 0) {	//root
 		char* p = strstr(buf, "teacher");
 		char temp[strlen(p)];
@@ -923,16 +906,16 @@ bool useradd(char username[], char passwd[], char group[]) {	//ÓÃ»§×¢²á
 	strcpy(Cur_Dir_Name, pro_cur_dir_name);
 	return true;
 }
-bool userdel(char username[]) {	//ÓÃ»§É¾³ı
+bool userdel(char username[]) {	//ç”¨æˆ·åˆ é™¤
 	if (strcmp(Cur_Dir_Name, "root") != 0) {
-		printf("È¨ÏŞ²»×ã£¬ÎŞ·¨É¾³ıÓÃ»§\n");
+		printf("æƒé™ä¸è¶³ï¼Œæ— æ³•åˆ é™¤ç”¨æˆ·\n");
 		return false;
 	}
 	if (strcmp(username, "root") == 0) {
-		printf("ÎŞ·¨É¾³ı¹ÜÀíÔ±\n");
+		printf("æ— æ³•åˆ é™¤ç®¡ç†å‘˜\n");
 		return false;
 	}
-	//±£»¤ÏÖ³¡²¢¸ü¸ÄĞÅÏ¢
+	//ä¿æŠ¤ç°åœºå¹¶æ›´æ”¹ä¿¡æ¯
 	int pro_cur_dir_addr = Cur_Dir_Addr;
 	char pro_cur_dir_name[310], pro_cur_user_name[110], pro_cur_group_name[110], pro_cur_user_dir_name[310];
 	strcpy(pro_cur_dir_name, Cur_Dir_Name);
@@ -943,7 +926,7 @@ bool userdel(char username[]) {	//ÓÃ»§É¾³ı
 	strcpy(Cur_User_Name, username);
 	strcpy(Cur_Group_Name, "");
 
-	//»ñÈ¡etcÈıÎÄ¼ş
+	//è·å–etcä¸‰æ–‡ä»¶
 	inode etcino, shadowino, passwdino, groupino;
 	int shadowiddr, passwdiddr, groupiddr;
 	gotoRoot();
@@ -962,7 +945,7 @@ bool userdel(char username[]) {	//ÓÃ»§É¾³ı
 					fseek(fr, passwdiddr, SEEK_SET);
 					fread(&passwdino, sizeof(inode), 1, fr);
 				}
-				if (strcmp(ditem[j].itemName, "shadow") == 0) {	//²»ÅĞ¶ÏÊÇ·ñÎªÎÄ¼şÁË
+				if (strcmp(ditem[j].itemName, "shadow") == 0) {	//ä¸åˆ¤æ–­æ˜¯å¦ä¸ºæ–‡ä»¶äº†
 					shadowiddr = ditem[j].inodeAddr;
 					fseek(fr, shadowiddr, SEEK_SET);
 					fread(&shadowino, sizeof(inode), 1, fr);
@@ -976,7 +959,7 @@ bool userdel(char username[]) {	//ÓÃ»§É¾³ı
 		}
 	}
 
-	//¶ÁÈ¡ÈıÎÄ¼şÄÚÈİ²¢ĞŞ¸ÄÈıÎÄ¼ş
+	//è¯»å–ä¸‰æ–‡ä»¶å†…å®¹å¹¶ä¿®æ”¹ä¸‰æ–‡ä»¶
 	char buf[BLOCK_SIZE * 10]; //1char:1B
 	char temp[BLOCK_SIZE];
 
@@ -985,14 +968,14 @@ bool userdel(char username[]) {	//ÓÃ»§É¾³ı
 		if (passwdino.i_dirBlock[i] != -1) {
 			memset(temp, '\0', sizeof(temp));
 			fseek(fr, passwdino.i_dirBlock[i], SEEK_SET);
-			fread(&temp, BLOCK_SIZE, 1, fr);//²»ÖªµÀÄÜ·ñ³É¹¦
+			fread(&temp, BLOCK_SIZE, 1, fr);//ä¸çŸ¥é“èƒ½å¦æˆåŠŸ
 			strcat(buf, temp);
 		}
 	}
-	//buf[strlen(buf)] = '\0'; (strcat¿ÉÄÜ»á×Ô¶¯Ìí¼Ó£¿£©
+	//buf[strlen(buf)] = '\0'; (strcatå¯èƒ½ä¼šè‡ªåŠ¨æ·»åŠ ï¼Ÿï¼‰
 	char* p = strstr(buf, username);
 	if (strstr(buf, username) == NULL) {
-		printf("¸ÃÓÃ»§Ãû²»´æÔÚ£¬ÎŞ·¨É¾³ı\n");
+		printf("è¯¥ç”¨æˆ·åä¸å­˜åœ¨ï¼Œæ— æ³•åˆ é™¤\n");
 		return false;
 	}
 	*p = '\0';
@@ -1010,7 +993,7 @@ bool userdel(char username[]) {	//ÓÃ»§É¾³ı
 		if (shadowino.i_dirBlock[i] != -1) {
 			memset(temp, '\0', sizeof(temp));
 			fseek(fr, shadowino.i_dirBlock[i], SEEK_SET);
-			fread(&temp, BLOCK_SIZE, 1, fr);//²»ÖªµÀÄÜ·ñ³É¹¦
+			fread(&temp, BLOCK_SIZE, 1, fr);//ä¸çŸ¥é“èƒ½å¦æˆåŠŸ
 			strcat(buf, temp);
 		}
 	}
@@ -1030,19 +1013,19 @@ bool userdel(char username[]) {	//ÓÃ»§É¾³ı
 		if (groupino.i_dirBlock[i] != -1) {
 			memset(temp, '\0', sizeof(temp));
 			fseek(fr, groupino.i_dirBlock[i], SEEK_SET);
-			fread(&temp, BLOCK_SIZE, 1, fr);//²»ÖªµÀÄÜ·ñ³É¹¦
+			fread(&temp, BLOCK_SIZE, 1, fr);//ä¸çŸ¥é“èƒ½å¦æˆåŠŸ
 			strcat(buf, temp);
 		}
 	}
 	p = strstr(buf, username);
-	if ((*(p - 1)) == ':') {	//µÚÒ»¸ö£¬ºóÃæ¿Õ¸ñºÍ¶ººÅ¶¼ÒªÈ¥µô
+	if ((*(p - 1)) == ':') {	//ç¬¬ä¸€ä¸ªï¼Œåé¢ç©ºæ ¼å’Œé€—å·éƒ½è¦å»æ‰
 		*p = '/0';
 		while ((*p) != '\n'||(*p)!=',') { 
 			p++;
 		}
 		p++;
 	}
-	else {	//²»ÊÇµÚÒ»¸ö£¬Ç°Ãæ¶ººÅÒªÈ¥µô
+	else {	//ä¸æ˜¯ç¬¬ä¸€ä¸ªï¼Œå‰é¢é€—å·è¦å»æ‰
 		p = p - 1;
 		*p = '\0';
 		while ((*p) != '\n' || (*p) != ',') {
@@ -1056,11 +1039,11 @@ bool userdel(char username[]) {	//ÓÃ»§É¾³ı
 	Cur_Dir_Addr = pro_cur_dir_addr;
 	strcpy(Cur_Dir_Name, pro_cur_dir_name);
 
-	//É¾³ı¸ÃÓÃ»§¶ÔÓ¦ÎÄ¼ş¼Ğ£¿£¿£¿
+	//åˆ é™¤è¯¥ç”¨æˆ·å¯¹åº”æ–‡ä»¶å¤¹ï¼Ÿï¼Ÿï¼Ÿ
 	return true;
 }
-bool check(char username[], char passwd[]) {//ºËÑéÉí·İµÇÂ¼&ÉèÖÃ ok
-	//»ñÈ¡ÈıÎÄ¼ş
+bool check(char username[], char passwd[]) {//æ ¸éªŒèº«ä»½ç™»å½•&è®¾ç½® ok
+	//è·å–ä¸‰æ–‡ä»¶
 	inode etcino, shadowino, passwdino, groupino;
 	int shadowiddr, passwdiddr, groupiddr;
 	gotoRoot();
@@ -1079,7 +1062,7 @@ bool check(char username[], char passwd[]) {//ºËÑéÉí·İµÇÂ¼&ÉèÖÃ ok
 					fseek(fr, passwdiddr, SEEK_SET);
 					fread(&passwdino, sizeof(inode), 1, fr);
 				}
-				if (strcmp(ditem[j].itemName, "shadow") == 0) {	//²»ÅĞ¶ÏÊÇ·ñÎªÎÄ¼şÁË
+				if (strcmp(ditem[j].itemName, "shadow") == 0) {	//ä¸åˆ¤æ–­æ˜¯å¦ä¸ºæ–‡ä»¶äº†
 					shadowiddr = ditem[j].inodeAddr;
 					fseek(fr, shadowiddr, SEEK_SET);
 					fread(&shadowino, sizeof(inode), 1, fr);
@@ -1093,7 +1076,7 @@ bool check(char username[], char passwd[]) {//ºËÑéÉí·İµÇÂ¼&ÉèÖÃ ok
 		}
 	}
 	fflush(fr);
-	//¶ÁÈ¡ÈıÎÄ¼şÄÚÈİ²¢ĞŞ¸ÄÈıÎÄ¼ş
+	//è¯»å–ä¸‰æ–‡ä»¶å†…å®¹å¹¶ä¿®æ”¹ä¸‰æ–‡ä»¶
 	char buf[BLOCK_SIZE * 10]; //1char:1B
 	char temp[BLOCK_SIZE];
 	char checkpw[100];
@@ -1106,13 +1089,13 @@ bool check(char username[], char passwd[]) {//ºËÑéÉí·İµÇÂ¼&ÉèÖÃ ok
 		if (shadowino.i_dirBlock[i] != -1) {
 			memset(temp, '\0', sizeof(temp));
 			fseek(fr, shadowino.i_dirBlock[i], SEEK_SET);
-			fread(&temp, BLOCK_SIZE, 1, fr);//²»ÖªµÀÄÜ·ñ³É¹¦
+			fread(&temp, BLOCK_SIZE, 1, fr);//ä¸çŸ¥é“èƒ½å¦æˆåŠŸ
 			strcpy(buf, temp);
 		}
 	}
 	char* p = strstr(buf, username);
 	if (p == NULL) {
-		printf("¸ÃÓÃ»§²»´æÔÚ¡£Çë´´½¨ÓÃ»§ºóÖØĞÂµÇÂ½.\n");
+		printf("è¯¥ç”¨æˆ·ä¸å­˜åœ¨ã€‚è¯·åˆ›å»ºç”¨æˆ·åé‡æ–°ç™»é™†.\n");
 		return false;
 	}
 	while ((*p) != ':') {
@@ -1125,7 +1108,7 @@ bool check(char username[], char passwd[]) {//ºËÑéÉí·İµÇÂ¼&ÉèÖÃ ok
 		p++;
 	}
 	if (strcmp(checkpw, passwd) != 0) {
-		printf("ÃÜÂë²»ÕıÈ·£¬ÇëÖØĞÂ³¢ÊÔ£¡\n");
+		printf("å¯†ç ä¸æ­£ç¡®ï¼Œè¯·é‡æ–°å°è¯•ï¼\n");
 		return false;
 	}
 
@@ -1135,7 +1118,7 @@ bool check(char username[], char passwd[]) {//ºËÑéÉí·İµÇÂ¼&ÉèÖÃ ok
 		if (passwdino.i_dirBlock[i] != -1) {
 			memset(temp, '\0', sizeof(temp));
 			fseek(fr, passwdino.i_dirBlock[i], SEEK_SET);
-			fread(&temp, BLOCK_SIZE, 1, fr);//²»ÖªµÀÄÜ·ñ³É¹¦
+			fread(&temp, BLOCK_SIZE, 1, fr);//ä¸çŸ¥é“èƒ½å¦æˆåŠŸ
 			strcpy(buf, temp);
 		}
 	}
@@ -1154,7 +1137,7 @@ bool check(char username[], char passwd[]) {//ºËÑéÉí·İµÇÂ¼&ÉèÖÃ ok
 		p++;
 	}
 
-	//³É¹¦µÇÂ¼ºóµÄÉèÖÃ
+	//æˆåŠŸç™»å½•åçš„è®¾ç½®
 	if(strcmp(group,"0")==0){
 		strcpy(Cur_Group_Name, "root");
 	}
@@ -1172,13 +1155,13 @@ bool check(char username[], char passwd[]) {//ºËÑéÉí·İµÇÂ¼&ÉèÖÃ ok
 
 	return true;
 }
-bool chmod(int PIAddr, char name[], int pmode,int type) {//ĞŞ¸ÄÎÄ¼şorÄ¿Â¼È¨ÏŞ£¨¼Ù¶¨ÎÄ¼şºÍÄ¿Â¼Ò²²»ÄÜÖØÃû£©
+bool chmod(int PIAddr, char name[], int pmode,int type) {//ä¿®æ”¹æ–‡ä»¶orç›®å½•æƒé™ï¼ˆå‡å®šæ–‡ä»¶å’Œç›®å½•ä¹Ÿä¸èƒ½é‡åï¼‰
 	if (strlen(name) > FILENAME_MAX) {
-		printf("ÎÄ¼şÃû³Æ³¬¹ı×î´ó³¤¶È\n");
+		printf("æ–‡ä»¶åç§°è¶…è¿‡æœ€å¤§é•¿åº¦\n");
 		return false;
 	}
 	if (strcmp(name, ".") ==0|| strcmp(name, "..")==0) {
-		printf("¸ÃÎÄ¼şÎŞ·¨ĞŞ¸ÄÈ¨ÏŞ\n");
+		printf("è¯¥æ–‡ä»¶æ— æ³•ä¿®æ”¹æƒé™\n");
 		return false;
 	}
 	inode ino;
@@ -1190,16 +1173,16 @@ bool chmod(int PIAddr, char name[], int pmode,int type) {//ĞŞ¸ÄÎÄ¼şorÄ¿Â¼È¨ÏŞ£¨¼
 		fseek(fr, ino.i_dirBlock[i], SEEK_SET);
 		fread(ditem, sizeof(ditem), 1, fr);
 		for (int j = 0; j < DirItem_Size; ++j) {
-			if (strcmp(ditem[j].itemName, name)==0) {//ÕÒµ½Í¬ÃûÎÄ¼ş
+			if (strcmp(ditem[j].itemName, name)==0) {//æ‰¾åˆ°åŒåæ–‡ä»¶
 				inode chiino;
 				fseek(fr, ditem[j].inodeAddr, SEEK_SET);
 				fread(&chiino, sizeof(inode), 1, fr);
 				fflush(fr);
-				//1:Ä¿Â¼ 0£ºÎÄ¼ş
-				if (((chiino.inode_mode >> 9) & 1 )!= type) {	//Î´ÕÒµ½Í¬Ò»ÀàĞÍÎÄ¼ş
+				//1:ç›®å½• 0ï¼šæ–‡ä»¶
+				if (((chiino.inode_mode >> 9) & 1 )!= type) {	//æœªæ‰¾åˆ°åŒä¸€ç±»å‹æ–‡ä»¶
 					continue;
 				}
-				//Ö»ÓĞ´´½¨ÕßºÍ¹ÜÀíÔ±¿ÉÒÔ¸ü¸ÄÈ¨ÏŞ
+				//åªæœ‰åˆ›å»ºè€…å’Œç®¡ç†å‘˜å¯ä»¥æ›´æ”¹æƒé™
 				if ((strcmp(chiino.i_uname, Cur_User_Name) == 0) || strcmp(Cur_User_Name, "root")==0) {
 					chiino.inode_mode = (chiino.inode_mode >> 9 << 9) | pmode;
 					fseek(fr, ditem[j].inodeAddr, SEEK_SET);
@@ -1210,7 +1193,34 @@ bool chmod(int PIAddr, char name[], int pmode,int type) {//ĞŞ¸ÄÎÄ¼şorÄ¿Â¼È¨ÏŞ£¨¼
 			}
 		}
 	}
-	printf("Ã»ÓĞÕÒµ½¸ÃÎÄ¼ş£¬ÎŞ·¨ĞŞ¸ÄÈ¨ÏŞ\n");
+	printf("æ²¡æœ‰æ‰¾åˆ°è¯¥æ–‡ä»¶ï¼Œæ— æ³•ä¿®æ”¹æƒé™\n");
 	return false;
 }
 
+
+
+bool mkdir(int parinodeAddr, char name[]) {
+
+}
+
+void cmd(char cmd[]) {
+	char com1[100];
+	char com2[100];
+	char com3[100];
+	sscanf(cmd,"%s", com1);
+	if (strcmp(com1, "ls") == 0) {
+		ls(Cur_Dir_Addr);
+	}
+	else if (strcmp(com1, "mkdir") == 0) {
+		cout << "in mkdir" << endl;
+		sscanf(cmd, "%s%s", com1, com2);
+		cout << com2 << endl;
+		mkdir(Cur_Dir_Addr, com2);
+	}
+	return;
+}
+
+void ls(int parinodeAddr) {
+	return;
+}
+ master

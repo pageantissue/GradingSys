@@ -137,6 +137,7 @@ int main()
             if ((p = strstr(Cur_Dir_Name, Cur_User_Dir_Name)) == NULL)	//当前是否在用户目录下
                 printf("[%s@%s %s]# ", Cur_Host_Name, Cur_User_Name, Cur_Dir_Name); //[Linux@yhl /etc]
             else
+FELIN
                 printf("[%s@%s ~%s]# ", Cur_Host_Name, Cur_User_Name, Cur_Dir_Name + strlen(Cur_User_Dir_Name));//[Linux@yhl ~/app]
             //gets(str);
             //cmd(str);
@@ -147,15 +148,34 @@ int main()
             mkfile(Cur_Dir_Addr, "tert", "helloworld");
             rmdir(Cur_Dir_Addr, "felin");
             userdel("felin");
+
+                printf("[%s@%s ~%s]# ", Cur_Host_Name, Cur_User_Name, Cur_Dir_Name + strlen(Cur_User_Dir_Name));
+            gets(str);
+            cmd(str);
+            
+master
         }
         else {
             printf("欢迎来到GradingSysOS，请先登录\n");
             while (!login());	//登陆
+ FELIN
             printf("登陆成功！\n");
         }
     }
     fclose(fw);		//释放文件指针
     fclose(fr);		//释放文件指针
 
+
+            cout << "登陆成功" << endl;
+            help();
+            //system("pause");
+            system("cls");
+        }
+        
+    }
+    fclose(fw);		//释放文件指针
+    fclose(fr);		//释放文件指针
+    
+ master
     return 0;
 }
