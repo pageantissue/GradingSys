@@ -244,11 +244,6 @@ bool mkdir(int PIAddr, char name[]) {	//目录创建函数(父目录权限:写)(
 	return true;
 }
 
-void inPasswd(char passwd[])	//输入密码
-{
-	printf("passwd:");
-	scanf("%s", passwd);
-}
 bool mkfile(int PIAddr, char name[],char buf[]) {	//文件创建函数
 	//理论上Cur_Dir_Addr是系统分配的，应该是正确的
 	if (strlen(name) > FILE_NAME_MAX_SIZE) {
@@ -701,6 +696,7 @@ void inUsername(char* username)	//输入用户名
 	printf("username:\n");
 	scanf("%s", username);	//用户名
 }
+
 void inPasswd(char *passwd)	//输入密码
 {
 	printf("password:\n");
@@ -1192,10 +1188,6 @@ bool chmod(int PIAddr, char name[], int pmode,int type) {//修改文件or目录�
 }
 
 
-
-bool mkdir(int parinodeAddr, char name[]) {
-
-}
 
 void cmd(char cmd[]) {
 	char com1[100];
