@@ -132,12 +132,12 @@ void bfree(int baddr);
 //用户&用户组函数
 void inUsername(char* username);							//输入用户名
 void inPasswd(char* passwd);
-bool login();
+bool login();	
 bool logout();
 bool useradd(char username[], char passwd[], char group[]);
 bool userdel(char username[]);
-bool check(char username[], char passwd[]);
-void chmod(int PIAddr, char name[], int pmode);
+bool check(char username[], char passwd[]);	
+bool chmod(int PIAddr, char name[], int pmode, int type);	
 
 
 //一点一点debug~加油！！！（今天能够做完当然最好）

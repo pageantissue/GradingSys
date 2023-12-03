@@ -69,7 +69,7 @@ int main()
         Root_Dir_Addr = Inode_Start_Addr;
         Cur_Dir_Addr = Root_Dir_Addr;
         strcpy(Cur_Dir_Name, "/");
-        printf("文件系统正在格式化");
+        printf("文件系统正在格式化\n");
         
         //系统格式化
         if (!Format()) {
@@ -120,16 +120,15 @@ int main()
                 return 0;
             }
         }
-        fflush(stdin);
-        printf("格式化完成！\n\n");
+        printf("格式化完成！\n");
 
         //Install
         if (!Install()) {
             printf("文件系统安装失败！\n");
             return 0;
         }
+        printf("安装文件系统成功！\n");
     }
-    //Cur_User_Dir_Name还没有定义
 
     while (1) {
         if (isLogin) {
@@ -139,20 +138,24 @@ int main()
                 printf("[%s@%s %s]# ", Cur_Host_Name, Cur_User_Name, Cur_Dir_Name); //[Linux@yhl /etc]
             else
                 printf("[%s@%s ~%s]# ", Cur_Host_Name, Cur_User_Name, Cur_Dir_Name + strlen(Cur_User_Dir_Name));//[Linux@yhl ~/app]
-            gets(str);
+            //gets(str);
             //cmd(str);
-            
+            useradd("felin", "123", "teacher");
+            cd(Cur_Dir_Addr, "..");
+            cd(Cur_Dir_Addr, "felin");
+            mkdir(Cur_Dir_Addr, "ms");
+            mkfile(Cur_Dir_Addr, "tert", "helloworld");
+            rmdir(Cur_Dir_Addr, "felin");
+            userdel("felin");
         }
         else {
             printf("欢迎来到GradingSysOS，请先登录\n");
             while (!login());	//登陆
             printf("登陆成功！\n");
         }
-
-        fclose(fw);		//释放文件指针
-        fclose(fr);		//释放文件指针
-
-        return 0;
     }
+    fclose(fw);		//释放文件指针
+    fclose(fr);		//释放文件指针
+
     return 0;
 }
