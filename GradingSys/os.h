@@ -110,7 +110,6 @@ extern char buffer[10000000];				//10M，缓存整个虚拟磁盘文件
 
 //启动函数&提示函数
 void help();
- FELIN
 
 //大类函数
 bool Format();								//文件系统格式化
@@ -150,4 +149,3 @@ bool login();
 void cmd(char cmd[]);
 void ls(int parinodeAddr);
 bool mkdir(int parinodeAddr, char name[]);
- master
