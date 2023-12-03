@@ -77,7 +77,6 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="os.cpp" />
-    <ClCompile Include="test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="os.h" />

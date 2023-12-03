@@ -53,7 +53,7 @@ struct SuperBlock {
 	int s_Block_Start_Addr;
 };
 
-struct inode {//不要动此处变量，刚好128B
+struct inode {		//不要动此处变量，刚好128B
 	unsigned short inode_id;					//inode标识（编号）
 	unsigned short inode_mode;					//存取权限:r--读取，w--写，x--执行
 	unsigned short inode_file_count;				//文件夹里有多少文件
@@ -139,8 +139,6 @@ bool userdel(char username[]);
 bool check(char username[], char passwd[]);	
 bool chmod(int PIAddr, char name[], int pmode, int type);	
 
-
-//一点一点debug~加油！！！（今天能够做完当然最好
 void Ready();
 bool Format();
 void inUsername(char username[]);								//输入用户名

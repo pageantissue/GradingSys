@@ -110,6 +110,7 @@ bool Install() {	//安装文件系统 ok
 	fflush(fr);
 	return true;
 }
+
 bool mkdir(int PIAddr, char name[]) {	//目录创建函数(父目录权限:写)(ok
 	//理论上Cur_Dir_Addr是系统分配的，应该是正确的
 	if (strlen(name) > FILE_NAME_MAX_SIZE) {
@@ -165,7 +166,7 @@ bool mkdir(int PIAddr, char name[]) {	//目录创建函数(父目录权限:写)(
 
 	if (bpos == -1 || dpos == -1) {	//block不足要新开
 		for (int i = 0; i < 10; ++i) {
-			if (parino.i_dirBlock[i] == -1) {
+			if (parino.i_dirBlock[i] == -1) {	//找到空闲块
 				empty_b = i;
 			}
 		}
@@ -182,6 +183,7 @@ bool mkdir(int PIAddr, char name[]) {	//目录创建函数(父目录权限:写)(
 		fwrite(&parino, sizeof(parino), 1, fw);
 		fflush(fw);
 
+		//初始化新的DirItem
 		DirItem ditem[DirItem_Size];
 		for (int i = 0; i < DirItem_Size; ++i) {
 			ditem[i].inodeAddr = -1;
@@ -241,6 +243,7 @@ bool mkdir(int PIAddr, char name[]) {	//目录创建函数(父目录权限:写)(
 	fwrite(chiitem, sizeof(chiitem), 1, fw);
 
 	fflush(fw);
+	DirItem ditem[DirItem_Size];
 	return true;
 }
 
@@ -581,6 +584,8 @@ void ls() {//显示当前目录所有文件
 	inode ino;
 	fseek(fr, Cur_Dir_Addr, SEEK_SET);
 	fread(&ino, sizeof(inode), 1, fr);
+	fflush(fr);
+	//printf("%s\n", ino);
 	
 	//查看权限
 	int mode = 0;//other
@@ -594,14 +599,15 @@ void ls() {//显示当前目录所有文件
 		printf("没有权限查看该文件夹\n");
 		return;
 	}
+	
 	for (int i = 0; i < 10; ++i) {
 		DirItem ditem[DirItem_Size];
 		if (ino.i_dirBlock[i] != -1) {//被使用过
 			fseek(fr, ino.i_dirBlock[i], SEEK_SET);
-			fread(ditem, sizeof(BLOCK_SIZE), 1, fr);
-			for (int j = 0; j < DirItem_Size; ++j) {
+			fread(ditem, sizeof(ditem), 1, fr);
+			for (int j = 0; j <DirItem_Size; j++) {
 				if (strlen(ditem[j].itemName) != 0) {
-					printf("%s  ", ditem[i].itemName);
+					cout<<ditem[j].itemName<<endl;
 				}
 			}
 		}
@@ -696,7 +702,7 @@ void inUsername(char* username)	//输入用户名
 	printf("username:\n");
 	scanf("%s", username);	//用户名
 }
-
+ 
 void inPasswd(char *passwd)	//输入密码
 {
 	printf("password:\n");
@@ -793,13 +799,13 @@ bool useradd(char username[], char passwd[], char group[]) {	//用户注册
 	char buf[BLOCK_SIZE * 10]; //1char:1B
 	char temp[BLOCK_SIZE];
 	int g = -1;
-	if (strcpy(group, "root")) {
+	if (strcmp(group, "root")) {
 		g = 0;
 	}
-	else if (strcpy(group, "teacher")) {
+	else if (strcmp(group, "teacher")) {
 		g = 1;
 	}
-	else if (strcpy(group, "student")) {
+	else if (strcmp(group, "student")) {
 		g = 2;
 	}
 	else {
@@ -1186,16 +1192,13 @@ bool chmod(int PIAddr, char name[], int pmode,int type) {//修改文件or目录�
 	printf("没有找到该文件，无法修改权限\n");
 	return false;
 }
-
-
-
 void cmd(char cmd[]) {
 	char com1[100];
 	char com2[100];
 	char com3[100];
 	sscanf(cmd,"%s", com1);
 	if (strcmp(com1, "ls") == 0) {
-		ls(Cur_Dir_Addr);
+		ls();
 	}
 	else if (strcmp(com1, "mkdir") == 0) {
 		cout << "in mkdir" << endl;
@@ -1203,9 +1206,7 @@ void cmd(char cmd[]) {
 		cout << com2 << endl;
 		mkdir(Cur_Dir_Addr, com2);
 	}
+	//else if(strcmp())
 	return;
 }
 
-void ls(int parinodeAddr) {
-	return;
-}
