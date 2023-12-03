@@ -138,24 +138,10 @@ int main()
                 printf("[%s@%s %s]# ", Cur_Host_Name, Cur_User_Name, Cur_Dir_Name); //[Linux@yhl /etc]
             else
                 printf("[%s@%s ~%s]# ", Cur_Host_Name, Cur_User_Name, Cur_Dir_Name + strlen(Cur_User_Dir_Name));//[Linux@yhl ~/app]
-            //gets(str);
-            //cmd(str);
-            //useradd("felin", "123", "teacher");
-            //cd(Cur_Dir_Addr, "..");
-            //cd(Cur_Dir_Addr, "felin");
-            //mkdir(Cur_Dir_Addr, "ms");
-            //mkfile(Cur_Dir_Addr, "tert", "helloworld");
-            //rmdir(Cur_Dir_Addr, "felin");
-            //userdel("felin");
-
-            //printf("[%s@%s ~%s]# ", Cur_Host_Name, Cur_User_Name, Cur_Dir_Name + strlen(Cur_User_Dir_Name));
-            //gets(str);
-            //cmd(str);
-            useradd("felin", "123", "teacher");
-            cd(Cur_Dir_Addr, "..");
-            cd(Cur_Dir_Addr, "felin");
-            cmd(Cur_Dir_Addr, "ms");
-
+            gets(str);
+            //cout << str << endl;
+            cmd(str);
+           
         }
         else {
             printf("欢迎来到GradingSysOS，请先登录\n");
