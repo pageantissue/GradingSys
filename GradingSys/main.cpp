@@ -43,7 +43,7 @@ int main()
 {
     printf("%s 向你问好!\n", "GradingSys");
     //###############打不开文件################
-    if ((fr = fopen(GRADE_SYS_NAME, "rb")) == NULL) {        
+    if ((fr = fopen(GRADE_SYS_NAME, "rb")) == NULL) {
         fw = fopen(GRADE_SYS_NAME, "wb");
         if (fw == NULL) {
             printf("虚拟磁盘文件打开失败！");
@@ -65,19 +65,19 @@ int main()
             perror("Error getting hostname");
             return 1;
         }
-        
+
         Root_Dir_Addr = Inode_Start_Addr;
         Cur_Dir_Addr = Root_Dir_Addr;
         strcpy(Cur_Dir_Name, "/");
         printf("文件系统正在格式化\n");
-        
+
         //系统格式化
         if (!Format()) {
             printf("格式化失败\n");
             return 0;
         }
         printf("格式化完成\n\n");
-        
+
         //Install
         if (!Install()) {
             printf("文件系统安装失败！\n");
@@ -91,7 +91,7 @@ int main()
             printf("磁盘文件打开失败！/n");
             return false;
         }
-        
+
         //初始化变量
         nextUID = 0;
         nextGID = 0;
@@ -147,6 +147,10 @@ int main()
             mkfile(Cur_Dir_Addr, "tert", "helloworld");
             rmdir(Cur_Dir_Addr, "felin");
             userdel("felin");
+
+            printf("[%s@%s ~%s]# ", Cur_Host_Name, Cur_User_Name, Cur_Dir_Name + strlen(Cur_User_Dir_Name));
+            gets(str);
+            cmd(str);
         }
         else {
             printf("欢迎来到GradingSysOS，请先登录\n");
@@ -154,8 +158,14 @@ int main()
             printf("登陆成功！\n");
         }
     }
+    cout << "登陆成功" << endl;
+    help();
+    //system("pause");
+    system("cls");
     fclose(fw);		//释放文件指针
     fclose(fr);		//释放文件指针
 
     return 0;
 }
+
+        
