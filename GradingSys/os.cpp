@@ -3,8 +3,9 @@
 #include<time.h>
 #include<string.h>
 #include<stdio.h>
+#include<iostream>
 
-//using namespace std;
+using namespace std;
 
 
 //****大类函数****
@@ -115,8 +116,6 @@ bool mkdir(int PIAddr, char name[]) {	//目录创建函数(父目录权限:写)(
 		printf("文件名称超过最大长度\n");
 		return false;
 	}
-
-FELIN
 	//查找父目录的空位置
 	int bpos = -1;
 	int dpos = -1;
@@ -133,7 +132,7 @@ FELIN
 	if (strcmp(Cur_User_Name, parino.i_uname) == 0) {
 		role = 6;
 	}
-	if (((parino.inode_mode >> role >> 1) & 1 == 0) ||( strcmp(Cur_User_Name, "root" )!= 0)){
+	if (((parino.inode_mode >> role >> 1) & 1 == 0) || (strcmp(Cur_User_Name, "root") != 0)) {
 		printf("权限不足，无法新建目录\n");
 		return false;
 	}
@@ -145,11 +144,11 @@ FELIN
 			fseek(fr, baddr, SEEK_SET);
 			fread(ditem, sizeof(ditem), 1, fr);
 			for (int j = 0; j < DirItem_Size; ++j) {
-				if (ditem[j].inodeAddr==-1) {//未使用过的项
+				if (ditem[j].inodeAddr == -1) {//未使用过的项
 					bpos = i;
 					dpos = j;
 				}
-				if (strcmp(ditem[j].itemName, name)==0) {//判断：存在同名目录
+				if (strcmp(ditem[j].itemName, name) == 0) {//判断：存在同名目录
 					inode temp;
 					fseek(fr, ditem[j].inodeAddr, SEEK_SET);
 					fread(&temp, sizeof(inode), 1, fr);
@@ -243,12 +242,12 @@ FELIN
 
 	fflush(fw);
 	return true;
+}
 
 void inPasswd(char passwd[])	//输入密码
 {
 	printf("passwd:");
 	scanf("%s", passwd);
- master
 }
 bool mkfile(int PIAddr, char name[],char buf[]) {	//文件创建函数
 	//理论上Cur_Dir_Addr是系统分配的，应该是正确的
@@ -526,6 +525,7 @@ bool writefile(inode fileinode, int iaddr, char buf[]) { //文件写入（续写
 	fflush(fw);
 	return true;
 }
+
 void cd(int PIAddr, char name[]) {//切换目录(ok
 	inode pinode;
 	fseek(fr, PIAddr, SEEK_SET);
@@ -599,8 +599,6 @@ void ls() {//显示当前目录所有文件
 		printf("没有权限查看该文件夹\n");
 		return;
 	}
-
- FELIN
 	for (int i = 0; i < 10; ++i) {
 		DirItem ditem[DirItem_Size];
 		if (ino.i_dirBlock[i] != -1) {//被使用过
@@ -709,28 +707,24 @@ void inPasswd(char *passwd)	//输入密码
 	scanf("%s", passwd);
 }
 bool login()	//登陆界面
-
-bool login()	//登陆
- master
 {
 	char username[100] = { 0 };
 	char passwd[100] = { 0 };
 	inUsername(username);	//输入用户名
 	inPasswd(passwd);		//输入用户密码
- FELIN
-	if(check(username,passwd)){
+	if (check(username, passwd)) {
 
-	if (strcmp(username,"root")==0&& strcmp(passwd, "root")==0) {	//核对用户名和密码
- master
-		isLogin = true;
-		return true;
-	}
-	else {
-		isLogin = false;
-		return false;
+		if (strcmp(username, "root") == 0 && strcmp(passwd, "root") == 0) {	//核对用户名和密码
+			isLogin = true;
+			return true;
+		}
+		else {
+			isLogin = false;
+			return false;
+		}
 	}
 }
- FELIN
+
 bool logout() {	//用户注销
 	gotoRoot();
 	strcmp(Cur_User_Name, "");
@@ -1223,4 +1217,3 @@ void cmd(char cmd[]) {
 void ls(int parinodeAddr) {
 	return;
 }
- master
