@@ -5,40 +5,47 @@
 #include<string.h>
 
 
-#define BLOCK_SIZE 512	//һ�����С 512 Byte
-#define INODE_SIZE 128  //һ��inode entry�Ĵ�С��128Byte
-#define FILE_NAME_MAX_SIZE	32	//�ļ����32Byte
+#define BLOCK_SIZE 512	//一个块大小 512 Byte
+#define INODE_SIZE 128  //一个inode entry的大小是128Byte
+#define DirItem_Size 16 //一个块最多能装16个DirItem
+#define FILE_NAME_MAX_SIZE	28	//文件名最长28Byte
 
-#define BLOCK_NUM 10240		//10240��block
-#define INODE_NUM 1024	//һ��inode���Դ�10��block->Ҫ��1024��inode����Ϣ
-#define BLOCK_PER_GROUP //UNKNOWN
+#define BLOCK_NUM 10240		//10240个block
+#define INODE_NUM 1024	//一个inode可以存10个block->要用1024个inode存信息
 
-#define MODE_DIR 01000	//Ŀ¼��ʶ���˽��ƣ�
-#define MODE_FILE 00000	//�ļ���ʶ���˽��ƣ�
+#define MODE_DIR 01000	//目录标识（八进制）: 001 000 000 000
+#define MODE_FILE 00000	//文件标识（八进制）: 000 000 000 000
 
-#define OWNER_R	4<<6						//���û���Ȩ��
-#define OWNER_W	2<<6						//���û�дȨ��
-#define OWNER_X	1<<6						//���û�ִ��Ȩ��
-#define GROUP_R	4<<3						//���û���Ȩ��
-#define GROUP_W	2<<3						//���û�дȨ��
-#define GROUP_X	1<<3						//���û�ִ��Ȩ��
-#define OTHERS_R	4						//�����û���Ȩ��
-#define OTHERS_W	2						//�����û�дȨ��
-#define OTHERS_X	1						//�����û�ִ��Ȩ��
-#define FILE_DEF_PERMISSION 0664			//�ļ�Ĭ��Ȩ��
-#define DIR_DEF_PERMISSION	0755			//Ŀ¼Ĭ��Ȩ��
+#define OWNER_R	4<<6						//本用户读权限
+#define OWNER_W	2<<6						//本用户写权限
+#define OWNER_X	1<<6						//本用户执行权限
+#define GROUP_R	4<<3						//组用户读权限
+#define GROUP_W	2<<3						//组用户写权限
+#define GROUP_X	1<<3						//组用户执行权限
+#define OTHERS_R	4						//其它用户读权限
+#define OTHERS_W	2						//其它用户写权限
+#define OTHERS_X	1						//其它用户执行权限
+#define FILE_DEF_PERMISSION 0664			//文件默认权限 owner,group:读写 other:读 
+#define DIR_DEF_PERMISSION	0755			//目录默认权限 owner：读写执行 group,other:读
 
-#define GRADE_SYS_NAME "grading_sys.sys"	//�ļ�ϵͳ��
+#define ROOT 0	  //管理员
+#define TEACHER 1 //老师
+#define STUDENT 2 //学生
+
+#define GRADE_SYS_NAME "grading_sys.sys"	//文件系统名
 
 struct SuperBlock {
-	unsigned short s_INODE_NUM;				//inode�ڵ�������� 65535
-	unsigned int s_BLOCK_NUM;				//���̿��������� 4294967294
+	unsigned short s_INODE_NUM;				//inode节点数，最多 65535
+	unsigned int s_BLOCK_NUM;				//磁盘块块数，最多 4294967294
 
-	unsigned short s_BLOCK_SIZE;			//���̿��С
-	unsigned short s_INODE_SIZE;			//inode��С
-	unsigned short s_SUPERBLOCK_SIZE;		//�������С
+	unsigned short s_free_INODE_NUM;		//空闲inode节点数
+	unsigned int s_free_BLOCK_NUM;			//空闲磁盘块数
+
+	unsigned short s_BLOCK_SIZE;			//磁盘块大小
+	unsigned short s_INODE_SIZE;			//inode大小
+	unsigned short s_SUPERBLOCK_SIZE;		//超级块大小
 	
-	//���̷ֲ�
+	//磁盘分布
 	int s_Superblock_Start_Addr;
 	int s_InodeBitmap_Start_Addr;
 	int s_BlockBitmap_Start_Addr;
@@ -46,66 +53,101 @@ struct SuperBlock {
 	int s_Block_Start_Addr;
 };
 
-struct inode {
-	unsigned short inode_id;					//inode��ʶ����ţ�
-	unsigned short inode_mode;					//��ȡȨ��:r--��ȡ��w--д��x--ִ��
-	unsigned short inode_file_count;				//�ļ������ж����ļ�
-	unsigned short i_uid;					//�ļ������û�id
-	unsigned short i_gid;					//�ļ������û���id
-	//char i_uname[20];						//�ļ������û�
-	//char i_gname[20];						//�ļ������û���
-	unsigned int inode_file_size;					//�ļ���С�Ƕ���Byte
-	time_t  inode_change_time;						//inode��һ�α䶯��ʱ��
-	time_t  file_change_time;						//�ļ�������һ�α䶯��ʱ��
-	time_t  file_modified_time;						//�ļ���һ���޸ĵ�ʱ��
-	int i_dirBlock[10];						//10��ֱ�ӿ飺�ܹ��ܴ洢�Ĵ�С��10*512B = 5120B = 5KB
+struct inode {//不要动此处变量，刚好128B
+	unsigned short inode_id;					//inode标识（编号）
+	unsigned short inode_mode;					//存取权限:r--读取，w--写，x--执行
+	unsigned short inode_file_count;				//文件夹里有多少文件
+	//unsigned short i_uid;					//文件所属用户id
+	//unsigned short i_gid;					//文件所属用户组id
+	char i_uname[20];						//文件所属用户
+	char i_gname[20];						//文件所属用户组
+	unsigned int inode_file_size;					//文件大小是多少Byte（文件：Byte 目录：block）
+	time_t  inode_change_time;						//inode上一次变动的时间
+	time_t  file_change_time;						//文件内容上一次变动的时间
+	time_t  file_modified_time;						//文件上一次修改的时间
+	int i_dirBlock[10];						//10个直接块：总共能存储的大小是10*512B = 5120B = 5KB
+	int i_indirect_1;						//一级间接块
+	int i_indirect_2;						//二级间接块
 };
 
-//�ļ�Ŀ¼
-struct DirItem {							//һ��item��32Byte��һ��block����װ16��item
-	char itemName[FILE_NAME_MAX_SIZE];			//Ŀ¼�����ļ���
-	int inodeAddr;							//Ŀ¼���Ӧ��inode�ڵ��ַ
+//文件目录
+struct DirItem {							//一个item是32Byte，一个block可以装16个item
+	char itemName[FILE_NAME_MAX_SIZE];			//目录或者文件名
+	int inodeAddr;							//目录项对应的inode节点地址
 };
 
 extern SuperBlock* superblock;
-extern const int Superblock_Start_Addr;		//������ƫ�Ƶ�ַ,ռһ��block
-extern const int InodeBitmap_Start_Addr;		//inodeλͼ ƫ�Ƶ�ַ��ռ�������̿飬�����1024��inode��״̬
-extern const int BlockBitmap_Start_Addr;		//blockλͼ ƫ�Ƶ�ַ��ռ��ʮ�����̿飬����� 10240 �����̿飨5120KB����״̬
-extern const int Inode_Start_Addr;			//inode�ڵ��� ƫ�Ƶ�ַ��ռ INODE_NUM/(BLOCK_SIZE/INODE_SIZE) �����̿�
-extern const int Block_Start_Addr;			//block������ ƫ�Ƶ�ַ ��ռ INODE_NUM �����̿�
-extern const int File_Max_Size;				//�����ļ�����С
-extern const int Disk_Size;					//��������ļ���С
+extern const int Superblock_Start_Addr;		//超级块偏移地址,占一个block
+extern const int InodeBitmap_Start_Addr;		//inode位图 偏移地址，占两个磁盘块，最多监控1024个inode的状态
+extern const int BlockBitmap_Start_Addr;		//block位图 偏移地址，占二十个磁盘块，最多监控 10240 个磁盘块（5120KB）的状态
+extern const int Inode_Start_Addr;			//inode节点区 偏移地址，占 INODE_NUM/(BLOCK_SIZE/INODE_SIZE) 个磁盘块
+extern const int Block_Start_Addr;			//block数据区 偏移地址 ，占 INODE_NUM 个磁盘块
+extern const int File_Max_Size;				//单个文件最大大小
+extern const int Disk_Size;					//虚拟磁盘文件大小
 
 
-//ȫ�ֱ�������
-extern int Root_Dir_Addr;					//��Ŀ¼inode��ַ
-extern int Cur_Dir_Addr;					//��ǰĿ¼
-extern char Cur_Dir_Name[310];				//��ǰĿ¼��
-extern char Cur_Host_Name[110];				//��ǰ������
-extern char Cur_User_Name[110];				//��ǰ��½�û���
-extern char Cur_Group_Name[110];			//��ǰ��½�û�����
-//extern char Cur_User_Dir_Name[310];			//��ǰ��½�û�Ŀ¼��
+//全局变量声明
+extern char Cur_Host_Name[110];				//当前主机名
+extern int Root_Dir_Addr;					//根目录inode地址
+extern int Cur_Dir_Addr;					//当前目录
+extern char Cur_Dir_Name[310];				//当前目录名
+extern char Cur_User_Name[110];				//当前登陆用户名
+extern char Cur_Group_Name[110];			//当前登陆用户组名
+extern char Cur_User_Dir_Name[310];			//当前登陆用户目录名
 
-extern int nextUID;							//��һ��Ҫ������û���ʶ��
-extern int nextGID;							//��һ��Ҫ������û����ʶ��
+extern int nextUID;							//下一个要分配的用户标识号
+extern int nextGID;							//下一个要分配的用户组标识号
 
-extern bool isLogin;						//�Ƿ����û���½
+extern bool isLogin;						//是否有用户登陆
 
-extern FILE* fw;							//��������ļ� д�ļ�ָ��
-extern FILE* fr;							//��������ļ� ���ļ�ָ��
-extern SuperBlock* superblock;				//������ָ��
-extern bool inode_bitmap[INODE_NUM];		//inodeλͼ
-extern bool block_bitmap[BLOCK_NUM];		//���̿�λͼ
+extern FILE* fw;							//虚拟磁盘文件 写文件指针
+extern FILE* fr;							//虚拟磁盘文件 读文件指针
+extern SuperBlock* superblock;				//超级块指针
+extern bool inode_bitmap[INODE_NUM];		//inode位图
+extern bool block_bitmap[BLOCK_NUM];		//磁盘块位图
 
-extern char buffer[10000000];				//10M������������������ļ�
+extern char buffer[10000000];				//10M，缓存整个虚拟磁盘文件
 
-
+//启动函数&提示函数
 void help();
+ FELIN
+
+//大类函数
+bool Format();								//文件系统格式化
+bool Install();								//安装文件系统
+bool mkdir(int PIAddr, char name[]);
+bool rmdir(int CHIAddr, char name[]);
+bool mkfile(int PIAddr, char name[], char buf[]);
+bool rmfile(int CHIAddr, char name[]);
+bool writefile(inode fileinode, int iaddr, char buf[]);
+void cd(int PIAddr, char name[]);
+void gotoRoot();
+void ls();
+
+//工具函数
+int ialloc();
+void ifree(int iaddr);
+int balloc();
+void bfree(int baddr);
+
+//用户&用户组函数
+void inUsername(char* username);							//输入用户名
+void inPasswd(char* passwd);
+bool login();	
+bool logout();
+bool useradd(char username[], char passwd[], char group[]);
+bool userdel(char username[]);
+bool check(char username[], char passwd[]);	
+bool chmod(int PIAddr, char name[], int pmode, int type);	
+
+
+//一点一点debug~加油！！！（今天能够做完当然最好
 void Ready();
 bool Format();
-void inUsername(char username[]);								//�����û���
+void inUsername(char username[]);								//输入用户名
 void inPasswd(char passwd[]);
 bool login();
 void cmd(char cmd[]);
 void ls(int parinodeAddr);
 bool mkdir(int parinodeAddr, char name[]);
+ master
