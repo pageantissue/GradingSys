@@ -149,3 +149,5 @@ bool login();
 void cmd(char cmd[]);
 void ls(int parinodeAddr);
 bool mkdir(int parinodeAddr, char name[]);
+
+void cmd(int addr, char name[]);
