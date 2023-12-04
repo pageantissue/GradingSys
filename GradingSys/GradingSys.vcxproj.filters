@@ -6,5 +6,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="os.h" />
+    <ClInclude Include="snapshot.h" />
   </ItemGroup>
 </Project>

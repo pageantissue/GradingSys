@@ -129,19 +129,27 @@ int main()
         }
         printf("安装文件系统成功！\n");
     }
-
+    int count = 0;  //记录操作次数
     while (1) {
         if (isLogin) {
             char str[100];
             char* p;
-            if ((p = strstr(Cur_Dir_Name, Cur_User_Dir_Name)) == NULL)	//当前是否在用户目录下
-                printf("[%s@%s %s]# ", Cur_Host_Name, Cur_User_Name, Cur_Dir_Name); //[Linux@yhl /etc]
+            if ((p = strstr(Cur_Dir_Name, Cur_User_Dir_Name)) == NULL) {	//当前是否在用户目录下
+                printf("[%s@%s %s]# ", Cur_Host_Name, Cur_User_Name, Cur_Dir_Name);
+            } //[Linux@yhl /etc]
             else
-                printf("[%s@%s ~%s]# ", Cur_Host_Name, Cur_User_Name, Cur_Dir_Name + strlen(Cur_User_Dir_Name));//[Linux@yhl ~/app]
+            {
+                printf("[%s@%s ~%s]# ", Cur_Host_Name, Cur_User_Name, Cur_Dir_Name + strlen(Cur_User_Dir_Name));
+            }
             gets(str);
             //cout << str << endl;
+<<<<<<< HEAD
+            cmd(str,count);
+            count++;
+=======
             cmd(str);
            
+>>>>>>> master
         }
         else {
             printf("欢迎来到GradingSysOS，请先登录\n");

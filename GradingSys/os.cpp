@@ -7,11 +7,48 @@
 
 using namespace std;
 
+<<<<<<< HEAD
+void help() {
+	cout.setf(ios::left); //设置对齐方式为left 
+	cout.width(30); //设置宽度，不足用空格填充 
+	//cout << setiosflags(ios::left);
+	cout << "ls" << "Display the current directory listing" << endl;	//列出当前目录清单
+	cout.width(30);
+	cout << "cd" << "Enter the specific directory " << endl;		//前往指定目录
+	cout.width(30);
+	cout << "mkdir" << "Create directory" << endl;					//创建目录
+	cout.width(30);
+	cout << "rm" << "Delete the file or directory" << endl;			//删除文件和目录 
+	cout.width(30);
+	cout << "touch" << "Create new file" << endl;				//创建新文件
+	cout.width(30);
+	cout << "read" << "Read the content of file" << endl;		//读文件
+	cout.width(30);
+	cout << "write" << "Write the file" << endl;			//写文件
+	cout.width(30);
+	cout << "chmod" << "Modify the access right" << endl;		//修改文件权限
+	cout.width(30);
+	cout << "adduser" << "Add user" << endl;		//新增用户
+	cout.width(30);
+	cout << "deluser" << "Delete user" << endl;		//删除用户
+	cout.width(30);
+	cout << "addusergrp" << "Add user group" << endl;		//新增用户组
+	cout.width(30);
+	cout << "delusergrp" << "Delete user group" << endl;		//删除用户组
+	cout.width(30);
+	cout << "snapshot" << "Back up the system" << endl;			//备份系统
+	cout.width(30);
+	cout << "format" << "Recover the system" << endl;	
+	cout.width(30);
+	cout << "exit" << "Exit the system" << endl;
+}
+=======
 void cmd(int addr, char name[]) {
 	mkdir(addr, name);
 	//cd(addr, name);
 }
 
+>>>>>>> master
 //****大类函数****
 bool Format() { //ok
 	//初始化:超级块,位图
@@ -619,9 +656,13 @@ void ls() {//显示当前目录所有文件 ok
 			fread(ditem, sizeof(ditem), 1, fr);
 			for (int j = 0; j < DirItem_Size; ++j) {
 				if (strlen(ditem[j].itemName) != 0) {
+<<<<<<< HEAD
+ 					cout<<ditem[j].itemName<<endl;
+=======
 					if ((strcmp(ditem[j].itemName, ".") == 0) || (strcmp(ditem[j].itemName, "..") == 0))
 						continue;
 					printf("%s\n", ditem[j].itemName);
+>>>>>>> master
 				}
 			}
 		}
@@ -1207,7 +1248,7 @@ bool chmod(int PIAddr, char name[], int pmode,int type) {//修改文件or目录�
 	printf("没有找到该文件，无法修改权限\n");
 	return false;
 }
-void cmd(char cmd[]) {
+void cmd(char cmd[],int count) {
 	char com1[100];
 	char com2[100];
 	char com3[100];
@@ -1216,12 +1257,42 @@ void cmd(char cmd[]) {
 		ls();
 	}
 	else if (strcmp(com1, "mkdir") == 0) {
-		cout << "in mkdir" << endl;
 		sscanf(cmd, "%s%s", com1, com2);
-		cout << com2 << endl;
 		mkdir(Cur_Dir_Addr, com2);
 	}
-	//else if(strcmp())
-	return;
+	else if (strcmp(com1, "help") == 0) {
+		help();
+	}
+	else if (strcmp(com1, "cd") == 0) {
+		sscanf(cmd, "%s%s", com1, com2);
+		cd(Cur_Dir_Addr, com2);
+	}
+	else if (strcmp(com1, "rmdir") == 0) {
+		sscanf(cmd, "%s%s", com1, com2);
+		rmdir(Cur_Dir_Addr, com2);
+	}
+	else if (strcmp(com1, "rmfile") == 0) {
+		sscanf(cmd, "%s%s", com1, com2);
+		rmfile(Cur_Dir_Addr, com2);
+	}
+	/*else if (strcmp(com1, "mkfile") == 0) {
+		sscanf(cmd, "%s%s", com1, com2);
+		mkfile(Cur_Dir_Addr, com2);
+	}*/		//这个第三个参数是啥？不太懂
+	else if(strcmp(com1,"logout")==0){
+		logout();
+	}
+	else if (strcmp(com1, "format") == 0) {
+		if (strcmp(Cur_User_Name, "root") != 0) {
+			cout << "您的权限不足" << endl;
+		}
+		logout();
+	}
+	else if (strcmp(com1, "exit") == 0) {
+		cout << "退出成绩管理系统，拜拜！" << endl;
+		exit(0);
+	}
+
+	return;                             
 }
 
