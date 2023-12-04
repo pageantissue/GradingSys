@@ -143,7 +143,7 @@ int main()
             }
             gets(str);
             //cout << str << endl;
-            cmd(str);
+            cmd(str,count);
             count++;
         }
         else {
