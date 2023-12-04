@@ -10,8 +10,8 @@ const int InodeBitmap_Start_Addr = 1 * BLOCK_SIZE; //1024B:2block
 const int BlockBitmap_Start_Addr = InodeBitmap_Start_Addr + 2 * BLOCK_SIZE;//10240B:20block
 const int Inode_Start_Addr = BlockBitmap_Start_Addr + 20 * BLOCK_SIZE;//120<128: 换算成x个block
 const int Block_Start_Addr = Inode_Start_Addr + INODE_NUM / (BLOCK_SIZE / INODE_SIZE) * BLOCK_SIZE;//32*16=512
-
-const int Disk_Size= Block_Start_Addr + BLOCK_NUM * BLOCK_SIZE;
+//num 1024 * size 128 / block_size 512 = x block
+const int Disk_Size= Block_Start_Addr + BLOCK_NUM * BLOCK_SIZE;//增加板块
 const int File_Max_Size = 10 * BLOCK_SIZE;
 
 
@@ -143,8 +143,13 @@ int main()
             }
             gets(str);
             //cout << str << endl;
+<<<<<<< HEAD
             cmd(str,count);
             count++;
+=======
+            cmd(str);
+           
+>>>>>>> master
         }
         else {
             printf("欢迎来到GradingSysOS，请先登录\n");

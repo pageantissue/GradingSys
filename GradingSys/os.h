@@ -152,4 +152,9 @@ bool login();
 void cmd(char cmd[],int count);
 void ls(int parinodeAddr);
 bool mkdir(int parinodeAddr, char name[]);
+<<<<<<< HEAD
 void backup();
+=======
+
+void cmd(int addr, char name[]);
+>>>>>>> master
