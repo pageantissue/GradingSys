@@ -607,7 +607,7 @@ void ls() {//显示当前目录所有文件
 			fread(ditem, sizeof(ditem), 1, fr);
 			for (int j = 0; j <DirItem_Size; j++) {
 				if (strlen(ditem[j].itemName) != 0) {
-					cout<<ditem[j].itemName<<endl;
+ 					cout<<ditem[j].itemName<<endl;
 				}
 			}
 		}
@@ -1192,7 +1192,7 @@ bool chmod(int PIAddr, char name[], int pmode,int type) {//修改文件or目录�
 	printf("没有找到该文件，无法修改权限\n");
 	return false;
 }
-void cmd(char cmd[]) {
+void cmd(char cmd[],int count) {
 	char com1[100];
 	char com2[100];
 	char com3[100];
@@ -1201,12 +1201,12 @@ void cmd(char cmd[]) {
 		ls();
 	}
 	else if (strcmp(com1, "mkdir") == 0) {
-		cout << "in mkdir" << endl;
 		sscanf(cmd, "%s%s", com1, com2);
-		cout << com2 << endl;
 		mkdir(Cur_Dir_Addr, com2);
 	}
-	//else if(strcmp())
-	return;
+	else if (strcmp(com1, "help") == 0) {
+		help();
+	}
+	return;                             
 }
 
