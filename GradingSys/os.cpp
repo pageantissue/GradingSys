@@ -1,4 +1,5 @@
 #include"os.h"
+#include"server.h"
 #include<iomanip>
 #include<time.h>
 #include<string.h>
@@ -691,26 +692,30 @@ void bfree(int baddr) {
 }
 
 //****用户&用户组函数****
-void inUsername(char* username)	//输入用户名
+void inUsername(Client& client)	//输入用户名
 {
-	printf("username:\n");
-	scanf("%s", username);	//用户名
+	memset(client.buffer, 0, sizeof(client.buffer)); // 初始化用户输入buffer
+	char buff[] = "username: ";
+	send(client.client_sock, buff, strlen(buff), 0);
+	recv(client.client_sock, client.buffer, sizeof(client.buffer), 0);
 }
 
-void inPasswd(char *passwd)	//输入密码
+void inPasswd(Client& client)	//输入密码
 {
-	printf("password:\n");
-	scanf("%s", passwd);
+	memset(client.buffer, 0, sizeof(client.buffer)); // 初始化用户输入buffer
+	char buff[] = "password: ";
+	send(client.client_sock, buff, strlen(buff), 0);
+	recv(client.client_sock, client.buffer, sizeof(client.buffer), 0);
 }
-bool login()	//登陆界面
+bool login(Client& client)	//登陆界面
 {
-	char username[100] = { 0 };
-	char passwd[100] = { 0 };
-	inUsername(username);	//输入用户名
-	inPasswd(passwd);		//输入用户密码
+	inUsername(client);	//输入用户名
+	auto username = client.buffer;
+	inPasswd(client);		//输入用户密码
+	auto passwd = client.buffer;
 	if (check(username, passwd)) {
 
-		if (strcmp(username, "root") == 0 && strcmp(passwd, "root") == 0) {	//核对用户名和密码
+		if (strcmp(username, "root\n") == 0 && strcmp(passwd, "root\n") == 0) {	//核对用户名和密码
 			isLogin = true;
 			return true;
 		}
