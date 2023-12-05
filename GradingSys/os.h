@@ -2,6 +2,7 @@
 #include<iostream>
 #include<stdio.h>
 #include<time.h>
+#include"server.h"
 #include<string.h>
 
 
@@ -145,7 +146,7 @@ void Ready();
 bool Format();
 void inUsername(char username[]);								//输入用户名
 void inPasswd(char passwd[]);
-bool login();
+bool login(Client& client);
 void cmd(char cmd[]);
 void ls(int parinodeAddr);
 bool mkdir(int parinodeAddr, char name[]);
