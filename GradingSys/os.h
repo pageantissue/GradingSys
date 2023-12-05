@@ -124,7 +124,7 @@ bool rmdir(int CHIAddr, char name[]);
 bool mkfile(int PIAddr, char name[], char buf[]);
 bool rmfile(int CHIAddr, char name[]);
 bool writefile(inode fileinode, int iaddr, char buf[]);
-void cd(int PIAddr, char name[]);
+bool cd(int PIAddr, char name[]);
 void gotoRoot();
 void ls();
 
@@ -137,6 +137,7 @@ void bfree(int baddr);
 //用户&用户组函数
 void inUsername(char* username);							//输入用户名
 void inPasswd(char* passwd);
+void ingroup(char* group);
 bool login();	
 bool logout();
 bool useradd(char username[], char passwd[], char group[]);
@@ -144,17 +145,4 @@ bool userdel(char username[]);
 bool check(char username[], char passwd[]);	
 bool chmod(int PIAddr, char name[], int pmode, int type);	
 
-void Ready();
-bool Format();
-void inUsername(char username[]);								//输入用户名
-void inPasswd(char passwd[]);
-bool login();
-void cmd(char cmd[],int count);
-void ls(int parinodeAddr);
-bool mkdir(int parinodeAddr, char name[]);
-<<<<<<< HEAD
-void backup();
-=======
-
-void cmd(int addr, char name[]);
->>>>>>> master
+void cmd(char cmd[], int count);

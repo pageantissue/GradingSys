@@ -119,8 +119,8 @@ int main()
                 printf("格式化失败！\n");
                 return 0;
             }
+            printf("格式化完成！\n");
         }
-        printf("格式化完成！\n");
 
         //Install
         if (!Install()) {
@@ -133,18 +133,19 @@ int main()
     while (1) {
         if (isLogin) {
             char str[100];
+            memset(str, '\0', sizeof(str));
             char* p;
+            count++;
+            
             if ((p = strstr(Cur_Dir_Name, Cur_User_Dir_Name)) == NULL) {	//当前是否在用户目录下
                 printf("[%s@%s %s]# ", Cur_Host_Name, Cur_User_Name, Cur_Dir_Name);
             } //[Linux@yhl /etc]
-            else
-            {
-                printf("[%s@%s ~%s]# ", Cur_Host_Name, Cur_User_Name, Cur_Dir_Name + strlen(Cur_User_Dir_Name));
+            else {
+                printf("[%s@%s ~%s]# ", Cur_Host_Name, Cur_User_Name, Cur_Dir_Name + strlen(Cur_User_Dir_Name));//[Linux@yhl ~/app]
             }
             gets(str);
-            //cout << str << endl;
-            cmd(str,count);
-            count++;
+            printf("\n");
+            cmd(str,0);
         }
         else {
             printf("欢迎来到GradingSysOS，请先登录\n");
