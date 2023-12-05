@@ -711,15 +711,24 @@ bool login(Client& client)	//登陆界面
 {
 	inUsername(client);	//输入用户名
 	auto username = client.buffer;
+	size_t len = strlen(username);
+	username[len - 1] = '\0';
 	inPasswd(client);		//输入用户密码
 	auto passwd = client.buffer;
-	if (check(username, passwd)) {
+	len = strlen(passwd);
+	passwd[len - 1] = '\0';
+	printf("here!!!!!username is %s,\npassword is %s\n", username, passwd);
 
-		if (strcmp(username, "root\n") == 0 && strcmp(passwd, "root\n") == 0) {	//核对用户名和密码
+	if (check(username, passwd))
+	{
+		if (strcmp(username, "root") == 0 && strcmp(passwd, "root") == 0) 
+		{
+			//核对用户名和密码
 			isLogin = true;
 			return true;
 		}
-		else {
+		else 
+		{
 			isLogin = false;
 			return false;
 		}
