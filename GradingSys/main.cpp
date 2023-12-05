@@ -1,4 +1,4 @@
-﻿#include <cstdio>
+#include <cstdio>
 #include<cstdlib>
 #include <iostream>
 #include"os.h"
@@ -143,13 +143,8 @@ int main()
             }
             gets(str);
             //cout << str << endl;
-<<<<<<< HEAD
             cmd(str,count);
             count++;
-=======
-            cmd(str);
-           
->>>>>>> master
         }
         else {
             printf("欢迎来到GradingSysOS，请先登录\n");
