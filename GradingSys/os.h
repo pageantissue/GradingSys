@@ -64,8 +64,8 @@ struct inode {		//不要动此处变量，刚好128B
 	char i_gname[20];						//文件所属用户组
 	unsigned int inode_file_size;					//文件大小是多少Byte（文件：Byte 目录：block）
 	time_t  inode_change_time;						//inode上一次变动的时间
-	time_t  file_change_time;						//文件内容上一次变动的时间
-	time_t  file_modified_time;						//文件上一次修改的时间
+	time_t  dir_change_time;						//文件内容上一次变动的时间(针对dir)
+	time_t  file_modified_time;						//文件上一次修改的时间(针对file)
 	int i_dirBlock[10];						//10个直接块：总共能存储的大小是10*512B = 5120B = 5KB
 	int i_indirect_1;						//一级间接块
 	int i_indirect_2;						//二级间接块
@@ -123,6 +123,7 @@ bool mkdir(int PIAddr, char name[]);
 bool rmdir(int CHIAddr, char name[]);
 bool mkfile(int PIAddr, char name[], char buf[]);
 bool rmfile(int CHIAddr, char name[]);
+bool addfile(inode fileinode, int iaddr, char buf[]);
 bool writefile(inode fileinode, int iaddr, char buf[]);
 bool cd(int PIAddr, char name[]);
 void gotoRoot();
