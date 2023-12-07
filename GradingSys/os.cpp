@@ -647,22 +647,64 @@ void ls(char str[]) {//显示当前目录所有文件 ok
 		if (ino.i_dirBlock[i] != -1) {//被使用过
 			fseek(fr, ino.i_dirBlock[i], SEEK_SET);
 			fread(ditem, sizeof(ditem), 1, fr);
-			if (str == "") {
-				for (int j = 0; j < DirItem_Size; ++j) {
-					if (strlen(ditem[j].itemName) != 0) {
-						if ((strcmp(ditem[j].itemName, ".") == 0) || (strcmp(ditem[j].itemName, "..") == 0))
-							continue;
-						printf("%s\n", ditem[j].itemName);
+			if (strcmp(str, "-l") == 0) {
+				//取出目录项的inode
+				
+				for (int j = 0; j < DirItem_Size; j++) {
+					inode tmp;
+					fseek(fr, ditem[j].inodeAddr, SEEK_SET);
+					fread(&tmp, sizeof(inode), 1, fr);
+					fflush(fr);
+
+					if (strcmp(ditem[j].itemName, "") == 0|| (strcmp(ditem[j].itemName, ".") == 0) || (strcmp(ditem[j].itemName, "..") == 0)) {
+						continue;
 					}
+
+					if (((tmp.inode_mode >> 9) & 1) == 1) {
+						printf("d");
+					}
+					else {
+						printf("-");
+					}
+					
+					//权限
+					int count = 8;
+					while (count >= 0) {
+						if (((tmp.inode_mode >> count) & 1) == 1) {
+							int mod = count % 3;
+							switch (mod) {
+							case 0:
+								printf("x");
+								break;
+							case 1:
+								printf("w");
+								break;
+							case 2:
+								printf("r");
+								break;
+							default:
+								printf("-");
+							}
+						}
+						count--;
+					}
+					printf("\t");
+					printf("%s\t", tmp.i_uname);
+					printf("%s\t", tmp.i_gname);
+					//printf("%s\t", tmp.inode_file_size);
+					printf("%s\t", ctime(&tmp.file_modified_time));
+					printf("%s\t", ditem[j].itemName);
+					printf("\n");
 				}
 			}
-			else if (strcmp(str, "-l") == 0) {
-				//取出目录项的inode
-				inode tmp;
-				fseek(fr, (ino.i_dirBlock[i]).inodeAddr, SEEK_SET);
-				fread(&tmp, sizeof(inode), 1, fr);
-				fflush(fr);
-
+			else {
+					for (int j = 0; j < DirItem_Size; ++j) {
+						if (strlen(ditem[j].itemName) != 0) {
+							if ((strcmp(ditem[j].itemName, ".") == 0) || (strcmp(ditem[j].itemName, "..") == 0))
+								continue;
+							printf("%s\n", ditem[j].itemName);
+						}
+					}
 			}
 		}
 	}
@@ -1253,7 +1295,8 @@ void cmd(char cmd[],int count) {
 	char com3[100];
 	sscanf(cmd,"%s", com1);
 	if (strcmp(com1, "ls") == 0) {
-		ls();
+		sscanf(cmd, "%s%s", com1, com2);
+		ls(com2);
 	}
 	else if (strcmp(com1, "mkdir") == 0) {
 		sscanf(cmd, "%s%s", com1, com2);
