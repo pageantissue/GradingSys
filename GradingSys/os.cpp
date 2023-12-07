@@ -850,22 +850,28 @@ void bfree(int baddr) {
 }
 
 //****用户&用户组函数****
-void inUsername(char* username)	//输入用户名
+void inUsername(Client& client, char* username)	//输入用户名
 {
-	printf("username:\n");
-	scanf("%s", username);	//用户名
+	char tosend[] = "username: ";
+	send(client.client_sock, tosend, strlen(tosend), 0);
+	recv(client.client_sock, client.buffer, sizeof(client.buffer), 0);
+	strcpy(username, client.buffer);	//用户名
 }
  
-void inPasswd(char *passwd)	//输入密码
+void inPasswd(Client& client, char *passwd)	//输入密码
 {
-	printf("password:\n");
-	scanf("%s", passwd);
+	char tosend[] = "password: ";
+	send(client.client_sock, tosend, strlen(tosend), 0);
+	recv(client.client_sock, client.buffer, sizeof(client.buffer), 0);
+	strcpy(passwd, client.buffer);
 }
-void ingroup(char* group) {
-	printf("group:(root;teacher;student)\n");
-	scanf("%s", group);
+void ingroup(Client& client, char* group) {
+	char tosend[] = "group (root;teacher;student): ";
+	send(client.client_sock, tosend, strlen(tosend), 0);
+	recv(client.client_sock, client.buffer, sizeof(client.buffer), 0);
+	strcpy(group, client.buffer);
 }
-bool login()	//登陆界面
+bool login(Client& client)	//登陆界面
 {	
 	//DirItem ditem[DirItem_Size];
 	//fseek(fr,143872, SEEK_SET);
@@ -873,8 +879,8 @@ bool login()	//登陆界面
 
 	char username[100] = { 0 };
 	char passwd[100] = { 0 };
-	inUsername(username);	//输入用户名
-	inPasswd(passwd);		//输入用户密码
+	inUsername(client, username);	//输入用户名
+	inPasswd(client, passwd);		//输入用户密码
 	if (check(username, passwd)) {			//核对用户名和密码
 
 		isLogin = true;
@@ -1364,7 +1370,9 @@ bool chmod(int PIAddr, char name[], int pmode,int type) {//修改文件or目录�
 	printf("没有找到该文件，无法修改权限\n");
 	return false;
 }
-void cmd(char cmd[],int count) {
+void cmd(Client& client, int count) {
+	char cmd[100] = "";
+	strcpy(cmd, client.buffer);
 	char com1[100];
 	char com2[100];
 	char com3[100];
@@ -1404,10 +1412,11 @@ void cmd(char cmd[],int count) {
 		sscanf(cmd, "%s%s", com1, com2);
 		mkfile(Cur_Dir_Addr, com2,"");
 	}		//这个第三个参数是啥？不太懂
-	else if (strcmp(com1, "useradd") == 0) {
-		inUsername(com1);
-		inPasswd(com2);
-		ingroup(com3);
+	else if (strcmp(com1, "useradd") == 0) {\
+		// 要提示用户重新输入三个参数
+		inUsername(client, com1);
+		inPasswd(client, com2);
+		ingroup(client, com3);
 		useradd(com1,com2,com3);
 	}
 	else if (strcmp(com1, "userdel") == 0) {

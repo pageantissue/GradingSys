@@ -131,10 +131,10 @@ int balloc();
 void bfree(int baddr);
 
 //用户&用户组函数
-void inUsername(Client& client);							//输入用户名
-void inPasswd(Client& client);
-void ingroup(Client& client);
-bool login(Client& client);	
+void inUsername(Client&, char*);							//输入用户名
+void inPasswd(Client&, char*);
+void ingroup(Client&, char*);
+bool login(Client&);	
 bool logout();
 bool useradd(char username[], char passwd[], char group[]);
 bool userdel(char username[]);
@@ -143,9 +143,8 @@ bool chmod(int PIAddr, char name[], int pmode, int type);
 
 
 bool Format();
-bool login();
-void cmd(char cmd[], int count);
+bool login(Client&);
+void cmd(Client& client, int count);
 void ls(char str[]);
 bool mkdir(int parinodeAddr, char name[]);
 void backup();
-void cmd(char cmd[], int count);

@@ -163,11 +163,7 @@ void handleClient(Client& client)
                 printf("Client %d has logged out the system!\n", client_sock);
                 break;
             }
-            memset(client.buffer, 0, sizeof(client.buffer)); // 初始化用户输入buffer
-            len = recv(client_sock, client.buffer, sizeof(client.buffer), 0);
-            if (strcmp(client.buffer, "exit\n") == 0 || len <= 0)
-                break;
-            cmd(client.buffer, count);
+            cmd(client, count);
         }
         else
         {
