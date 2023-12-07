@@ -5,14 +5,18 @@
 #include<cstdio>
 #include<cstdlib>
 #include<iostream>
-using namespace std;
 extern int count;
 
-int Initialize(Client& client)
+void Welcome(Client& client)
 {
     int client_sock = client.client_sock;
     char buff[] = "GradingSys Greeting!\n";
     send(client_sock, buff, strlen(buff), 0);
+}
+int Initialize(Client& client)
+{
+    char buff[100] = "";
+    int client_sock = client.client_sock;
     //###############打不开文件################
     if ((fr = fopen(GRADE_SYS_NAME, "rb")) == NULL)
     {
@@ -172,9 +176,8 @@ void handleClient(Client& client)
             while (!login(client));	//登陆
             strcpy(buff, "Successfully logged into our system!\n");
             send(client_sock, buff, strlen(buff), 0);
-            system("cls");
-            fclose(fw);		//释放文件指针
-            fclose(fr);		//释放文件指针
+            //fclose(fw);		//释放文件指针
+            //fclose(fr);		//释放文件指针
         }
     }
     close(client_sock);

@@ -74,6 +74,7 @@ int main()
         if (fork() == 0) {
             // 子进程
             close(server_sock); // 子进程关闭服务器监听
+            Welcome(client);
             Initialize(client); // 重新初始化独立的Client对象
             handleClient(client); // 处理客户端请求
             close(client.client_sock); // 子进程处理完毕后关闭套接字
@@ -81,7 +82,6 @@ int main()
         }
         // 父进程继续监听，不需要额外的处理
     }
-
     close(server_sock);//关闭服务器响应socket
     return 0;
 }

@@ -32,5 +32,6 @@ struct Client //服务端客户
 };
 
 //char* parseCommand(char* message); // 解析用户的输入，并返回命令行语言
+void Welcome(Client&);
 void handleClient(Client& client);
 int Initialize(Client& client);

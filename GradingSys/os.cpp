@@ -675,7 +675,7 @@ bool cd(int PIAddr, char name[]) {//切换目录(ok
 	return false;
 }
 void gotoRoot() { //ok
-	Cur_Dir_Addr= Root_Dir_Addr;
+	Cur_Dir_Addr = Root_Dir_Addr;
 	strcpy(Cur_Dir_Name , "/");
 }
 void ls(char str[]) {//显示当前目录所有文件 ok
@@ -881,6 +881,10 @@ bool login(Client& client)	//登陆界面
 	char passwd[100] = { 0 };
 	inUsername(client, username);	//输入用户名
 	inPasswd(client, passwd);		//输入用户密码
+	auto len = strlen(passwd);
+	passwd[len - 1] = '\0';
+	len = strlen(username);
+	username[len - 1] = '\0';
 	if (check(username, passwd)) {			//核对用户名和密码
 
 		isLogin = true;
