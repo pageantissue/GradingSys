@@ -717,7 +717,7 @@ bool login(Client& client)	//登陆界面
 	auto passwd = client.buffer;
 	len = strlen(passwd);
 	passwd[len - 1] = '\0';
-	printf("here!!!!!username is %s,\npassword is %s\n", username, passwd);
+	//printf("here!!!!!username is %s,\npassword is %s\n", username, passwd);
 
 	if (check(username, passwd))
 	{
