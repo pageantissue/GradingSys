@@ -144,17 +144,10 @@ bool userdel(char username[]);
 bool check(char username[], char passwd[]);	
 bool chmod(int PIAddr, char name[], int pmode, int type);	
 
-void Ready();
 bool Format();
-void inUsername(char username[]);								//输入用户名
-void inPasswd(char passwd[]);
 bool login();
 void cmd(char cmd[],int count);
-void ls(int parinodeAddr);
+void ls();
 bool mkdir(int parinodeAddr, char name[]);
-<<<<<<< HEAD
 void backup();
-=======
 
-void cmd(int addr, char name[]);
->>>>>>> master

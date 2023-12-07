@@ -7,7 +7,6 @@
 
 using namespace std;
 
-<<<<<<< HEAD
 void help() {
 	cout.setf(ios::left); //设置对齐方式为left 
 	cout.width(30); //设置宽度，不足用空格填充 
@@ -42,13 +41,7 @@ void help() {
 	cout.width(30);
 	cout << "exit" << "Exit the system" << endl;
 }
-=======
-void cmd(int addr, char name[]) {
-	mkdir(addr, name);
-	//cd(addr, name);
-}
 
->>>>>>> master
 //****大类函数****
 bool Format() { //ok
 	//初始化:超级块,位图
@@ -629,7 +622,7 @@ void gotoRoot() { //ok
 	Cur_Dir_Addr= Root_Dir_Addr;
 	strcpy(Cur_Dir_Name , "/");
 }
-void ls() {//显示当前目录所有文件 ok
+void ls(char str[]) {//显示当前目录所有文件 ok
 	inode ino;
 	fseek(fr, Cur_Dir_Addr, SEEK_SET);
 	fread(&ino, sizeof(inode), 1, fr);
@@ -654,16 +647,22 @@ void ls() {//显示当前目录所有文件 ok
 		if (ino.i_dirBlock[i] != -1) {//被使用过
 			fseek(fr, ino.i_dirBlock[i], SEEK_SET);
 			fread(ditem, sizeof(ditem), 1, fr);
-			for (int j = 0; j < DirItem_Size; ++j) {
-				if (strlen(ditem[j].itemName) != 0) {
-<<<<<<< HEAD
- 					cout<<ditem[j].itemName<<endl;
-=======
-					if ((strcmp(ditem[j].itemName, ".") == 0) || (strcmp(ditem[j].itemName, "..") == 0))
-						continue;
-					printf("%s\n", ditem[j].itemName);
->>>>>>> master
+			if (str == "") {
+				for (int j = 0; j < DirItem_Size; ++j) {
+					if (strlen(ditem[j].itemName) != 0) {
+						if ((strcmp(ditem[j].itemName, ".") == 0) || (strcmp(ditem[j].itemName, "..") == 0))
+							continue;
+						printf("%s\n", ditem[j].itemName);
+					}
 				}
+			}
+			else if (strcmp(str, "-l") == 0) {
+				//取出目录项的inode
+				inode tmp;
+				fseek(fr, (ino.i_dirBlock[i]).inodeAddr, SEEK_SET);
+				fread(&tmp, sizeof(inode), 1, fr);
+				fflush(fr);
+
 			}
 		}
 	}
@@ -1275,10 +1274,10 @@ void cmd(char cmd[],int count) {
 		sscanf(cmd, "%s%s", com1, com2);
 		rmfile(Cur_Dir_Addr, com2);
 	}
-	/*else if (strcmp(com1, "mkfile") == 0) {
+	else if (strcmp(com1, "mkfile") == 0) {
 		sscanf(cmd, "%s%s", com1, com2);
-		mkfile(Cur_Dir_Addr, com2);
-	}*/		//这个第三个参数是啥？不太懂
+		mkfile(Cur_Dir_Addr, com2,"");
+	}		//这个第三个参数是啥？不太懂
 	else if(strcmp(com1,"logout")==0){
 		logout();
 	}
