@@ -147,8 +147,6 @@ int main()
             //cout << str << endl;
             cmd(str,count);
             count++;
-            printf("\n");
-            cmd(str,0);
         }
         else {
             printf("欢迎来到GradingSysOS，请先登录\n");
