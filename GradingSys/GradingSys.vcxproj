@@ -76,28 +76,10 @@
   <PropertyGroup Label="UserMacros" />
   <ItemGroup>
     <ClCompile Include="os.cpp" />
-<<<<<<< Updated upstream
     <ClCompile Include="server.cpp" />
-    <ClCompile Include="test.cpp" />
-  </ItemGroup>
-  <ItemGroup>
+	<ClCompile Include="main.cpp" />
     <ClInclude Include="os.h" />
     <ClInclude Include="server.h" />
-=======
-<<<<<<< Updated upstream
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="os.h" />
-    <ClInclude Include="snapshot.h" />
-=======
-    <ClCompile Include="server.cpp" />
-    <ClCompile Include="test.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="os.h" />
-    <ClInclude Include="server.h" />
->>>>>>> Stashed changes
->>>>>>> Stashed changes
   </ItemGroup>
   <ItemDefinitionGroup />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

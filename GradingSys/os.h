@@ -34,6 +34,7 @@
 #define STUDENT 2 //学生
 
 #define GRADE_SYS_NAME "grading_sys.sys"	//文件系统名
+#define BACKUP_SYS_NAME "backup_sys.sys"	//备份系统名
 
 struct SuperBlock {
 	unsigned short s_INODE_NUM;				//inode节点数，最多 65535
@@ -64,8 +65,8 @@ struct inode {//不要动此处变量，刚好128B
 	char i_gname[20];						//文件所属用户组
 	unsigned int inode_file_size;					//文件大小是多少Byte（文件：Byte 目录：block）
 	time_t  inode_change_time;						//inode上一次变动的时间
-	time_t  file_change_time;						//文件内容上一次变动的时间
-	time_t  file_modified_time;						//文件上一次修改的时间
+	time_t  dir_change_time;						//文件内容上一次变动的时间(针对dir)
+	time_t  file_modified_time;						//文件上一次修改的时间(针对file)
 	int i_dirBlock[10];						//10个直接块：总共能存储的大小是10*512B = 5120B = 5KB
 	int i_indirect_1;						//一级间接块
 	int i_indirect_2;						//二级间接块
@@ -120,9 +121,8 @@ bool rmdir(int CHIAddr, char name[]);
 bool mkfile(int PIAddr, char name[], char buf[]);
 bool rmfile(int CHIAddr, char name[]);
 bool writefile(inode fileinode, int iaddr, char buf[]);
-void cd(int PIAddr, char name[]);
+bool cd(int PIAddr, char name[]);
 void gotoRoot();
-void ls();
 
 //工具函数
 int ialloc();
@@ -133,6 +133,7 @@ void bfree(int baddr);
 //用户&用户组函数
 void inUsername(Client& client);							//输入用户名
 void inPasswd(Client& client);
+void ingroup(Client& client);
 bool login(Client& client);	
 bool logout();
 bool useradd(char username[], char passwd[], char group[]);
@@ -141,12 +142,10 @@ bool check(char username[], char passwd[]);
 bool chmod(int PIAddr, char name[], int pmode, int type);	
 
 
-//一点一点debug~加油！！！（今天能够做完当然最好
-void Ready();
 bool Format();
-void inUsername(char username[]);								//输入用户名
-void inPasswd(char passwd[]);
-bool login(Client& client);
-void cmd(char cmd[]);
-void ls(int parinodeAddr);
+bool login();
+void cmd(char cmd[], int count);
+void ls(char str[]);
 bool mkdir(int parinodeAddr, char name[]);
+void backup();
+void cmd(char cmd[], int count);
