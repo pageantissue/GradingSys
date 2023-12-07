@@ -131,9 +131,9 @@ int balloc();
 void bfree(int baddr);
 
 //用户&用户组函数
-void inUsername(char* username);							//输入用户名
-void inPasswd(char* passwd);
-bool login();	
+void inUsername(Client& client);							//输入用户名
+void inPasswd(Client& client);
+bool login(Client& client);	
 bool logout();
 bool useradd(char username[], char passwd[], char group[]);
 bool userdel(char username[]);

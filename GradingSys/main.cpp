@@ -2,6 +2,8 @@
 #include<cstdlib>
 #include <iostream>
 #include"os.h"
+#include"client.h"
+#include"server.h"
 #include<limits>
 #include <unistd.h>
 
@@ -39,7 +41,7 @@ char buffer[10000000] = { 0 };				//10M，缓存整个虚拟磁盘文件
 using namespace std;
 
 
-int main()
+int main1()
 {
     printf("%s 向你问好!\n", "GradingSys");
     //###############打不开文件################
@@ -137,18 +139,37 @@ int main()
             if ((p = strstr(Cur_Dir_Name, Cur_User_Dir_Name)) == NULL)	//当前是否在用户目录下
                 printf("[%s@%s %s]# ", Cur_Host_Name, Cur_User_Name, Cur_Dir_Name); //[Linux@yhl /etc]
             else
+<<<<<<< Updated upstream
                 printf("[%s@%s ~%s]# ", Cur_Host_Name, Cur_User_Name, Cur_Dir_Name + strlen(Cur_User_Dir_Name));//[Linux@yhl ~/app]
             //gets(str);
             //cmd(str);
             useradd("felin", "123", "teacher");
+=======
+<<<<<<< Updated upstream
+            {
+                printf("[%s@%s ~%s]# ", Cur_Host_Name, Cur_User_Name, Cur_Dir_Name + strlen(Cur_User_Dir_Name));
+            }
+=======
+                printf("[%s@%s ~%s]# ", Cur_Host_Name, Cur_User_Name, Cur_Dir_Name + strlen(Cur_User_Dir_Name));//[Linux@yhl ~/app]
+            //gets(str);
+            //cmd(str);
+            /*useradd("felin", "123", "teacher");
+>>>>>>> Stashed changes
             cd(Cur_Dir_Addr, "..");
             cd(Cur_Dir_Addr, "felin");
             mkdir(Cur_Dir_Addr, "ms");
             mkfile(Cur_Dir_Addr, "tert", "helloworld");
             rmdir(Cur_Dir_Addr, "felin");
+<<<<<<< Updated upstream
             userdel("felin");
 
             printf("[%s@%s ~%s]# ", Cur_Host_Name, Cur_User_Name, Cur_Dir_Name + strlen(Cur_User_Dir_Name));
+=======
+            userdel("felin");*/
+            int state = run_server();
+            printf("[%s@%s ~%s]# ", Cur_Host_Name, Cur_User_Name, Cur_Dir_Name + strlen(Cur_User_Dir_Name));
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
             gets(str);
             cmd(str);
         }

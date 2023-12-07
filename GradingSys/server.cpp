@@ -123,7 +123,10 @@ int Initialize(Client& client)
         send(client_sock, buff, strlen(buff), 0);
         memset(client.buffer, 0, sizeof(client.buffer)); // 初始化用户输入buffer
         recv(client_sock, client.buffer, sizeof(client.buffer), 0);
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
         char yes[] = "y";
         if (client.buffer == yes) {
             if (!Format()) {
@@ -174,7 +177,10 @@ void handleClient(Client& client)
             cd(Cur_Dir_Addr, "..");
             cd(Cur_Dir_Addr, "felin");
             mkdir(Cur_Dir_Addr, "ms");
+<<<<<<< Updated upstream
             // ls    
+=======
+>>>>>>> Stashed changes
             mkfile(Cur_Dir_Addr, "tert", "helloworld");
             rmdir(Cur_Dir_Addr, "felin");
             userdel("felin");*/
@@ -182,6 +188,7 @@ void handleClient(Client& client)
             snprintf(output_buffer, BUF_SIZE, "[%s@%s %s]# ", Cur_Host_Name, Cur_User_Name, Cur_Dir_Name + strlen(Cur_User_Dir_Name));
             send(client_sock, output_buffer, strlen(output_buffer), 0);
             // 准备接收用户输入
+<<<<<<< Updated upstream
             memset(client.buffer, 0, sizeof(client.buffer));
             int len = recv(client_sock, client.buffer, sizeof(client.buffer), 0);
             if (strcmp(client.buffer, "exit\n") == 0 || len <= 0)
@@ -189,6 +196,12 @@ void handleClient(Client& client)
                 printf("Client %d has logged out the system!\n", client_sock);
                 break;
             }
+=======
+            memset(client.buffer, 0, sizeof(client.buffer)); // 初始化用户输入buffer
+            int len = recv(client_sock, client.buffer, sizeof(client.buffer), 0);
+            if (strcmp(client.buffer, "exit\n") == 0 || len <= 0)
+                break;
+>>>>>>> Stashed changes
             printf("Client %d send message: %s", client_sock, client.buffer);
             //parseCommand(client.buffer);
             //cmd(client.buffer);
@@ -199,7 +212,11 @@ void handleClient(Client& client)
         {
             char buff[] = "Welcome to GradingSysOS! Login first, please!\n";
             send(client_sock, buff, strlen(buff), 0);
+<<<<<<< Updated upstream
             while (!login(client));
+=======
+            while (!login(client));	//登陆
+>>>>>>> Stashed changes
             strcpy(buff, "Successfully logged into our system!\n");
             send(client_sock, buff, strlen(buff), 0);
         }
@@ -214,6 +231,7 @@ char* parseCommand(char* buffer)
 
 int main()
 {
+<<<<<<< Updated upstream
     int server_sock = socket(AF_INET, SOCK_STREAM, 0);
     struct sockaddr_in server_sockaddr;
     server_sockaddr.sin_family = AF_INET;//ipv4
@@ -224,13 +242,29 @@ int main()
         perror("Bind Failure\n");
         printf("Error: %s\n", strerror(errno));
         close(server_sock);
+=======
+    int server_sock = socket(AF_INET, SOCK_STREAM, 0);//建立服务器响应socket
+    struct sockaddr_in server_sockaddr;//保存本地地址信息
+    server_sockaddr.sin_family = AF_INET;//采用ipv4
+    server_sockaddr.sin_port = htons(MY_PORT);//指定端口
+    server_sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);//获取主机接收的所有响应
+
+    if (bind(server_sock, (struct sockaddr*)&server_sockaddr, sizeof(server_sockaddr)) == -1) {//绑定本地ip与端口
+        perror("Bind Failure\n");
+        printf("Error: %s\n", strerror(errno));//输出错误信息
+>>>>>>> Stashed changes
         return -1;
     }
 
     printf("Listen Port : %d\n", MY_PORT);
+<<<<<<< Updated upstream
     if (listen(server_sock, MAX_QUEUE_NUM) == -1) {
         perror("Listen Error");
         close(server_sock);
+=======
+    if (listen(server_sock, MAX_QUEUE_NUM) == -1) {//设置监听状态
+        perror("Listen Error");
+>>>>>>> Stashed changes
         return -1;
     }
 

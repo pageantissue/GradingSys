@@ -691,9 +691,11 @@ void bfree(int baddr) {
 	fwrite(superblock, sizeof(superblock), 1, fw);
 }
 
+
 //****用户&用户组函数****
 void inUsername(Client& client)	//输入用户名
 {
+<<<<<<< Updated upstream
 	memset(client.buffer, 0, sizeof(client.buffer)); // 初始化用户输入buffer
 	char buff[] = "username: ";
 	send(client.client_sock, buff, strlen(buff), 0);
@@ -724,6 +726,46 @@ bool login(Client& client)	//登陆界面
 		if (strcmp(username, "root") == 0 && strcmp(passwd, "root") == 0) 
 		{
 			//核对用户名和密码
+=======
+	char buff[] = "username:";
+	send(client.client_sock, buff, strlen(buff), 0);
+	recv(client.client_sock, client.buffer, sizeof(client.buffer), 0);
+	std::string username(client.buffer, client.buffer + strlen(client.buffer));
+	client.
+}
+<<<<<<< Updated upstream
+ 
+void inPasswd(char *passwd)	//输入密码
+=======
+
+void inPasswd(Client& client)	//输入密码
+>>>>>>> Stashed changes
+{
+	char buff[] = "password:";
+	send(client.client_sock, buff, strlen(buff), 0);
+	recv(client.client_sock, client.buffer, sizeof(client.buffer), 0);
+}
+<<<<<<< Updated upstream
+bool login()	//登陆界面
+{	
+	//DirItem ditem[DirItem_Size];
+	//fseek(fr,143872, SEEK_SET);
+	//fread(ditem, sizeof(ditem), 1, fr);
+
+	char username[100] = { 0 };
+	char passwd[100] = { 0 };
+	inUsername(username);	//输入用户名
+	inPasswd(passwd);		//输入用户密码
+=======
+bool login(Client& client)	//登陆界面
+{
+	inUsername(client);	//输入用户名
+	inPasswd(client); //输入用户密码
+>>>>>>> Stashed changes
+	if (check(username, passwd)) {
+
+		if (strcmp(username, "root") == 0 && strcmp(passwd, "root") == 0) {	//核对用户名和密码
+>>>>>>> Stashed changes
 			isLogin = true;
 			return true;
 		}
@@ -1021,7 +1063,7 @@ bool userdel(char username[]) {	//用户删除
 			strcat(buf, temp);
 		}
 	}
-	p = strstr(buf, username);
+	p = strstr(buf, userame);
 	if ((*(p - 1)) == ':') {	//第一个，后面空格和逗号都要去掉
 		*p = '/0';
 		while ((*p) != '\n'||(*p)!=',') { 
