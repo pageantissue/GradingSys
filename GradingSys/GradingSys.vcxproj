@@ -75,9 +75,9 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <ItemGroup>
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="os.cpp" />
     <ClCompile Include="server.cpp" />
-	<ClCompile Include="main.cpp" />
     <ClInclude Include="os.h" />
     <ClInclude Include="server.h" />
   </ItemGroup>

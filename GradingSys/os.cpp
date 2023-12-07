@@ -1427,7 +1427,6 @@ void cmd(char cmd[],int count) {
 		cout << "退出成绩管理系统，拜拜！" << endl;
 		exit(0);
 	}
-
 	return;                             
 }
 
