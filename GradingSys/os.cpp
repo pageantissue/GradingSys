@@ -145,6 +145,7 @@ bool Format() { //ok
 	gotoRoot();
 	return true;
 }
+
 bool Install() {	//安装文件系统 ok
 	fseek(fr, Superblock_Start_Addr, SEEK_SET);
 	fread(superblock, sizeof(superblock), 1, fr);
@@ -1431,3 +1432,7 @@ void cmd(char cmd[],int count) {
 	return;                             
 }
 
+void backup() {
+	inode pinode, childinode;
+
+}

@@ -4,6 +4,7 @@
 #include"os.h"
 #include<limits>
 #include <unistd.h>
+#include"snapshot.h"
 
 const int Superblock_Start_Addr=0;     //44B:1block
 const int InodeBitmap_Start_Addr = 1 * BLOCK_SIZE; //1024B:2block
@@ -144,7 +145,8 @@ int main()
                 printf("[%s@%s ~%s]# ", Cur_Host_Name, Cur_User_Name, Cur_Dir_Name + strlen(Cur_User_Dir_Name));//[Linux@yhl ~/app]
             }
             gets(str);
-            //cout << str << endl;
+            Backup bu;
+            printf("%d", sizeof(bu));
             cmd(str,count);
             count++;
         }

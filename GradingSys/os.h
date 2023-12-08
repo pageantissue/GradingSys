@@ -33,7 +33,7 @@
 #define STUDENT 2 //学生
 
 #define GRADE_SYS_NAME "grading_sys.sys"	//文件系统名
-#define BACKUP_SYS_NAME "backup_sys.sys"	//备份系统名
+
 
 struct SuperBlock {
 	unsigned short s_INODE_NUM;				//inode节点数，最多 65535
@@ -110,8 +110,7 @@ extern bool block_bitmap[BLOCK_NUM];		//磁盘块位图
 extern char buffer[10000000];				//10M，缓存整个虚拟磁盘文件
 
 
-extern FILE* bfw;							//备份文件 写文件指针
-extern FILE* bfr;							//备份文件 读文件指针
+
 
 //启动函数&提示函数
 void help();
