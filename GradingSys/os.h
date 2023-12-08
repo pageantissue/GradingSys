@@ -121,8 +121,8 @@ bool rmdir(int CHIAddr, char name[]);
 bool mkfile(int PIAddr, char name[], char buf[]);
 bool rmfile(int CHIAddr, char name[]);
 bool writefile(inode fileinode, int iaddr, char buf[]);
-bool cd(int PIAddr, char name[]);
-void gotoRoot();
+//bool cd(int PIAddr, char name[]);
+void gotoRoot(Client&);
 
 //工具函数
 int ialloc();
@@ -135,16 +135,15 @@ void inUsername(Client&, char*);							//输入用户名
 void inPasswd(Client&, char*);
 void ingroup(Client&, char*);
 bool login(Client&);	
-bool logout();
-bool useradd(char username[], char passwd[], char group[]);
-bool userdel(char username[]);
+bool logout(Client&);
+bool useradd(Client&, char username[], char passwd[], char group[]);
+bool userdel(Client&, char username[]);
 bool check(Client&, char username[], char passwd[]);	
-bool chmod(int PIAddr, char name[], int pmode, int type);	
+bool chmod(Client&, int PIAddr, char name[], int pmode, int type);	
 
-
+bool cd(Client&, int PIAddr, char name[]);
 bool Format();
-bool login(Client&);
 void cmd(Client& client, int count);
-void ls(char str[]);
-bool mkdir(int parinodeAddr, char name[]);
+void ls(Client& client, char str[]);
+bool mkdir(Client&, int parinodeAddr, char name[]);
 void backup();

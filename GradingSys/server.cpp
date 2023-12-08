@@ -15,7 +15,6 @@ void Welcome(Client& client)
 }
 int Initialize()
 {
-    char buff[100] = "";
     //###############打不开文件################
     if ((fr = fopen(GRADE_SYS_NAME, "rb")) == NULL)
     {
@@ -97,7 +96,7 @@ int Initialize()
             printf("File system installation failed!\n");
             return 0;
         }
-        printf(buff, "File system installation done.\n");
+        printf("File system installation done.\n");
     }
 }
 
@@ -109,6 +108,16 @@ void localize(Client& client)
     strcpy(client.Cur_Group_Name, Cur_Group_Name);
     strcpy(client.Cur_User_Dir_Name, Cur_User_Dir_Name);
     strcpy(client.Cur_User_Name, Cur_User_Name);
+}
+
+void globalize(Client& client)
+{
+    // 全局变量局部化 
+    Cur_Dir_Addr = client.Cur_Dir_Addr;
+    strcpy(Cur_Dir_Name, client.Cur_Dir_Name);
+    strcpy(Cur_Group_Name, client.Cur_Group_Name);
+    strcpy(Cur_User_Dir_Name, client.Cur_User_Dir_Name);
+    strcpy(Cur_User_Name, client.Cur_User_Name);
 }
 
 void handleClient(Client& client)
@@ -156,5 +165,4 @@ void handleClient(Client& client)
             //fclose(fr);		//释放文件指针
         }
     }
-    close(client_sock);
 }

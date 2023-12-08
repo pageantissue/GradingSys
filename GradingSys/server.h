@@ -30,6 +30,7 @@ struct Client //服务端客户
 };
 
 void Welcome(Client&);
-void handleClient(Client& client);
-void localize(Client& client); //关键变量局部化
+void handleClient(Client&);
+void localize(Client&); //关键变量局部化
+void globalize(Client&);
 int Initialize();
