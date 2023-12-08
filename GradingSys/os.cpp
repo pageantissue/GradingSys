@@ -759,7 +759,8 @@ void ls(Client& client, char str[]) {//显示当前目录所有文件 ok
 	
 	for (int i = 0; i < 10; ++i) {
 		DirItem ditem[DirItem_Size];
-		char sendbuff[100] = "";
+		char sendbuff[1000] = "";
+		memset(sendbuff, 0, sizeof(sendbuff));
 		int str_ptr = 0;
 		if (ino.i_dirBlock[i] != -1)
 		{//被使用过
@@ -779,11 +780,11 @@ void ls(Client& client, char str[]) {//显示当前目录所有文件 ok
 					}
 
 					if (((tmp.inode_mode >> 9) & 1) == 1) {
-						printf("d");
+						//printf("d");
 						sendbuff[str_ptr++] = 'd';
 					}
 					else {
-						printf("-");
+						//printf("-");
 						sendbuff[str_ptr++] = '-';
 					}
 
@@ -794,20 +795,20 @@ void ls(Client& client, char str[]) {//显示当前目录所有文件 ok
 							int mod = count % 3;
 							switch (mod) {
 							case 0:
-								printf("x");
+								//printf("x");
 								sendbuff[str_ptr++] = 'x';
 								break;
 							case 1:
-								printf("w");
+								//printf("w");
 								sendbuff[str_ptr++] = 'w';
 								break;
 							case 2:
-								printf("r");
+								//printf("r");
 								sendbuff[str_ptr++] = 'w';
 								break;
 							default:
 								sendbuff[str_ptr++] = '-';
-								printf("-");
+								//printf("-");
 							}
 						}
 						count--;
@@ -836,7 +837,6 @@ void ls(Client& client, char str[]) {//显示当前目录所有文件 ok
 					sendbuff[str_ptr++] = '\n';
 				}
 				//printf("here in ls func, send buff before send is %s", sendbuff);
-				sendbuff[str_ptr++] = '\0';
 				send(client.client_sock, sendbuff, strlen(sendbuff), 0);
 			}
 			else
@@ -847,7 +847,7 @@ void ls(Client& client, char str[]) {//显示当前目录所有文件 ok
 					{
 						if ((strcmp(ditem[j].itemName, ".") == 0) || (strcmp(ditem[j].itemName, "..") == 0))
 							continue;
-						printf("%s\n", ditem[j].itemName);
+						snprintf(client.buffer, BUF_SIZE, "%s\n", ditem[j].itemName);
 						send(client.client_sock, ditem[j].itemName, strlen(ditem[j].itemName), 0);
 					}
 				}
