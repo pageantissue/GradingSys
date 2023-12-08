@@ -825,7 +825,10 @@ void ls(Client& client, char str[]) {//显示当前目录所有文件 ok
 					str_ptr += offset;
 
 					//printf("%s\t", tmp.inode_file_size);
-					printf("%s\t", ctime(&tmp.file_modified_time));
+					offset = snprintf(sendbuff + str_ptr, sizeof(sendbuff) - str_ptr, "%s\t", tmp.inode_file_size);
+					str_ptr += offset;
+
+					//printf("%s\t", ctime(&tmp.file_modified_time));
 					offset = snprintf(sendbuff + str_ptr, sizeof(sendbuff) - str_ptr, "%s\t", ctime(&tmp.file_modified_time));
 					str_ptr += offset;
 
@@ -837,6 +840,7 @@ void ls(Client& client, char str[]) {//显示当前目录所有文件 ok
 					sendbuff[str_ptr++] = '\n';
 				}
 				//printf("here in ls func, send buff before send is %s", sendbuff);
+				sendbuff[str_ptr++] = '\0';
 				send(client.client_sock, sendbuff, strlen(sendbuff), 0);
 			}
 			else
