@@ -844,7 +844,7 @@ void ls(Client& client, char str[]) {//显示当前目录所有文件 ok
 					sendbuff[str_ptr++] = '\n';
 				}
 				//printf("here in ls func, send buff before send is %s", sendbuff);
-				send(client.client_sock, sendbuff, str_ptr+1, 0);
+				send(client.client_sock, sendbuff, strlen(sendbuff), 0);
 			}
 			else
 			{
