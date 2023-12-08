@@ -18,6 +18,8 @@ struct Backup {
 	char blcokBitMap[10240];	//占20个block
 	inode childinode;
 	inode parinode;
+	int childinodeAddr;
+	int parinodeAddr;
 	char childblocks[BLOCK_SIZE * 10];
 	char parblocks[BLOCK_SIZE * 10];
 };
@@ -27,5 +29,8 @@ extern FILE* bfr;							//备份文件 读文件指针
 
 extern const int Backup_Cur_Addr;			//备份文件系统当前地址
 
+extern const char backup_buf[500000];
 
-void backup();
+void initial();
+bool backup(int count,int addr);
+bool recovery(int count);

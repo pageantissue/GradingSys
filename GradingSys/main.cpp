@@ -2,9 +2,10 @@
 #include<cstdlib>
 #include <iostream>
 #include"os.h"
+#include"snapshot.h"
 #include<limits>
 #include <unistd.h>
-#include"snapshot.h"
+
 
 const int Superblock_Start_Addr=0;     //44B:1block
 const int InodeBitmap_Start_Addr = 1 * BLOCK_SIZE; //1024B:2block
@@ -35,13 +36,17 @@ SuperBlock* superblock = new SuperBlock;	//超级块指针
 bool inode_bitmap[INODE_NUM];				//inode位图
 bool block_bitmap[BLOCK_NUM];				//磁盘块位图
 
-char buffer[10000000] = { 0 };				//10M，缓存整个虚拟磁盘文件
+FILE* bfw;
+FILE* bfr;
 
+char buffer[10000000] = { 0 };				//10M，缓存整个虚拟磁盘文件
+//extern const int count;
 using namespace std;
 
 
 int main()
 {
+    int count = -1;
     printf("%s 向你问好!\n", "GradingSys");
     //###############打不开文件################
     if ((fr = fopen(GRADE_SYS_NAME, "rb")) == NULL) {
@@ -73,7 +78,7 @@ int main()
         printf("文件系统正在格式化\n");
 
         //系统格式化
-        if (!Format()) {
+        if (!Format(count)) {
             printf("格式化失败\n");
             return 0;
         }
@@ -116,7 +121,7 @@ int main()
         printf("是否需要格式化：[y/n]\n");
         char a = getchar();
         if (a == 'y') {
-            if (!Format()) {
+            if (!Format(count)) {
                 printf("格式化失败！\n");
                 return 0;
             }
@@ -130,7 +135,7 @@ int main()
         }
         printf("安装文件系统成功！\n");
     }
-    int count = 0;  //记录操作次数
+    count = 0;  //记录操作次数
     while (1) {
         if (isLogin) {
             char str[100];
@@ -145,8 +150,7 @@ int main()
                 printf("[%s@%s ~%s]# ", Cur_Host_Name, Cur_User_Name, Cur_Dir_Name + strlen(Cur_User_Dir_Name));//[Linux@yhl ~/app]
             }
             gets(str);
-            Backup bu;
-            printf("%d", sizeof(bu));
+            initial();
             cmd(str,count);
             count++;
         }

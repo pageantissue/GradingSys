@@ -4,6 +4,7 @@
 #include<string.h>
 #include<stdio.h>
 #include<iostream>
+#include"snapshot.h"
 
 using namespace std;
 
@@ -45,7 +46,7 @@ void help() {
 
 
 //****大类函数****
-bool Format() { //ok
+bool Format(int count) { //ok
 	//初始化:超级块,位图
 	char buffer[Disk_Size];
 	memset(buffer, '\0', sizeof(buffer));
@@ -115,9 +116,9 @@ bool Format() { //ok
 
 	fflush(fw);
 	//创建目录及配置文件
-	mkdir(Cur_Dir_Addr, "home");
+	mkdir(Cur_Dir_Addr, "home",count);
 	cd(Cur_Dir_Addr, "home");
-	mkdir(Cur_Dir_Addr, "root");
+	mkdir(Cur_Dir_Addr, "root",count);
 
 
 	//DirItem gitem[DirItem_Size];
@@ -125,7 +126,7 @@ bool Format() { //ok
 	//fread(gitem, sizeof(ditem), 1, fr);
 	
 	gotoRoot();
-	mkdir(Cur_Dir_Addr, "etc");
+	mkdir(Cur_Dir_Addr, "etc",count);
 	cd(Cur_Dir_Addr, "etc");
 
 	char buf[1000] = { 0 };
@@ -160,7 +161,7 @@ bool Install() {	//安装文件系统 ok
 	return true;
 }
 
-bool mkdir(int PIAddr, char name[]) {	//目录创建函数(父目录权限:写)(ok
+bool mkdir(int PIAddr, char name[],int count) {	//目录创建函数(父目录权限:写)(ok
 	//理论上Cur_Dir_Addr是系统分配的，应该是正确的
 	if (strlen(name) > FILE_NAME_MAX_SIZE) {
 		printf("文件名称超过最大长度\n");
@@ -297,6 +298,7 @@ bool mkdir(int PIAddr, char name[]) {	//目录创建函数(父目录权限:写)(
 
 	fflush(fw);
 	DirItem ditem[DirItem_Size];
+	backup(count, 0);
 	return true;
 }
 
@@ -915,7 +917,7 @@ bool useradd(char username[], char passwd[], char group[]) {	//用户注册
 
 	gotoRoot();
 	cd(Cur_Dir_Addr, "home");
-	mkdir(Cur_Dir_Addr, username);
+	mkdir(Cur_Dir_Addr, username,-1);
 
 	//获取etc三文件
 	inode etcino,shadowino,passwdino,groupino;
@@ -1383,7 +1385,7 @@ void cmd(char cmd[],int count) {
 	}
 	else if (strcmp(com1, "mkdir") == 0) {
 		sscanf(cmd, "%s%s", com1, com2);
-		mkdir(Cur_Dir_Addr, com2);
+		mkdir(Cur_Dir_Addr, com2,count);
 	}
 	else if (strcmp(com1, "mkfile") == 0) {
 		sscanf(cmd, "%s%s", com1, com2);

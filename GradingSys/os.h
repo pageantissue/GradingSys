@@ -116,9 +116,9 @@ extern char buffer[10000000];				//10M，缓存整个虚拟磁盘文件
 void help();
 
 //大类函数
-bool Format();								//文件系统格式化
+bool Format(int count);								//文件系统格式化
 bool Install();								//安装文件系统
-bool mkdir(int PIAddr, char name[]);
+bool mkdir(int PIAddr, char name[],int count);
 bool rmdir(int CHIAddr, char name[]);
 bool mkfile(int PIAddr, char name[], char buf[]);
 bool rmfile(int CHIAddr, char name[]);
@@ -149,6 +149,6 @@ bool Format();
 bool login();
 void cmd(char cmd[],int count);
 void ls(char str[]);
-bool mkdir(int parinodeAddr, char name[]);
+bool mkdir(int parinodeAddr, char name[],int count);
 void backup();
 void cmd(char cmd[], int count);
