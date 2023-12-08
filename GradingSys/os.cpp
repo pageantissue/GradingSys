@@ -841,7 +841,7 @@ void ls(Client& client, char str[]) {//显示当前目录所有文件 ok
 				}
 				//printf("here in ls func, send buff before send is %s", sendbuff);
 				sendbuff[str_ptr++] = '\0';
-				send(client.client_sock, sendbuff, strlen(sendbuff), 0);
+				send(client.client_sock, sendbuff, str_ptr, 0);
 			}
 			else
 			{
@@ -852,7 +852,7 @@ void ls(Client& client, char str[]) {//显示当前目录所有文件 ok
 						if ((strcmp(ditem[j].itemName, ".") == 0) || (strcmp(ditem[j].itemName, "..") == 0))
 							continue;
 						snprintf(client.buffer, BUF_SIZE, "%s\n", ditem[j].itemName);
-						send(client.client_sock, ditem[j].itemName, strlen(ditem[j].itemName), 0);
+						send(client.client_sock, client.buffer, strlen(client.buffer), 0);
 					}
 				}
 			}
