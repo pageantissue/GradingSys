@@ -708,17 +708,19 @@ void ls(Client& client, char str[]) {//显示当前目录所有文件 ok
 	for (int i = 0; i < 10; ++i)
 	{
 		DirItem ditem[DirItem_Size];
-		int str_ptr = 0;
 		if (ino.i_dirBlock[i] != -1)
-		{//被使用过
+		{
+			//被使用过
 			char sendbuff[100] = "";
+			int str_ptr = 0;
 			memset(sendbuff, '\0', sizeof(sendbuff));
 			fseek(fr, ino.i_dirBlock[i], SEEK_SET);
 			fread(ditem, sizeof(ditem), 1, fr);
 			if (strcmp(str, "-l") == 0)
 			{
 				//取出目录项的inode
-				for (int j = 0; j < DirItem_Size; j++) {
+				for (int j = 0; j < DirItem_Size; j++)
+				{
 					inode tmp;
 					fseek(fr, ditem[j].inodeAddr, SEEK_SET);
 					fread(&tmp, sizeof(inode), 1, fr);
@@ -1128,7 +1130,7 @@ bool useradd(Client& client, char username[], char passwd[], char group[])
 
 	Cur_Dir_Addr = pro_cur_dir_addr;
 	strcpy(Cur_Dir_Name, pro_cur_dir_name);
-	globalize(client); // 保存用户指针后退出
+	localize(client); // 保存用户指针后退出
 	return true;
 }
 bool userdel(Client& client, char username[])
@@ -1447,7 +1449,7 @@ void cmd(Client& client, int count) {
 	char cmd[100] = "";
 	strcpy(cmd, client.buffer);
 	//cmd[strlen(cmd) - 1] = '\0'; // 删去换行符
-	//printf("here cmd is %s", cmd);
+	printf("here cmd is %s", cmd);
 	globalize(client); // 切换文件系统工作指针
 	char com1[100];
 	char com2[100];
