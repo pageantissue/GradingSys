@@ -812,13 +812,14 @@ void ls(Client& client, char str[]) {//显示当前目录所有文件 ok
 						}
 						count--;
 					}
-					printf("\t"); sendbuff[str_ptr++] = '\t';
+					//printf("\t");
+					sendbuff[str_ptr++] = '\t';
 
-					printf("%s\t", tmp.i_uname);
+					//printf("%s\t", tmp.i_uname);
 					int offset = snprintf(sendbuff + str_ptr, sizeof(sendbuff) - str_ptr, "%s\t", tmp.i_uname);
 					str_ptr += offset;
 
-					printf("%s\t", tmp.i_gname);
+					//printf("%s\t", tmp.i_gname);
 					offset = snprintf(sendbuff + str_ptr, sizeof(sendbuff) - str_ptr, "%s\t", tmp.i_gname);
 					str_ptr += offset;
 
@@ -827,14 +828,15 @@ void ls(Client& client, char str[]) {//显示当前目录所有文件 ok
 					offset = snprintf(sendbuff + str_ptr, sizeof(sendbuff) - str_ptr, "%s\t", ctime(&tmp.file_modified_time));
 					str_ptr += offset;
 
-					printf("%s\t", ditem[j].itemName);
+					//printf("%s\t", ditem[j].itemName);
 					offset = snprintf(sendbuff + str_ptr, sizeof(sendbuff) - str_ptr, "%s\t", ditem[j].itemName);
 					str_ptr += offset;
 
-					printf("\n");
+					//printf("\n");
 					sendbuff[str_ptr++] = '\n';
 				}
 				//printf("here in ls func, send buff before send is %s", sendbuff);
+				sendbuff[str_ptr++] = '\0';
 				send(client.client_sock, sendbuff, strlen(sendbuff), 0);
 			}
 			else
