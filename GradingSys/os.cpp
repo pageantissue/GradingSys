@@ -613,62 +613,6 @@ bool addfile(Client& client, inode fileinode, int iaddr, char buf[]) { //文件�
 	return true;
 }
 
-//bool cd(int PIAddr, char name[]) {//切换目录(ok
-//	inode pinode;
-//	fseek(fr, PIAddr, SEEK_SET);
-//	fread(&pinode, sizeof(inode), 1, fr);
-//
-//	//判断身份
-//	int role = 0;	//other 0
-//	if (strcmp(Cur_Group_Name, pinode.i_gname) == 0) {
-//		role = 3;	//group 3
-//	}
-//	if (strcmp(Cur_User_Name, pinode.i_uname) == 0) {
-//		role = 6;
-//	}
-//
-//
-//	for (int i = 0; i < 10; ++i) {
-//		if (pinode.i_dirBlock[i] != -1) {
-//			DirItem ditem[DirItem_Size];
-//			fseek(fr, pinode.i_dirBlock[i], SEEK_SET);
-//			fread(ditem, sizeof(ditem), 1, fr);
-//			for (int j = 0; j < DirItem_Size; ++j) {
-//				if (strcmp(ditem[j].itemName, name) == 0) { //找到同名
-//					if (strcmp(name, ".") == 0) {
-//						return true;
-//					}
-//					if (strcmp(name, "..") == 0) {
-//						if (strcmp(Cur_Dir_Name, "/") == 0) {
-//							return true;
-//						}
-//						//char* p = strrchr(Cur_Dir_Addr, '/'); 跑不了啊
-//						char* p = Cur_Dir_Name + strlen(Cur_Dir_Name);
-//						while ((*p) != '/')p--;
-//						*p = '\0'; //打断它
-//						Cur_Dir_Addr = ditem[j].inodeAddr;
-//						return true;
-//					}
-//					inode chiino;
-//					fseek(fr, ditem[j].inodeAddr, SEEK_SET);
-//					fread(&chiino, sizeof(inode), 1, fr);
-//					fflush(fr);
-//					if (((chiino.inode_mode >> role) & 1) == 1) {	//是否有执行权限
-//						if (strcmp(Cur_Dir_Name, "/") != 0) {
-//							strcat(Cur_Dir_Name, "/");
-//						}
-//						strcat(Cur_Dir_Name, name);
-//						Cur_Dir_Addr = ditem[j].inodeAddr;
-//						return true;
-//					}
-//				}
-//			}
-//		}
-//	}
-//	perror("该文件夹不存在，无法进入\n");
-//	return false;
-//}
-
 bool cd(Client& client, int PIAddr, char name[]) {//切换目录(ok
 	inode pinode;
 	globalize(client); // 切换计算机指针到当前用户
@@ -761,13 +705,14 @@ void ls(Client& client, char str[]) {//显示当前目录所有文件 ok
 		return;
 	}
 	
-	for (int i = 0; i < 10; ++i) {
+	for (int i = 0; i < 10; ++i)
+	{
 		DirItem ditem[DirItem_Size];
-		char sendbuff[1000] = "";
-		memset(sendbuff, 0, sizeof(sendbuff));
 		int str_ptr = 0;
 		if (ino.i_dirBlock[i] != -1)
 		{//被使用过
+			char sendbuff[100] = "";
+			memset(sendbuff, '\0', sizeof(sendbuff));
 			fseek(fr, ino.i_dirBlock[i], SEEK_SET);
 			fread(ditem, sizeof(ditem), 1, fr);
 			if (strcmp(str, "-l") == 0)
@@ -843,7 +788,7 @@ void ls(Client& client, char str[]) {//显示当前目录所有文件 ok
 					//printf("\n");
 					sendbuff[str_ptr++] = '\n';
 				}
-				//printf("here in ls func, send buff before send is %s", sendbuff);
+				printf("here in ls func, send buff before send is %s", sendbuff);
 				send(client.client_sock, sendbuff, strlen(sendbuff), 0);
 			}
 			else
@@ -1528,7 +1473,7 @@ void cmd(Client& client, int count) {
 		char temp[100];
 		memset(temp, '\0', strlen(temp));
 		//printf("输入你需要的内容：\n");
-		char mes[] = "Please Enter your content: ...";
+		char mes[] = "Please enter your content: ...";
 		send(client.client_sock, mes, strlen(mes), 0);
 		recv(client.client_sock, client.buffer, sizeof(client.buffer), 0);
 		mkfile(client, Cur_Dir_Addr, com2, client.buffer);

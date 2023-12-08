@@ -162,8 +162,8 @@ void handleClient(Client& client)
             while (!login(client));	//登陆
             strcpy(buff, "Successfully logged into our system!\n");
             send(client_sock, buff, strlen(buff), 0);
-            fclose(fw);		//释放文件指针
-            fclose(fr);		//释放文件指针
+            //fclose(fw);		//释放文件指针
+            //fclose(fr);		//释放文件指针
         }
     }
 }
