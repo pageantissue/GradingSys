@@ -111,7 +111,7 @@ extern bool block_bitmap[BLOCK_NUM];		//磁盘块位图
 extern char buffer[10000000];				//10M，缓存整个虚拟磁盘文件
 
 //启动函数&提示函数
-void help();
+void help(Client& client);
 
 //大类函数
 bool Format();								//文件系统格式化
@@ -138,7 +138,7 @@ bool login(Client&);
 bool logout();
 bool useradd(char username[], char passwd[], char group[]);
 bool userdel(char username[]);
-bool check(char username[], char passwd[]);	
+bool check(Client&, char username[], char passwd[]);	
 bool chmod(int PIAddr, char name[], int pmode, int type);	
 
 

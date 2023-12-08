@@ -13,25 +13,20 @@ void Welcome(Client& client)
     char buff[] = "GradingSys Greeting!\n";
     send(client_sock, buff, strlen(buff), 0);
 }
-int Initialize(Client& client)
+int Initialize()
 {
     char buff[100] = "";
-    int client_sock = client.client_sock;
     //###############打不开文件################
     if ((fr = fopen(GRADE_SYS_NAME, "rb")) == NULL)
     {
         fw = fopen(GRADE_SYS_NAME, "wb");
         if (fw == NULL) {
-            strcpy(buff, "Failed to open the virtual disc file!\n");
-            send(client_sock, buff, strlen(buff), 0);
+            printf("Failed to open the virtual disc file!\n");
             return 0;
         }
         fr = fopen(GRADE_SYS_NAME, "rb");
-        strcpy(buff, "Virtual disc file openned successfully!\n");
-        send(client_sock, buff, strlen(buff), 0);
+        printf("Virtual disc file openned successfully!\n");
         //初始化变量
-        nextUID = 0;
-        nextGID = 0;
         isLogin = false;
         strcpy(Cur_User_Name, "root");
         strcpy(Cur_Group_Name, "root");
@@ -46,22 +41,18 @@ int Initialize(Client& client)
         Root_Dir_Addr = Inode_Start_Addr;
         Cur_Dir_Addr = Root_Dir_Addr;
         strcpy(Cur_Dir_Name, "/");
-        strcpy(buff, "Formatting the file system...\n");
-        send(client_sock, buff, strlen(buff), 0);
+        printf("Formatting the file system...\n");
 
         //系统格式化
         if (!Format()) {
-            char buff1[] = "Formatting file system failed!\n";
-            send(client_sock, buff1, strlen(buff1), 0);
+            printf("Formatting file system failed!\n");
             return 0;
         }
-        strcpy(buff, "Formatting done.\n\n");
-        send(client_sock, buff, strlen(buff), 0);
+        printf("Formatting done.\n\n");
         //Install
         if (!Install()) {
 
-            strcpy(buff, "File system installation failure!\n");
-            send(client_sock, buff, strlen(buff), 0);
+            printf("File system installation failure!\n");
             return 0;
         }
     }
@@ -69,13 +60,10 @@ int Initialize(Client& client)
     {
         fw = fopen(GRADE_SYS_NAME, "rb+"); //在原来的基础上修改文件
         if (fw == NULL) {
-            char buff1[] = "Disk files openning failure!\n";
-            send(client_sock, buff1, strlen(buff1), 0);
+            printf("Disk files openning failure!\n");
             return false;
         }
         //初始化变量
-        nextUID = 0;
-        nextGID = 0;
         isLogin = false;
         strcpy(Cur_User_Name, "root");
         strcpy(Cur_Group_Name, "root");
@@ -93,39 +81,36 @@ int Initialize(Client& client)
         strcpy(Cur_Dir_Name, "/");
 
         //是否需要格式化
-        strcpy(buff, "Format the file system? [y/n]");
-        send(client_sock, buff, strlen(buff), 0);
-        memset(client.buffer, 0, sizeof(client.buffer)); // 初始化用户输入buffer
-        recv(client_sock, client.buffer, sizeof(client.buffer), 0);
-        char yes[] = "y";
-        if (client.buffer == yes) {
+        printf("Format the file system? [y/n]\n");
+        char str;
+        scanf("%s", &str);
+        if (str == 'y') {
             if (!Format()) {
-                char buff1[] = "Failed to format the system!\n";
-                send(client_sock, buff1, strlen(buff1), 0);
+                printf( "Failed to format the system!\n");
                 return 0;
             }
         }
-        strcpy(buff, "Format done!\n");
-        send(client_sock, buff, strlen(buff), 0);
+        printf("Format done!\n");
 
         //Install
         if (!Install()) {
-            char buff1[] = "File system installation failed!\n";
-            send(client_sock, buff1, strlen(buff1), 0);
+            printf("File system installation failed!\n");
             return 0;
         }
-        strcpy(buff, "File system installation done.\n");
-        send(client_sock, buff, strlen(buff), 0);
+        printf(buff, "File system installation done.\n");
     }
-    // 全局变量局部化
-    client.Root_Dir_Addr = Root_Dir_Addr;
+}
+
+void localize(Client& client)
+{
+    // 全局变量局部化 
     client.Cur_Dir_Addr = Cur_Dir_Addr;
     strcpy(client.Cur_Dir_Name, Cur_Dir_Name);
     strcpy(client.Cur_Group_Name, Cur_Group_Name);
-    strcpy(client.Cur_Host_Name, Cur_Host_Name);
     strcpy(client.Cur_User_Dir_Name, Cur_User_Dir_Name);
     strcpy(client.Cur_User_Name, Cur_User_Name);
 }
+
 void handleClient(Client& client)
 {
     int client_sock = client.client_sock;
@@ -139,26 +124,17 @@ void handleClient(Client& client)
             {
                 char output_buffer[BUF_SIZE];
                 // 使用snprintf将格式化的字符串存储到output_buffer中
-                snprintf(output_buffer, BUF_SIZE, "[%s@%s %s]# ", client.Cur_Host_Name, client.Cur_User_Name, client.Cur_Dir_Name);
+                snprintf(output_buffer, BUF_SIZE, "[%s@%s %s]# ", Cur_Host_Name, client.Cur_User_Name, client.Cur_Dir_Name);
                 //[Linux@yhl /etc]
                 send(client_sock, output_buffer, strlen(output_buffer), 0);
             }
             else
             {
                 char output_buffer[BUF_SIZE];
-                snprintf(output_buffer, BUF_SIZE, "[%s@%s %s]# ", client.Cur_Host_Name, client.Cur_User_Name, client.Cur_Dir_Name + strlen(client.Cur_User_Dir_Name));
+                snprintf(output_buffer, BUF_SIZE, "[%s@%s %s]# ", Cur_Host_Name, client.Cur_User_Name, client.Cur_Dir_Name + strlen(client.Cur_User_Dir_Name));
                 //[Linux@yhl ~/app]
                 send(client_sock, output_buffer, strlen(output_buffer), 0);
             }
-            //gets(str);
-            //cmd(str);
-            /*useradd("felin", "123", "teacher");
-            cd(Cur_Dir_Addr, "..");
-            cd(Cur_Dir_Addr, "felin");
-            mkdir(Cur_Dir_Addr, "ms");
-            mkfile(Cur_Dir_Addr, "tert", "helloworld");
-            rmdir(Cur_Dir_Addr, "felin");
-            userdel("felin");*/
             // 准备接收用户输入
             memset(client.buffer, 0, sizeof(client.buffer));
             int len = recv(client_sock, client.buffer, sizeof(client.buffer), 0);

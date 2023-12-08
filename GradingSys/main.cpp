@@ -42,6 +42,9 @@ int count = 0;  //记录操作次数
 
 int main()
 {
+    nextUID = 0;
+    nextGID = 0;
+    Initialize(); // 初始化文件系统
     int server_sock = socket(AF_INET, SOCK_STREAM, 0);
     struct sockaddr_in server_sockaddr;
     server_sockaddr.sin_family = AF_INET;//ipv4
@@ -60,6 +63,7 @@ int main()
         close(server_sock);
         return -1;
     }
+    
     printf("Waiting for connection!\n");
     while (true)
     {
@@ -75,7 +79,6 @@ int main()
             // 子进程
             close(server_sock); // 子进程关闭服务器监听
             Welcome(client);
-            Initialize(client); // 重新初始化独立的Client对象
             handleClient(client); // 处理客户端请求
             close(client.client_sock); // 子进程处理完毕后关闭套接字
             exit(0); // 子进程处理完毕后退出

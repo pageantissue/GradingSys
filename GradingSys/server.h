@@ -18,10 +18,8 @@ struct Client //服务端客户
 {
     int client_sock;
 
-    int Root_Dir_Addr;							//根目录inode地址
     int Cur_Dir_Addr;							//当前目录:存inode地址
     char Cur_Dir_Name[310];						//当前目录名
-    char Cur_Host_Name[110];					//当前主机名
     char Cur_User_Name[110];					//当前登陆用户名
     char Cur_Group_Name[110];					//当前登陆用户组名
     char Cur_User_Dir_Name[310];				//当前登陆用户目录名
@@ -31,7 +29,7 @@ struct Client //服务端客户
     socklen_t length = sizeof(client_addr);//需要的内存大小
 };
 
-//char* parseCommand(char* message); // 解析用户的输入，并返回命令行语言
 void Welcome(Client&);
 void handleClient(Client& client);
-int Initialize(Client& client);
+void localize(Client& client); //关键变量局部化
+int Initialize();
