@@ -684,8 +684,8 @@ bool cd(Client& client, int PIAddr, char name[]) {//切换目录(ok
 		role = 6;
 	}
 
-
-	for (int i = 0; i < 10; ++i) {
+	for (int i = 0; i < 10; ++i)
+	{
 		if (pinode.i_dirBlock[i] != -1) {
 			DirItem ditem[DirItem_Size];
 			fseek(fr, pinode.i_dirBlock[i], SEEK_SET);
@@ -693,10 +693,12 @@ bool cd(Client& client, int PIAddr, char name[]) {//切换目录(ok
 			for (int j = 0; j < DirItem_Size; ++j) {
 				if (strcmp(ditem[j].itemName, name) == 0) { //找到同名
 					if (strcmp(name, ".") == 0) {
+						localize(client);
 						return true;
 					}
 					if (strcmp(name, "..") == 0) {
 						if (strcmp(Cur_Dir_Name, "/") ==0){
+							localize(client);
 							return true;
 						}
 						//char* p = strrchr(Cur_Dir_Addr, '/'); 跑不了啊
@@ -704,6 +706,7 @@ bool cd(Client& client, int PIAddr, char name[]) {//切换目录(ok
 						while ((*p) != '/')p--;
 						*p = '\0'; //打断它
 						Cur_Dir_Addr = ditem[j].inodeAddr;
+						localize(client);
 						return true;
 					}
 					inode chiino;
@@ -716,6 +719,7 @@ bool cd(Client& client, int PIAddr, char name[]) {//切换目录(ok
 						}
 						strcat(Cur_Dir_Name, name);
 						Cur_Dir_Addr = ditem[j].inodeAddr;
+						localize(client);
 						return true;
 					}
 				}
@@ -840,8 +844,7 @@ void ls(Client& client, char str[]) {//显示当前目录所有文件 ok
 					sendbuff[str_ptr++] = '\n';
 				}
 				//printf("here in ls func, send buff before send is %s", sendbuff);
-				sendbuff[str_ptr++] = '\0';
-				send(client.client_sock, sendbuff, str_ptr, 0);
+				send(client.client_sock, sendbuff, str_ptr+1, 0);
 			}
 			else
 			{
@@ -1023,7 +1026,6 @@ bool useradd(Client& client, char username[], char passwd[], char group[])
 	strcpy(pro_cur_user_dir_name, Cur_User_Dir_Name);
 	
 	//创建用户目录
-
 	gotoRoot(client);
 	cd(client, Cur_Dir_Addr, "home"); // 非用户的cd
 	mkdir(client, Cur_Dir_Addr, username);
