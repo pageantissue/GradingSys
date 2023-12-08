@@ -1020,7 +1020,7 @@ bool useradd(Client& client, char username[], char passwd[], char group[])
 
 	gotoRoot(client);
 	cd(client, Cur_Dir_Addr, "home"); // 非用户的cd
-	mkdir(Cur_Dir_Addr, username);
+	mkdir(client, Cur_Dir_Addr, username);
 
 	//获取etc三文件
 	inode etcino,shadowino,passwdino,groupino;
@@ -1320,7 +1320,7 @@ bool userdel(Client& client, char username[])
 	gotoRoot(client);
 	cd(client, Cur_Dir_Addr, "home");
 	cd(client, Cur_Dir_Addr, username);
-	rmdir(Cur_Dir_Addr, username);
+	rmdir(client, Cur_Dir_Addr, username);
 
 
 	Cur_Dir_Addr = pro_cur_dir_addr;
@@ -1513,7 +1513,7 @@ void cmd(Client& client, int count) {
 	}
 	else if (strcmp(com1, "mkdir") == 0) {
 		sscanf(cmd, "%s%s", com1, com2);
-		mkdir(Cur_Dir_Addr, com2);
+		mkdir(client, Cur_Dir_Addr, com2);
 	}
 	else if (strcmp(com1, "mkfile") == 0) {
 		sscanf(cmd, "%s%s", com1, com2);
@@ -1523,19 +1523,19 @@ void cmd(Client& client, int count) {
 		char mes[] = "Please Enter your content: ...";
 		send(client.client_sock, mes, strlen(mes), 0);
 		recv(client.client_sock, client.buffer, sizeof(client.buffer), 0);
-		mkfile(Cur_Dir_Addr, com2, client.buffer);
+		mkfile(client, Cur_Dir_Addr, com2, client.buffer);
 	}
 	else if (strcmp(com1, "rmdir") == 0) {
 		sscanf(cmd, "%s%s", com1, com2);
-		rmdir(Cur_Dir_Addr, com2);
+		rmdir(client, Cur_Dir_Addr, com2);
 	}
 	else if (strcmp(com1, "rmfile") == 0) {
 		sscanf(cmd, "%s%s", com1, com2);
-		rmfile(Cur_Dir_Addr, com2);
+		rmfile(client, Cur_Dir_Addr, com2);
 	}
 	else if (strcmp(com1, "mkfile") == 0) {
 		sscanf(cmd, "%s%s", com1, com2);
-		mkfile(Cur_Dir_Addr, com2, "");
+		mkfile(client, Cur_Dir_Addr, com2, "");
 	}		//这个第三个参数是啥？不太懂
 	else if (strcmp(com1, "useradd") == 0) {\
 		// 要提示用户重新输入三个参数

@@ -116,10 +116,10 @@ void help(Client& client);
 //大类函数
 bool Format();								//文件系统格式化
 bool Install();								//安装文件系统
-bool mkdir(int PIAddr, char name[]);
-bool rmdir(int CHIAddr, char name[]);
-bool mkfile(int PIAddr, char name[], char buf[]);
-bool rmfile(int CHIAddr, char name[]);
+bool mkdir(Client&, int PIAddr, char name[]);
+bool rmdir(Client&, int CHIAddr, char name[]);
+bool mkfile(Client&, int PIAddr, char name[], char buf[]);
+bool rmfile(Client&, int CHIAddr, char name[]);
 bool writefile(inode fileinode, int iaddr, char buf[]);
 //bool cd(int PIAddr, char name[]);
 void gotoRoot(Client&);
