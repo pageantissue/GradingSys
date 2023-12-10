@@ -16,6 +16,7 @@ const int Block_Start_Addr = Inode_Start_Addr + INODE_NUM / (BLOCK_SIZE / INODE_
 const int Disk_Size= Block_Start_Addr + BLOCK_NUM * BLOCK_SIZE;//增加板块
 const int File_Max_Size = 10 * BLOCK_SIZE;
 
+const int Start_Addr = 0;
 
 int Root_Dir_Addr;							//根目录inode地址
 int Cur_Dir_Addr;							//当前目录:存inode地址

@@ -10,6 +10,7 @@
 #define DirItem_Size 16 //一个块最多能装16个DirItem
 #define FILE_NAME_MAX_SIZE	28	//文件名最长28Byte
 #define Operation_Num 20		//假设存20次操作
+#define Backup_Block_Num 43		//假设一个backup结构体占用43个block
 
 #define BACKUP_SYS_NAME "backup_sys.sys"	//备份系统名
 
@@ -27,10 +28,11 @@ struct Backup {
 extern FILE* bfw;							//备份文件 写文件指针
 extern FILE* bfr;							//备份文件 读文件指针
 
+extern const int Start_Addr;
 extern const int Backup_Cur_Addr;			//备份文件系统当前地址
 
 extern const char backup_buf[500000];
 
 void initial();
-bool backup(int count,int addr);
+bool backup(int count,int parAddr,int childAddr);
 bool recovery(int count);

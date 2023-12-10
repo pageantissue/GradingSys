@@ -298,7 +298,7 @@ bool mkdir(int PIAddr, char name[],int count) {	//目录创建函数(父目录�
 
 	fflush(fw);
 	DirItem ditem[DirItem_Size];
-	backup(count, 0);
+	//backup(count, 0);
 	return true;
 }
 
