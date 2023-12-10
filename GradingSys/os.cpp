@@ -899,6 +899,7 @@ void inUsername(Client& client, char* username)	//输入用户名
 {
 	char tosend[] = "username: ";
 	send(client.client_sock, tosend, strlen(tosend), 0);
+	memset(client.buffer, '\0', sizeof(client.buffer));
 	recv(client.client_sock, client.buffer, sizeof(client.buffer), 0);
 	strcpy(username, client.buffer);	//用户名
 }
@@ -929,7 +930,7 @@ bool login(Client& client)	//登陆界面
 	char passwd[100] = { 0 };
 	inUsername(client, username);	//输入用户名
 	inPasswd(client, passwd);		//输入用户密码
-	//printf("here usernasme is %s, psswd is %s", username, passwd);
+	printf("here usernasme is %s, psswd is %s\n", username, passwd);
 	if (check(client, username, passwd)) {			//核对用户名和密码
 
 		isLogin = true;
