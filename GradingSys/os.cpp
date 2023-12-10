@@ -711,9 +711,6 @@ void ls(Client& client, char str[]) {//显示当前目录所有文件 ok
 		if (ino.i_dirBlock[i] != -1)
 		{
 			//被使用过
-			char sendbuff[100] = "";
-			int str_ptr = 0;
-			memset(sendbuff, '\0', sizeof(sendbuff));
 			fseek(fr, ino.i_dirBlock[i], SEEK_SET);
 			fread(ditem, sizeof(ditem), 1, fr);
 			if (strcmp(str, "-l") == 0)
@@ -721,6 +718,9 @@ void ls(Client& client, char str[]) {//显示当前目录所有文件 ok
 				//取出目录项的inode
 				for (int j = 0; j < DirItem_Size; j++)
 				{
+					char sendbuff[100] = "";
+					int str_ptr = 0;
+					memset(sendbuff, '\0', sizeof(sendbuff));
 					inode tmp;
 					fseek(fr, ditem[j].inodeAddr, SEEK_SET);
 					fread(&tmp, sizeof(inode), 1, fr);
@@ -906,6 +906,7 @@ void inPasswd(Client& client, char *passwd)	//输入密码
 {
 	char tosend[] = "password: ";
 	send(client.client_sock, tosend, strlen(tosend), 0);
+	memset(client.buffer, '\0', sizeof(client.buffer));
 	recv(client.client_sock, client.buffer, sizeof(client.buffer), 0);
 	strcpy(passwd, client.buffer);
 }
@@ -913,6 +914,7 @@ void inPasswd(Client& client, char *passwd)	//输入密码
 void ingroup(Client& client, char* group) {
 	char tosend[] = "group (root;teacher;student): ";
 	send(client.client_sock, tosend, strlen(tosend), 0);
+	memset(client.buffer, '\0', sizeof(client.buffer));
 	recv(client.client_sock, client.buffer, sizeof(client.buffer), 0);
 	strcpy(group, client.buffer);
 }
@@ -927,10 +929,6 @@ bool login(Client& client)	//登陆界面
 	inUsername(client, username);	//输入用户名
 	inPasswd(client, passwd);		//输入用户密码
 	//printf("here usernasme is %s, psswd is %s", username, passwd);
-	auto len = strlen(passwd);
-	passwd[len - 2] = '\0';
-	len = strlen(username);
-	username[len - 2] = '\0';
 	if (check(client, username, passwd)) {			//核对用户名和密码
 
 		isLogin = true;
