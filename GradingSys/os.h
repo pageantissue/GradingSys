@@ -146,4 +146,10 @@ bool userdel(char username[]);
 bool check(char username[], char passwd[]);	
 bool chmod(int PIAddr, char name[], int pmode, int type);	
 
+bool Format();
+bool login();
+void cmd(char cmd[],int count);
+void ls(char str[]);
+bool mkdir(int parinodeAddr, char name[]);
+void backup();
 void cmd(char cmd[], int count);

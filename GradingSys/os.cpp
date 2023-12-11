@@ -298,6 +298,7 @@ bool mkdir(int PIAddr, char name[]) {	//目录创建函数(父目录权限:写)(
 	DirItem ditem[DirItem_Size];
 	return true;
 }
+
 bool mkfile(int PIAddr, char name[],char buf[]) {	//文件创建函数
 	//理论上Cur_Dir_Addr是系统分配的，应该是正确的
 	if (strlen(name) > FILE_NAME_MAX_SIZE) {
@@ -677,7 +678,7 @@ void gotoRoot() { //ok
 	Cur_Dir_Addr= Root_Dir_Addr;
 	strcpy(Cur_Dir_Name , "/");
 }
-void ls() {//显示当前目录所有文件 ok
+void ls(char str[]) {//显示当前目录所有文件 ok
 	inode ino;
 	fseek(fr, Cur_Dir_Addr, SEEK_SET);
 	fread(&ino, sizeof(inode), 1, fr);
@@ -702,12 +703,64 @@ void ls() {//显示当前目录所有文件 ok
 		if (ino.i_dirBlock[i] != -1) {//被使用过
 			fseek(fr, ino.i_dirBlock[i], SEEK_SET);
 			fread(ditem, sizeof(ditem), 1, fr);
-			for (int j = 0; j < DirItem_Size; ++j) {
-				if (strlen(ditem[j].itemName) != 0) {
-					if ((strcmp(ditem[j].itemName, ".") == 0) || (strcmp(ditem[j].itemName, "..") == 0))
+			if (strcmp(str, "-l") == 0) {
+				//取出目录项的inode
+				
+				for (int j = 0; j < DirItem_Size; j++) {
+					inode tmp;
+					fseek(fr, ditem[j].inodeAddr, SEEK_SET);
+					fread(&tmp, sizeof(inode), 1, fr);
+					fflush(fr);
+
+					if (strcmp(ditem[j].itemName, "") == 0|| (strcmp(ditem[j].itemName, ".") == 0) || (strcmp(ditem[j].itemName, "..") == 0)) {
 						continue;
-					printf("%s\n", ditem[j].itemName);
+					}
+
+					if (((tmp.inode_mode >> 9) & 1) == 1) {
+						printf("d");
+					}
+					else {
+						printf("-");
+					}
+					
+					//权限
+					int count = 8;
+					while (count >= 0) {
+						if (((tmp.inode_mode >> count) & 1) == 1) {
+							int mod = count % 3;
+							switch (mod) {
+							case 0:
+								printf("x");
+								break;
+							case 1:
+								printf("w");
+								break;
+							case 2:
+								printf("r");
+								break;
+							default:
+								printf("-");
+							}
+						}
+						count--;
+					}
+					printf("\t");
+					printf("%s\t", tmp.i_uname);
+					printf("%s\t", tmp.i_gname);
+					//printf("%s\t", tmp.inode_file_size);
+					printf("%s\t", ctime(&tmp.file_modified_time));
+					printf("%s\t", ditem[j].itemName);
+					printf("\n");
 				}
+			}
+			else {
+					for (int j = 0; j < DirItem_Size; ++j) {
+						if (strlen(ditem[j].itemName) != 0) {
+							if ((strcmp(ditem[j].itemName, ".") == 0) || (strcmp(ditem[j].itemName, "..") == 0))
+								continue;
+							printf("%s\n", ditem[j].itemName);
+						}
+					}
 			}
 		}
 	}
@@ -1317,7 +1370,8 @@ void cmd(char cmd[],int count) {
 	char com3[100];
 	sscanf(cmd,"%s", com1);
 	if (strcmp(com1, "ls") == 0) {
-		ls();
+		sscanf(cmd, "%s%s", com1, com2);
+		ls(com2);
 	}
 	else if (strcmp(com1, "help") == 0) {
 		help();
@@ -1346,6 +1400,10 @@ void cmd(char cmd[],int count) {
 		sscanf(cmd, "%s%s", com1, com2);
 		rmfile(Cur_Dir_Addr, com2);
 	}
+	else if (strcmp(com1, "mkfile") == 0) {
+		sscanf(cmd, "%s%s", com1, com2);
+		mkfile(Cur_Dir_Addr, com2,"");
+	}		//这个第三个参数是啥？不太懂
 	else if (strcmp(com1, "useradd") == 0) {
 		inUsername(com1);
 		inPasswd(com2);
