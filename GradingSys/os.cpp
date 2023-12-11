@@ -7,6 +7,9 @@
 #include<iostream>
 using namespace std;
 
+Client sys;
+std::vector<Client> allClients;
+
 void help(Client& client)
 {
 	char help[] = "help";
