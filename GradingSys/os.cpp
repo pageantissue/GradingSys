@@ -118,11 +118,6 @@ bool Format() { //ok
 	mkdir(Cur_Dir_Addr, "home");
 	cd(Cur_Dir_Addr, "home");
 	mkdir(Cur_Dir_Addr, "root");
-
-
-	//DirItem gitem[DirItem_Size];
-	//fseek(fr, 143872, SEEK_SET);
-	//fread(gitem, sizeof(ditem), 1, fr);
 	
 	gotoRoot();
 	mkdir(Cur_Dir_Addr, "etc");
