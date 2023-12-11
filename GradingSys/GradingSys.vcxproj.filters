@@ -3,9 +3,11 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="os.cpp" />
+    <ClCompile Include="server.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="os.h" />
     <ClInclude Include="snapshot.h" />
+    <ClInclude Include="server.h" />
   </ItemGroup>
 </Project>
