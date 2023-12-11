@@ -128,7 +128,7 @@ bool cd(int PIAddr, char str[]);
 void gotoRoot();
 void ls(char str[]);
 
-bool cat(int CHIAddr, char name[]);
+bool cat(int PIAddr, char name[]);
 bool chown(int PIAddr, char name[], char uname[], char gname[]);
 
 //工具函数

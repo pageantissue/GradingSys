@@ -264,7 +264,6 @@ bool mkdir(int PIAddr, char name[]) {	//目录创建函数(父目录权限:读�
 	fflush(fw);
 	return true;
 }
-
 bool mkfile(int PIAddr, char name[],char buf[]) {	//文件创建函数
 	//理论上Cur_Dir_Addr是系统分配的，应该是正确的
 	if (strlen(name) > FILE_NAME_MAX_SIZE) {
@@ -385,35 +384,6 @@ bool mkfile(int PIAddr, char name[],char buf[]) {	//文件创建函数
 	writefile(chiino, chiiaddr, buf);//将buf信息写入(新开）
 	
 	fflush(fw);
-	return true;
-}
-bool writefile(inode fileinode, int iaddr, char buf[]) { //文件写入
-
-	int new_block = strlen(buf) / BLOCK_SIZE + 1;
-	for (int i = 0; i < new_block; ++i) {
-		int baddr = fileinode.i_dirBlock[i];
-		if (baddr == -1) {
-			baddr = balloc();
-		}
-		char temp_file[BLOCK_SIZE];
-		memset(temp_file, '\0', BLOCK_SIZE);
-		if (i == new_block - 1) {
-			strcpy(temp_file, buf + BLOCK_SIZE * i);//buf+blocksize*i-->buf+blocksize*i+1
-		}
-		else {
-			strncpy(temp_file, buf + BLOCK_SIZE * i, BLOCK_SIZE);
-		}
-
-		fseek(fw, baddr, SEEK_SET);
-		fwrite(temp_file, BLOCK_SIZE, 1, fw);
-
-		fileinode.i_dirBlock[i] = baddr;
-	}
-	fileinode.inode_file_size = strlen(buf);
-	time(&fileinode.inode_change_time);
-	time(&fileinode.file_modified_time);
-	fseek(fw, iaddr, SEEK_SET);
-	fwrite(&fileinode, sizeof(fileinode), 1, fw);
 	return true;
 }
 bool rm(int PIAddr, char name[], int type) {	//删除文件or文件夹
@@ -583,6 +553,67 @@ bool recursive_rmfile(int CHIAddr, char name[]) {	//删除当前文件（父亲i
 	ino.inode_file_count = 0;
 	ino.inode_file_size =0;
 	ifree(CHIAddr);
+	return true;
+}
+bool cat(int PIAddr, char name[]) {	//查看文件内容
+	inode parino;
+	fseek(fr, PIAddr, SEEK_SET);
+	fread(&parino, sizeof(parino), 1, fr);
+
+	for (int i = 0; i < 10; ++i) {
+		if (parino.i_dirBlock[i] != -1) {
+			DirItem ditem[DirItem_Size];
+			fseek(fr, parino.i_dirBlock[i], SEEK_SET);
+			fread(ditem, sizeof(ditem), 1, fr);
+			for (int j = 0; j < DirItem_Size; ++j) {
+				if (strcmp(ditem[j].itemName, name) == 0) {	//同名
+					inode chiino;
+					fseek(fr, ditem[j].inodeAddr, SEEK_SET);
+					fread(&chiino, sizeof(chiino), 1, fr);
+					if(((chiino.inode_mode>>9)&1)==0){//文件
+						//读文件内容
+						for (int k = 0; k < 10;++k) {
+							if (chiino.i_dirBlock[k] != -1) {
+								char content[BLOCK_SIZE];
+								fseek(fr, chiino.i_dirBlock[k], SEEK_SET);
+								fread(content, sizeof(content), 1, fr);
+								printf("%s\n", content);
+							}	
+						}
+					}
+				}
+			}
+		}
+	}
+	
+}
+bool writefile(inode fileinode, int iaddr, char buf[]) { //文件写入
+
+	int new_block = strlen(buf) / BLOCK_SIZE + 1;
+	for (int i = 0; i < new_block; ++i) {
+		int baddr = fileinode.i_dirBlock[i];
+		if (baddr == -1) {
+			baddr = balloc();
+		}
+		char temp_file[BLOCK_SIZE];
+		memset(temp_file, '\0', BLOCK_SIZE);
+		if (i == new_block - 1) {
+			strcpy(temp_file, buf + BLOCK_SIZE * i);//buf+blocksize*i-->buf+blocksize*i+1
+		}
+		else {
+			strncpy(temp_file, buf + BLOCK_SIZE * i, BLOCK_SIZE);
+		}
+
+		fseek(fw, baddr, SEEK_SET);
+		fwrite(temp_file, BLOCK_SIZE, 1, fw);
+
+		fileinode.i_dirBlock[i] = baddr;
+	}
+	fileinode.inode_file_size = strlen(buf);
+	time(&fileinode.inode_change_time);
+	time(&fileinode.file_modified_time);
+	fseek(fw, iaddr, SEEK_SET);
+	fwrite(&fileinode, sizeof(fileinode), 1, fw);
 	return true;
 }
 bool addfile(inode fileinode, int iaddr, char buf[]) { //文件续写ok
