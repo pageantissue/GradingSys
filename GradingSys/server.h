@@ -8,6 +8,7 @@
 #include<unistd.h>
 #include<cstring>
 #include<cerrno>
+#include<vector>
 #include<cstdlib>
 
 #define MY_PORT 6591//端口号
@@ -17,6 +18,7 @@
 struct Client //服务端客户
 {
     int client_sock;
+    int ptr = -1;                                    //当前用户在所有用户登陆数组的下标
     bool islogin;                               //当前用户是否登录
     int Cur_Dir_Addr;							//当前目录:存inode地址
     char Cur_Dir_Name[310];						//当前目录名
@@ -29,8 +31,11 @@ struct Client //服务端客户
     socklen_t length = sizeof(client_addr);//需要的内存大小
 }sys;
 
+std::vector<Client&> allClients;
+
 void Welcome(Client&);
 void handleClient(Client&);
 void localize(Client&); //关键变量局部化
 void globalize(Client&);
 int Initialize();
+bool ever_logging();

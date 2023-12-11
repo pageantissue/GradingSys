@@ -3,6 +3,7 @@
 #include<stdio.h>
 #include<time.h>
 #include<string.h>
+#include"server.h"
 
 
 #define BLOCK_SIZE 512	//一个块大小 512 Byte
@@ -111,24 +112,24 @@ extern char buffer[10000000];				//10M，缓存整个虚拟磁盘文件
 
 
 extern Client sys;							//系统初始化用对象
+extern std::vector<Client&> stdallClients;  //整个系统登录的用户
 extern FILE* bfw;							//备份文件 写文件指针
 extern FILE* bfr;							//备份文件 读文件指针
 
 //启动函数&提示函数
-void help();
+void help(Client& client);
 
 //大类函数
 bool Format();								//文件系统格式化
 bool Install();								//安装文件系统
-bool mkdir(int PIAddr, char name[]);
-bool rmdir(int CHIAddr, char name[]);
-bool mkfile(int PIAddr, char name[], char buf[]);
-bool rmfile(int CHIAddr, char name[]);
-bool addfile(inode fileinode, int iaddr, char buf[]);
+bool mkdir(Client&, int PIAddr, char name[]);
+bool rmdir(Client&, int CHIAddr, char name[]);
+bool mkfile(Client&, int PIAddr, char name[], char buf[]);
+bool rmfile(Client&, int CHIAddr, char name[]);
+bool addfile(Client&, inode fileinode, int iaddr, char buf[]);
 bool writefile(inode fileinode, int iaddr, char buf[]);
-bool cd(int PIAddr, char name[]);
-void gotoRoot();
-void ls();
+void gotoRoot(Client&);
+void ls(Client& client, char str[]);
 
 //工具函数
 int ialloc();
@@ -137,20 +138,16 @@ int balloc();
 void bfree(int baddr);
 
 //用户&用户组函数
-void inUsername(char* username);							//输入用户名
-void inPasswd(char* passwd);
-void ingroup(char* group);
-bool login();	
-bool logout();
-bool useradd(char username[], char passwd[], char group[]);
-bool userdel(char username[]);
-bool check(char username[], char passwd[]);	
-bool chmod(int PIAddr, char name[], int pmode, int type);	
-
-bool Format();
-bool login();
-void cmd(char cmd[],int count);
-void ls(char str[]);
-bool mkdir(int parinodeAddr, char name[]);
+void inUsername(Client&, char*);							//输入用户名
+void inPasswd(Client&, char*);
+void ingroup(Client&, char*);
+bool login(Client&);
+bool logout(Client&);
+bool useradd(Client&, char username[], char passwd[], char group[]);
+bool userdel(Client&, char username[]);
+bool check(Client&, char username[], char passwd[]);
+bool chmod(Client&, int PIAddr, char name[], int pmode, int type);
+void cmd(Client& client, int count);
 void backup();
-void cmd(char cmd[], int count);
+
+bool ever_logging();
