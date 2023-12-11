@@ -2,6 +2,7 @@
 #include<cstdlib>
 #include <iostream>
 #include"os.h"
+#include"function.h"
 #include<limits>
 #include <unistd.h>
 
@@ -144,15 +145,9 @@ int main()
                 printf("[%s@%s ~%s]# ", Cur_Host_Name, Cur_User_Name, Cur_Dir_Name + strlen(Cur_User_Dir_Name));//[Linux@yhl ~/app]
             }
             gets(str);
-<<<<<<< HEAD
-           // printf("\n");
-=======
-            //cout << str << endl;
             cmd(str,count);
             count++;
             printf("\n");
->>>>>>> 726a6e1afc30297d539e0622d1d282dfbe90684e
-            cmd(str,0);
         }
         else {
             printf("欢迎来到GradingSysOS，请先登录\n");

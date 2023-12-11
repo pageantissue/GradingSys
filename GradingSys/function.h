@@ -1,0 +1,15 @@
+#pragma once
+#include<iostream>
+#include<stdio.h>
+#include<time.h>
+#include<string.h>
+#include"os.h"
+
+//提示函数
+void help();
+void cmd(char cmd[], int count);							//命令行函数(二级命令处理中心）
+
+//应用函数
+bool cd_func(int CurAddr, char* str);
+bool mkdir_func(int CurAddr, char* str);
+bool rm_func(int CurAddr, char* str, char* s_type);
