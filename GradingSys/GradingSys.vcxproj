@@ -75,11 +75,13 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <ItemGroup>
+    <ClCompile Include="function.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="os.cpp" />
     <ClCompile Include="snapshot.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="function.h" />
     <ClInclude Include="os.h" />
     <ClInclude Include="snapshot.h" />
   </ItemGroup>

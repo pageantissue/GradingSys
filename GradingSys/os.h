@@ -3,6 +3,7 @@
 #include<stdio.h>
 #include<time.h>
 #include<string.h>
+#include"function.h"
 
 
 #define BLOCK_SIZE 512	//一个块大小 512 Byte
@@ -26,7 +27,7 @@
 #define OTHERS_W	2						//其它用户写权限
 #define OTHERS_X	1						//其它用户执行权限
 #define FILE_DEF_PERMISSION 0664			//文件默认权限 owner,group:读写 other:读 
-#define DIR_DEF_PERMISSION	0755			//目录默认权限 owner：读写执行 group,other:读
+#define DIR_DEF_PERMISSION	0755			//目录默认权限 owner：全部 group,other:读执行
 
 #define ROOT 0	  //管理员
 #define TEACHER 1 //老师
@@ -113,27 +114,31 @@ extern char buffer[10000000];				//10M，缓存整个虚拟磁盘文件
 
 
 
-//启动函数&提示函数
-void help();
 
 //大类函数
 bool Format(int count);								//文件系统格式化
 bool Install();								//安装文件系统
 bool mkdir(int PIAddr, char name[],int count);
-bool rmdir(int CHIAddr, char name[]);
+bool mkdir(int PIAddr, char name[]);
 bool mkfile(int PIAddr, char name[], char buf[]);
-bool rmfile(int CHIAddr, char name[]);
-bool addfile(inode fileinode, int iaddr, char buf[]);
-bool writefile(inode fileinode, int iaddr, char buf[]);
-bool cd(int PIAddr, char name[]);
+bool rm(int PIAddr, char name[],int type);
+bool addfile(inode fileinode, int CHIaddr, char buf[]);
+bool writefile(inode fileinode, int CHIaddr, char buf[]);
+bool chmod(int PIAddr, char name[], int pmode, int type);
+bool cd(int PIAddr, char str[]);
 void gotoRoot();
-void ls();
+void ls(char str[]);
+
+bool cat(int PIAddr, char name[]);
+bool chown(int PIAddr, char name[], char uname[], char gname[]);
 
 //工具函数
 int ialloc();
 void ifree(int iaddr);
 int balloc();
 void bfree(int baddr);
+bool recursive_rmdir(int CHIAddr, char name[]);
+bool recursive_rmfile(int CHIAddr, char name[]);
 
 //用户&用户组函数
 void inUsername(char* username);							//输入用户名
@@ -144,7 +149,6 @@ bool logout();
 bool useradd(char username[], char passwd[], char group[]);
 bool userdel(char username[]);
 bool check(char username[], char passwd[]);	
-bool chmod(int PIAddr, char name[], int pmode, int type);	
 
 bool Format();
 bool login();
@@ -153,3 +157,7 @@ void ls(char str[]);
 bool mkdir(int parinodeAddr, char name[],int count);
 void backup();
 void cmd(char cmd[], int count);
+bool groupadd(char gname[]);
+bool groupdel(char gname[]);
+bool passwd();
+
