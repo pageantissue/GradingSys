@@ -99,8 +99,8 @@ bool mkdir_func(int CurAddr, char* str) {//在任意目录下创建目录
 	//绝对,相对,直接创建
 	char* p = strrchr(str, '/');
 	if (p == NULL) {	//直接创建
-		if (mkdir(CurAddr, str))	return true;
-		return false;
+		if (mkdir(CurAddr, str)) { return true; }
+		else { return false; }
 	}
 	else {
 		char name[File_Max_Size];
@@ -166,8 +166,8 @@ bool echo_func(int CurAddr, char* str, char* s_type,char* buf) {//在任意目录下创
 	}
 
 	//类型执行
-	if (echo(Cur_Dir_Addr, name, type, buf))	return true;
-	return false;
+	//if (echo(Cur_Dir_Addr, name, type, buf))	return true;
+	//return false;
 
 	//if (type == 0) {
 	//	if (mkfile(Cur_Dir_Addr, name, buf) == false) {
@@ -224,7 +224,7 @@ bool rm_func(int CurAddr, char* str,char* s_type) {//在任意目录下删除
 	}
 }
 
-void cmd(char cmd_str[], int count) {
+void cmd(char cmd_str[]) {
 	char com1[100];
 	char com2[100];
 	char com3[100];
