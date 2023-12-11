@@ -37,7 +37,7 @@ bool block_bitmap[BLOCK_NUM];				//磁盘块位图
 
 char buffer[10000000] = { 0 };				//10M，缓存整个虚拟磁盘文件
 
-int count = 0;  //记录操作次数
+int cnt = 0;  //记录操作次数
 
 int main()
 {

@@ -7,7 +7,6 @@
 
 using namespace std;
 
-
 void help(Client& client)
 {
 	char help[] = "help";
@@ -689,6 +688,7 @@ void ls(Client& client, char str[]) {//显示当前目录所有文件 ok
 	fread(&ino, sizeof(inode), 1, fr);
 	fflush(fr);
 	//printf("%s\n", ino);
+	printf("Here is str is |%s|\n", str);
 	
 	//查看权限
 	int mode = 0;//other
@@ -704,7 +704,7 @@ void ls(Client& client, char str[]) {//显示当前目录所有文件 ok
 		send(client.client_sock, mes, strlen(mes), 0);
 		return;
 	}
-	
+	printf("命令接收完毕，准备进入ls -l块的for循环\n");
 	for (int i = 0; i < 10; ++i)
 	{
 		DirItem ditem[DirItem_Size];
@@ -731,12 +731,12 @@ void ls(Client& client, char str[]) {//显示当前目录所有文件 ok
 					}
 
 					if (((tmp.inode_mode >> 9) & 1) == 1) {
-						//printf("d");
-						sendbuff[str_ptr++] = 'd';
+						printf("d");
+						//sendbuff[str_ptr++] = 'd';
 					}
 					else {
-						//printf("-");
-						sendbuff[str_ptr++] = '-';
+						printf("-");
+						//sendbuff[str_ptr++] = '-';
 					}
 
 					//权限
@@ -746,52 +746,56 @@ void ls(Client& client, char str[]) {//显示当前目录所有文件 ok
 							int mod = count % 3;
 							switch (mod) {
 							case 0:
-								//printf("x");
-								sendbuff[str_ptr++] = 'x';
+								printf("x");
+								//sendbuff[str_ptr++] = 'x';
 								break;
 							case 1:
-								//printf("w");
-								sendbuff[str_ptr++] = 'w';
+								printf("w");
+								//sendbuff[str_ptr++] = 'w';
 								break;
 							case 2:
-								//printf("r");
-								sendbuff[str_ptr++] = 'w';
+								printf("r");
+								//sendbuff[str_ptr++] = 'w';
 								break;
 							default:
-								sendbuff[str_ptr++] = '-';
-								//printf("-");
+								//sendbuff[str_ptr++] = '-';
+								printf("-");
 							}
 						}
 						count--;
 					}
+					printf("到这里1\n");
+
 					//printf("\t");
-					sendbuff[str_ptr++] = '\t';
+					cout << "\t";
+					//sendbuff[str_ptr++] = '\t';
 
-					//printf("%s\t", tmp.i_uname);
-					int offset = snprintf(sendbuff + str_ptr, sizeof(sendbuff) - str_ptr, "%s\t", tmp.i_uname);
-					str_ptr += offset;
+					printf("%s\t", tmp.i_uname);
+					//int offset = snprintf(sendbuff + str_ptr, sizeof(sendbuff) - str_ptr, "%s\t", tmp.i_uname);
+					//str_ptr += offset;
 
-					//printf("%s\t", tmp.i_gname);
-					offset = snprintf(sendbuff + str_ptr, sizeof(sendbuff) - str_ptr, "%s\t", tmp.i_gname);
-					str_ptr += offset;
+					printf("%s\t", tmp.i_gname);
+					//offset = snprintf(sendbuff + str_ptr, sizeof(sendbuff) - str_ptr, "%s\t", tmp.i_gname);
+					//str_ptr += offset;
 
-					//printf("%s\t", tmp.inode_file_size);
-					offset = snprintf(sendbuff + str_ptr, sizeof(sendbuff) - str_ptr, "%s\t", tmp.inode_file_size);
-					str_ptr += offset;
+					printf("%s\t", tmp.inode_file_size);
+					/*offset = snprintf(sendbuff + str_ptr, sizeof(sendbuff) - str_ptr, "%s\t", tmp.inode_file_size);
+					str_ptr += offset;*/
 
-					//printf("%s\t", ctime(&tmp.file_modified_time));
-					offset = snprintf(sendbuff + str_ptr, sizeof(sendbuff) - str_ptr, "%s\t", ctime(&tmp.file_modified_time));
-					str_ptr += offset;
+					printf("%s\t", ctime(&tmp.file_modified_time));
+					/*offset = snprintf(sendbuff + str_ptr, sizeof(sendbuff) - str_ptr, "%s\t", ctime(&tmp.file_modified_time));
+					str_ptr += offset;*/
 
-					//printf("%s\t", ditem[j].itemName);
-					offset = snprintf(sendbuff + str_ptr, sizeof(sendbuff) - str_ptr, "%s\t", ditem[j].itemName);
-					str_ptr += offset;
+					printf("%s\t", ditem[j].itemName);
+					/*offset = snprintf(sendbuff + str_ptr, sizeof(sendbuff) - str_ptr, "%s\t", ditem[j].itemName);
+					str_ptr += offset;*/
 
-					//printf("\n");
-					sendbuff[str_ptr++] = '\n';
+					printf("\n");
+					printf("到这里2\n");
+					/*sendbuff[str_ptr++] = '\n';*/
 
-					printf("here in ls func, send buff before send is %s", sendbuff);
-					send(client.client_sock, sendbuff, strlen(sendbuff), 0);
+					/*printf("here in ls func, send buff before send is %s", sendbuff);
+					send(client.client_sock, sendbuff, strlen(sendbuff), 0);*/
 				}
 			}
 			else
@@ -802,7 +806,7 @@ void ls(Client& client, char str[]) {//显示当前目录所有文件 ok
 					{
 						if ((strcmp(ditem[j].itemName, ".") == 0) || (strcmp(ditem[j].itemName, "..") == 0))
 							continue;
-						snprintf(client.buffer, BUF_SIZE, "%s\n", ditem[j].itemName);
+						snprintf(client.buffer, sizeof(client.buffer), "%s\n", ditem[j].itemName);
 						send(client.client_sock, client.buffer, strlen(client.buffer), 0);
 					}
 				}
@@ -1446,17 +1450,18 @@ bool chmod(Client& client, int PIAddr, char name[], int pmode,int type) {//修�
 	return false;
 }
 void cmd(Client& client, int count) {
-	char cmd[100] = "";
+	char cmd[BUF_SIZE] = "";
 	strcpy(cmd, client.buffer);
 	//cmd[strlen(cmd) - 1] = '\0'; // 删去换行符
-	printf("here cmd is %s", cmd);
-	globalize(client); // 切换文件系统工作指针
+	printf("here cmd is %s\n", cmd);
+	globalize(client); // 切换文件系统工作指针 -- 可以加锁，工作区域应该被设定为临界资源
 	char com1[100];
 	char com2[100];
 	char com3[100];
 	sscanf(cmd,"%s", com1);
 	if (strcmp(com1, "ls") == 0) {
 		sscanf(cmd, "%s%s", com1, com2);
+		//printf("Here com1 is %s, com2 is %s\n", com1, com2);
 		ls(client, com2);
 	}
 	else if (strcmp(com1, "help") == 0) {

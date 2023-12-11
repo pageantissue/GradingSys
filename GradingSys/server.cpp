@@ -5,7 +5,7 @@
 #include<cstdio>
 #include<cstdlib>
 #include<iostream>
-extern int count;
+extern int cnt;
 
 void Welcome(Client& client)
 {
@@ -129,7 +129,7 @@ void handleClient(Client& client)
         if (isLogin)
         {
             char* p;
-            count++;
+            cnt++;
             if ((p = strstr(client.Cur_Dir_Name, client.Cur_User_Dir_Name)) == NULL)	//当前是否在用户目录下
             {
                 char output_buffer[BUF_SIZE];
@@ -146,14 +146,15 @@ void handleClient(Client& client)
                 send(client_sock, output_buffer, strlen(output_buffer), 0);
             }
             // 准备接收用户输入
-            memset(client.buffer, 0, sizeof(client.buffer));
+            memset(client.buffer, '\0', sizeof(client.buffer));
             int len = recv(client_sock, client.buffer, sizeof(client.buffer), 0);
             if (strcmp(client.buffer, "exit\n") == 0 || len <= 0)
             {
                 printf("Client %d has logged out the system!\n", client_sock);
                 break;
             }
-            cmd(client, count);
+            printf("Recieved: %s\n", client.buffer);
+            cmd(client, cnt);
         }
         else
         {
