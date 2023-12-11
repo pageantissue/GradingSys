@@ -60,8 +60,8 @@ struct inode {		//不要动此处变量，刚好128B
 	unsigned short inode_file_count;				//文件夹里有多少文件
 	//unsigned short i_uid;					//文件所属用户id
 	//unsigned short i_gid;					//文件所属用户组id
-	char i_uname[20];						//文件所属用户
-	char i_gname[20];						//文件所属用户组
+	char i_uname[18];						//文件所属用户
+	char i_gname[18];						//文件所属用户组
 	unsigned int inode_file_size;					//文件大小是多少Byte（文件：Byte 目录：block）
 	time_t  inode_change_time;						//inode上一次变动的时间
 	time_t  dir_change_time;						//文件内容上一次变动的时间(针对dir)
@@ -69,6 +69,7 @@ struct inode {		//不要动此处变量，刚好128B
 	int i_dirBlock[10];						//10个直接块：总共能存储的大小是10*512B = 5120B = 5KB
 	int i_indirect_1;						//一级间接块
 	int i_indirect_2;						//二级间接块
+	bool snapshot;							//ture:是挂载的； false：非挂载
 };
 
 //文件目录
