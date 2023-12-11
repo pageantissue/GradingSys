@@ -67,7 +67,9 @@ int main()
     printf("Waiting for connection!\n");
     while (true)
     {
-        if (fork() == 0) {
+        if (fork() == 0)
+        {
+            // 子进程
             Client client;
             client.client_sock = accept(server_sock, (struct sockaddr*)&client.client_addr, &client.length);
             if (client.client_sock == -1)
@@ -75,15 +77,13 @@ int main()
                 perror("Connect Error");
                 return -1;
             }
-            printf("Connection Successful\n");
-            // 子进程
+            printf("Client %d Connected Successful\n", client.client_sock);
             close(server_sock); // 子进程关闭服务器监听
             Welcome(client);
             handleClient(client); // 处理客户端请求
-            close(client.client_sock); // 子进程处理完毕后关闭套接字
-            exit(0); // 子进程处理完毕后退出
+            close(client.client_sock); // 关闭套接字
+            exit(0); // 子进程退出
         }
-        // 父进程继续监听，不需要额外的处理
     }
     close(server_sock);//关闭服务器响应socket
     return 0;
