@@ -144,7 +144,7 @@ int main()
                 printf("[%s@%s ~%s]# ", Cur_Host_Name, Cur_User_Name, Cur_Dir_Name + strlen(Cur_User_Dir_Name));//[Linux@yhl ~/app]
             }
             gets(str);
-            printf("\n");
+           // printf("\n");
             cmd(str,0);
         }
         else {
