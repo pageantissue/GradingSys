@@ -767,7 +767,7 @@ void ls(Client& client, char str[]) {//显示当前目录所有文件 ok
 					printf("到这里1\n");
 
 					//printf("\t");
-					cout << "\t";
+					//cout << "\t";
 					//sendbuff[str_ptr++] = '\t';
 
 					printf("%s\t", tmp.i_uname);
