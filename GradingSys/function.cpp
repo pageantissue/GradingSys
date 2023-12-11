@@ -115,7 +115,7 @@ bool mkdir_func(int CurAddr, char* str) {//在任意目录下创建目录
 		return false;
 	}
 }
-bool mkfile_func(int CurAddr, char* str,char *buf) {//在任意目录下创建文件
+bool touch_func(int CurAddr, char* str,char *buf) {//在任意目录下创建文件
 	//绝对,相对,直接创建
 	char* p = strrchr(str, '/');
 	if (p == NULL) {	//直接创建
@@ -134,6 +134,61 @@ bool mkfile_func(int CurAddr, char* str,char *buf) {//在任意目录下创建文件
 		}
 		return false;
 	}
+}
+bool echo_func(int CurAddr, char* str, char* s_type,char* buf) {//在任意目录下创建or覆盖写入or追加
+	//判断类型 0：覆盖写入 1：追加
+	int type = -1;
+	if (strcmp(s_type, ">") == 0) {
+		type = 0;
+	}
+	else if (strcmp(s_type, ">>") == 0) {
+		type = 1;
+	}
+	else {
+		printf("echo输入格式错误，请输入正确格式!\n");
+		return false;
+	}
+
+	//寻找直接地址
+	char* p = strrchr(str, '/');
+	char name[File_Max_Size];
+	memset(name, '\0', sizeof(name));
+	if (p != NULL) {	//直接创建
+		p++;
+		strcpy(name, p);
+		*p = '\0';
+		if (cd_func(CurAddr, str) == false) {
+			return false;
+		}
+	}
+	else {
+		strcpy(name, str);
+	}
+
+	//类型执行
+	if (echo(Cur_Dir_Addr, name, type, buf))	return true;
+	return false;
+
+	//if (type == 0) {
+	//	if (mkfile(Cur_Dir_Addr, name, buf) == false) {
+	//		inode ino;
+	//		fseek(fr, Cur_Dir_Addr, SEEK_SET);
+	//		fread(&ino, sizeof(ino), 1, fr);
+	//		
+	//	}
+	//}
+	//else {
+	//	char name[File_Max_Size];
+	//	memset(name, '\0', sizeof(name));
+	//	p++;
+	//	strcpy(name, p);
+	//	*p = '\0';
+	//	if (cd_func(CurAddr, str)) {
+	//		if (mkfile(Cur_Dir_Addr, name, buf))
+	//			return true;
+	//	}
+	//	return false;
+	//}
 }
 bool rm_func(int CurAddr, char* str,char* s_type) {//在任意目录下删除
 	//文件类型
@@ -200,13 +255,16 @@ void cmd(char cmd_str[], int count) {
 	}
 	else if (strcmp(com1, "touch") == 0) {
 		sscanf(cmd_str, "%s%s", com1, com2);
-		mkfile_func(Cur_Dir_Addr, com2, "");
+		touch_func(Cur_Dir_Addr, com2, "");
 	}
 	else if (strcmp(com1, "echo") == 0) {
+		//注意文字里面不要有空格
 		sscanf(cmd_str, "%s%s%s%s", com1, com2,com3,com4);
-		//去掉括号
-		com2[-1] = '\0';
-		mkfile_func(Cur_Dir_Addr, com4,com2+1);
+		echo_func(Cur_Dir_Addr, com4,com3,com2);
+	}
+	else if (strcmp(com1, "cat") == 0) {
+		sscanf(cmd_str, "%s%s", com1, com2);
+		cat(Cur_Dir_Addr, com2);
 	}
 	//writefile&addfile需要改一下
 	//cat,chown
