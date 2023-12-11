@@ -90,11 +90,11 @@ extern const int Disk_Size;					//虚拟磁盘文件大小
 //全局变量声明
 extern char Cur_Host_Name[110];				//当前主机名
 extern int Root_Dir_Addr;					//根目录inode地址
-extern int Cur_Dir_Addr;					//当前目录
-extern char Cur_Dir_Name[310];				//当前目录名
-extern char Cur_User_Name[110];				//当前登陆用户名
-extern char Cur_Group_Name[110];			//当前登陆用户组名
-extern char Cur_User_Dir_Name[310];			//当前登陆用户目录名
+//extern int Cur_Dir_Addr;					//当前目录
+//extern char Cur_Dir_Name[310];				//当前目录名
+//extern char Cur_User_Name[110];				//当前登陆用户名
+//extern char Cur_Group_Name[110];			//当前登陆用户组名
+//extern char Cur_User_Dir_Name[310];			//当前登陆用户目录名
 
 extern int nextUID;							//下一个要分配的用户标识号
 extern int nextGID;							//下一个要分配的用户组标识号
@@ -110,6 +110,7 @@ extern bool block_bitmap[BLOCK_NUM];		//磁盘块位图
 extern char buffer[10000000];				//10M，缓存整个虚拟磁盘文件
 
 
+extern Client sys;							//系统初始化用对象
 extern FILE* bfw;							//备份文件 写文件指针
 extern FILE* bfr;							//备份文件 读文件指针
 

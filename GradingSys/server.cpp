@@ -5,8 +5,10 @@
 #include<cstdio>
 #include<cstdlib>
 #include<iostream>
+#include <mutex>
 
-extern int cnt;
+extern Client sys;
+std::mutex workPrt;
 
 void Welcome(Client& client)
 {
@@ -28,8 +30,8 @@ int Initialize()
         printf("Virtual disc file openned successfully!\n");
         //初始化变量
         isLogin = false;
-        strcpy(Cur_User_Name, "root");
-        strcpy(Cur_Group_Name, "root");
+        strcpy(sys.Cur_User_Name, "root");
+        strcpy(sys.Cur_Group_Name, "root");
 
         //获取主机名
         memset(Cur_Host_Name, 0, sizeof(Cur_Host_Name));
@@ -39,8 +41,8 @@ int Initialize()
         }
 
         Root_Dir_Addr = Inode_Start_Addr;
-        Cur_Dir_Addr = Root_Dir_Addr;
-        strcpy(Cur_Dir_Name, "/");
+        sys.Cur_Dir_Addr = Root_Dir_Addr;
+        strcpy(sys.Cur_Dir_Name, "/");
         printf("Formatting the file system...\n");
 
         //系统格式化
@@ -65,8 +67,8 @@ int Initialize()
         }
         //初始化变量
         isLogin = false;
-        strcpy(Cur_User_Name, "root");
-        strcpy(Cur_Group_Name, "root");
+        strcpy(sys.Cur_User_Name, "root");
+        strcpy(sys.Cur_Group_Name, "root");
 
         //获取主机名
         memset(Cur_Host_Name, 0, sizeof(Cur_Host_Name));
@@ -77,8 +79,8 @@ int Initialize()
 
         //获取根目录
         Root_Dir_Addr = Inode_Start_Addr;
-        Cur_Dir_Addr = Root_Dir_Addr;
-        strcpy(Cur_Dir_Name, "/");
+        sys.Cur_Dir_Addr = Root_Dir_Addr;
+        strcpy(sys.Cur_Dir_Name, "/");
 
         //是否需要格式化
         printf("Format the file system? [y/n]\n");
@@ -114,7 +116,11 @@ void localize(Client& client)
 
 void globalize(Client& client)
 {
-    // 全局变量局部化 
+    // 切换计算机指针位于当前用户
+    // 
+    // 在修改这三个数组之前锁定互斥锁
+    std::lock_guard<std::mutex> lock(workPrt);
+
     Cur_Dir_Addr = client.Cur_Dir_Addr;
     strcpy(Cur_Dir_Name, client.Cur_Dir_Name);
     strcpy(Cur_Group_Name, client.Cur_Group_Name);
@@ -125,12 +131,13 @@ void globalize(Client& client)
 void handleClient(Client& client)
 {
     int client_sock = client.client_sock;
+    int count = 0;  //记录操作次数
     while (1)
     {
-        if (isLogin)
+        if (client.islogin)
         {
             char* p;
-            cnt++;
+            count++;
             if ((p = strstr(client.Cur_Dir_Name, client.Cur_User_Dir_Name)) == NULL)	//当前是否在用户目录下
             {
                 char output_buffer[BUF_SIZE];
@@ -155,7 +162,8 @@ void handleClient(Client& client)
                 break;
             }
             printf("Recieved: %s\n", client.buffer);
-            cmd(client, cnt);
+            cmd(client, count);
+            count++;
         }
         else
         {
