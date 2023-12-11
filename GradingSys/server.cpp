@@ -7,8 +7,9 @@
 #include<iostream>
 #include <mutex>
 
-extern Client sys;
 std::mutex workPrt;
+char Cur_Host_Name[110];
+int Root_Dir_Addr;
 
 void Welcome(Client& client)
 {
@@ -113,29 +114,29 @@ bool ever_logging()
     return false;
 }
 
-void localize(Client& client)
-{
-    // 全局变量局部化 
-    client.Cur_Dir_Addr = sys.Cur_Dir_Addr;
-    strcpy(client.Cur_Dir_Name, sys.Cur_Dir_Name);
-    strcpy(client.Cur_Group_Name, sys.Cur_Group_Name);
-    strcpy(client.Cur_User_Dir_Name, sys.Cur_User_Dir_Name);
-    strcpy(client.Cur_User_Name, sys.Cur_User_Name);
-}
-
-void globalize(Client& client)
-{
-    // 切换计算机指针位于当前用户
-    // 
-    // 在修改这三个数组之前锁定互斥锁
-    std::lock_guard<std::mutex> lock(workPrt);
-
-    sys.Cur_Dir_Addr = client.Cur_Dir_Addr;
-    strcpy(sys.Cur_Dir_Name, client.Cur_Dir_Name);
-    strcpy(sys.Cur_Group_Name, client.Cur_Group_Name);
-    strcpy(sys.Cur_User_Dir_Name, client.Cur_User_Dir_Name);
-    strcpy(sys.Cur_User_Name, client.Cur_User_Name);
-}
+//void localize(Client& client)
+//{
+//    // 全局变量局部化 
+//    client.Cur_Dir_Addr = sys.Cur_Dir_Addr;
+//    strcpy(client.Cur_Dir_Name, sys.Cur_Dir_Name);
+//    strcpy(client.Cur_Group_Name, sys.Cur_Group_Name);
+//    strcpy(client.Cur_User_Dir_Name, sys.Cur_User_Dir_Name);
+//    strcpy(client.Cur_User_Name, sys.Cur_User_Name);
+//}
+//
+//void globalize(Client& client)
+//{
+//    // 切换计算机指针位于当前用户
+//    // 
+//    // 在修改这三个数组之前锁定互斥锁
+//    std::lock_guard<std::mutex> lock(workPrt);
+//
+//    sys.Cur_Dir_Addr = client.Cur_Dir_Addr;
+//    strcpy(sys.Cur_Dir_Name, client.Cur_Dir_Name);
+//    strcpy(sys.Cur_Group_Name, client.Cur_Group_Name);
+//    strcpy(sys.Cur_User_Dir_Name, client.Cur_User_Dir_Name);
+//    strcpy(sys.Cur_User_Name, client.Cur_User_Name);
+//}
 
 void handleClient(Client& client)
 {

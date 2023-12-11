@@ -112,7 +112,7 @@ extern char buffer[10000000];				//10M，缓存整个虚拟磁盘文件
 
 
 extern Client sys;							//系统初始化用对象
-extern std::vector<Client&> stdallClients;  //整个系统登录的用户
+extern std::vector<Client> allClients;  //整个系统登录的用户
 extern FILE* bfw;							//备份文件 写文件指针
 extern FILE* bfr;							//备份文件 读文件指针
 
@@ -130,6 +130,7 @@ bool addfile(Client&, inode fileinode, int iaddr, char buf[]);
 bool writefile(inode fileinode, int iaddr, char buf[]);
 void gotoRoot(Client&);
 void ls(Client& client, char str[]);
+bool cd(Client& client, int PIAddr, char name[]);
 
 //工具函数
 int ialloc();

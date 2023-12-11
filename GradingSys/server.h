@@ -29,9 +29,7 @@ struct Client //服务端客户
     char buffer[BUF_SIZE]; //缓存用户的输入
     struct sockaddr_in client_addr;//保存客户端地址信息
     socklen_t length = sizeof(client_addr);//需要的内存大小
-}sys;
-
-std::vector<Client&> allClients;
+};
 
 void Welcome(Client&);
 void handleClient(Client&);

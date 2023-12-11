@@ -5,7 +5,6 @@
 #include<string.h>
 #include<stdio.h>
 #include<iostream>
-
 using namespace std;
 
 void help(Client& client)
@@ -894,6 +893,7 @@ bool login(Client& client)	//登陆界面
 			if (strcmp(allClients[i].Cur_User_Name, client.Cur_User_Name) == 0)
 			{
 				flag = true; // 如果找到了
+				allClients[i] = client;
 				client.ptr = i;
 				break;
 			}
