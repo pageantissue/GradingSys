@@ -11,7 +11,7 @@
 #include<vector>
 #include<cstdlib>
 
-#define MY_PORT 6591//端口号
+#define MY_PORT 66591//端口号
 #define BUF_SIZE 1024//最大缓存
 #define MAX_QUEUE_NUM 5//最大连接数
 
