@@ -855,11 +855,14 @@ void bfree(int baddr) {
 void inUsername(Client& client, char* username)	//输入用户名
 {
 	char tosend[] = "username: ";
-	printf("here\n");
+	printf("here1\n");
 	send(client.client_sock, tosend, strlen(tosend), 0);
+	printf("here2\n");
 	memset(client.buffer, '\0', sizeof(client.buffer));
 	recv(client.client_sock, client.buffer, sizeof(client.buffer), 0);
+	printf("here3\n");
 	strcpy(username, client.buffer);	//用户名
+	printf("here4\n");
 }
  
 void inPasswd(Client& client, char* passwd)	//输入密码
@@ -885,8 +888,10 @@ bool login(Client& client)	//登陆界面
 	//fseek(fr,143872, SEEK_SET);
 	//fread(ditem, sizeof(ditem), 1, fr);
 	printf("Client sock %d is trying logging...\n", client.client_sock);
-	char username[100] = { 0 };
-	char passwd[100] = { 0 };
+	char username[100];
+	char passwd[100];
+	memset(username, '\0', sizeof(username));
+	memset(passwd, '\0', sizeof(passwd));
 	inUsername(client, username);	//输入用户名
 	inPasswd(client, passwd);		//输入用户密码
 	if (check(client, username, passwd)){  //核对用户名和密码
