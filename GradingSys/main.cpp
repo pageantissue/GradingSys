@@ -78,7 +78,7 @@ int main()
                 return -1;
             }
             printf("Client %d Connected Successful\n", client.client_sock);
-            close(server_sock); // 子进程关闭服务器监听
+            //close(server_sock); // 子进程关闭服务器监听
             Welcome(client);
             handleClient(client); // 处理客户端请求
             close(client.client_sock); // 关闭套接字

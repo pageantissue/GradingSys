@@ -855,30 +855,26 @@ void bfree(int baddr) {
 void inUsername(Client& client, char* username)	//输入用户名
 {
 	char tosend[] = "username:";
-	printf("here1\n");
-	send(client.client_sock, tosend, strlen(tosend), 0);
-	printf("here2\n");
+	auto i = send(client.client_sock, tosend, strlen(tosend), 0);
 	memset(client.buffer, '\0', sizeof(client.buffer));
-	recv(client.client_sock, client.buffer, sizeof(client.buffer), 0);
-	printf("here3\n");
+	i = recv(client.client_sock, client.buffer, sizeof(client.buffer), 0);
 	strcpy(username, client.buffer);	//用户名
-	printf("here4\n");
 }
  
 void inPasswd(Client& client, char* passwd)	//输入密码
 {
 	char tosend[] = "password:";
-	send(client.client_sock, tosend, strlen(tosend), 0);
+	auto i = send(client.client_sock, tosend, strlen(tosend), 0);
 	memset(client.buffer, '\0', sizeof(client.buffer));
-	recv(client.client_sock, client.buffer, sizeof(client.buffer), 0);
+	i = recv(client.client_sock, client.buffer, sizeof(client.buffer), 0);
 	strcpy(passwd, client.buffer);
 }
 
 void ingroup(Client& client, char* group) {
 	char tosend[] = "group (root;teacher;student): ";
-	send(client.client_sock, tosend, strlen(tosend), 0);
+	auto i = send(client.client_sock, tosend, strlen(tosend), 0);
 	memset(client.buffer, '\0', sizeof(client.buffer));
-	recv(client.client_sock, client.buffer, sizeof(client.buffer), 0);
+	i = recv(client.client_sock, client.buffer, sizeof(client.buffer), 0);
 	strcpy(group, client.buffer);
 }
 
