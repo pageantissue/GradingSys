@@ -854,7 +854,7 @@ void bfree(int baddr) {
 //****用户&用户组函数****
 void inUsername(Client& client, char* username)	//输入用户名
 {
-	char tosend[] = "username: ";
+	char tosend[] = "username:";
 	printf("here1\n");
 	send(client.client_sock, tosend, strlen(tosend), 0);
 	printf("here2\n");
@@ -867,7 +867,7 @@ void inUsername(Client& client, char* username)	//输入用户名
  
 void inPasswd(Client& client, char* passwd)	//输入密码
 {
-	char tosend[] = "password: ";
+	char tosend[] = "password:";
 	send(client.client_sock, tosend, strlen(tosend), 0);
 	memset(client.buffer, '\0', sizeof(client.buffer));
 	recv(client.client_sock, client.buffer, sizeof(client.buffer), 0);
