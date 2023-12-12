@@ -855,6 +855,7 @@ void bfree(int baddr) {
 void inUsername(Client& client, char* username)	//输入用户名
 {
 	char tosend[] = "username: ";
+	printf("here\n");
 	send(client.client_sock, tosend, strlen(tosend), 0);
 	memset(client.buffer, '\0', sizeof(client.buffer));
 	recv(client.client_sock, client.buffer, sizeof(client.buffer), 0);
