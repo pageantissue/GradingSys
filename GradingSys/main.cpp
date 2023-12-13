@@ -1,10 +1,15 @@
-#include <cstdio>
+#include<cstdio>
 #include<cstdlib>
-#include <iostream>
+#include<iostream>
 #include"os.h"
 #include<limits>
 #include<unistd.h>
 #include"server.h"
+#include<sys/wait.h>
+#include<sys/types.h>
+#include<sys/socket.h>
+#include<netinet/in.h>
+#include<arpa/inet.h>
 
 const int Superblock_Start_Addr=0;     //44B:1block
 const int InodeBitmap_Start_Addr = 1 * BLOCK_SIZE; //1024B:2block
@@ -85,6 +90,7 @@ int main()
             exit(0); // 子进程退出
         }
     }
+    wait(NULL); // 等待子进程退出
     close(server_sock);//关闭服务器响应socket
     return 0;
 }

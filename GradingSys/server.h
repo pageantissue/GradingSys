@@ -11,29 +11,29 @@
 #include<vector>
 #include<cstdlib>
 
-#define MY_PORT 6591//¶Ë¿ÚºÅ
-#define BUF_SIZE 1024//×î´ó»º´æ
-#define MAX_QUEUE_NUM 5//×î´óÁ¬½ÓÊı
+#define MY_PORT 6591//ï¿½Ë¿Úºï¿½
+#define BUF_SIZE 1024//ï¿½ï¿½ó»º´ï¿½
+#define MAX_QUEUE_NUM 5//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
-struct Client //·şÎñ¶Ë¿Í»§
+struct Client //ï¿½ï¿½ï¿½ï¿½Ë¿Í»ï¿½
 {
     int client_sock;
-    int ptr = -1;                                    //µ±Ç°ÓÃ»§ÔÚËùÓĞÓÃ»§µÇÂ½Êı×éµÄÏÂ±ê
-    bool islogin;                               //µ±Ç°ÓÃ»§ÊÇ·ñµÇÂ¼
-    int Cur_Dir_Addr;							//µ±Ç°Ä¿Â¼:´æinodeµØÖ·
-    char Cur_Dir_Name[310];						//µ±Ç°Ä¿Â¼Ãû
-    char Cur_User_Name[110];					//µ±Ç°µÇÂ½ÓÃ»§Ãû
-    char Cur_Group_Name[110];					//µ±Ç°µÇÂ½ÓÃ»§×éÃû
-    char Cur_User_Dir_Name[310];				//µ±Ç°µÇÂ½ÓÃ»§Ä¿Â¼Ãû
+    int ptr = -1;
+    bool islogin;      
+    int Cur_Dir_Addr;
+    char Cur_Dir_Name[310];
+    char Cur_User_Name[110];
+    char Cur_Group_Name[110];
+    char Cur_User_Dir_Name[310];
 
-    char buffer[BUF_SIZE]; //»º´æÓÃ»§µÄÊäÈë
-    struct sockaddr_in client_addr;//±£´æ¿Í»§¶ËµØÖ·ĞÅÏ¢
-    socklen_t length = sizeof(client_addr);//ĞèÒªµÄÄÚ´æ´óĞ¡
+    char buffer[BUF_SIZE];
+    struct sockaddr_in client_addr;
+    socklen_t length = sizeof(client_addr);
 };
 
 void Welcome(Client&);
 void handleClient(Client&);
-void localize(Client&); //¹Ø¼ü±äÁ¿¾Ö²¿»¯
+void localize(Client&);
 void globalize(Client&);
 int Initialize();
 bool ever_logging();
