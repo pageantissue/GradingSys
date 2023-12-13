@@ -158,8 +158,13 @@ bool recovery() {
 	DIR* dir;
 	struct dirent* ent;
 	if ((dir = opendir("./")) != NULL) {
+		
 		while ((ent = readdir(dir)) != NULL) {
-			cout << ent->d_name<<"  " << endl;
+			if (strcmp(ent->d_name, "Full") == 0) {
+				//打开文件
+
+			}
+			//cout << ent->d_name<<"  " << endl;
 
 		}
 	}

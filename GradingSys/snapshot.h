@@ -31,6 +31,7 @@ extern time_t last_backup_time;
 extern FILE* bfw;							//备份文件 写文件指针
 extern FILE* bfr;							//备份文件 读文件指针
 
+
 extern const int Backup_Start_Addr;
 extern const int Backup_Cur_Addr;			//备份文件系统当前地址
 extern const int Backup_Block_Start_Addr;

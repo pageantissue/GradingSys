@@ -2019,4 +2019,3 @@ bool passwd(char username[],char pwd[]) {
 	return true;
 }
 
-}
