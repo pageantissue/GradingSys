@@ -6,7 +6,9 @@
 #include<cstdio>
 #include<mutex>
 using namespace std;
+
 Client sys;
+std::vector<Client> allClients;
 
 void Welcome(Client& client)
 {
