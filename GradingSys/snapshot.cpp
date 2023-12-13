@@ -50,6 +50,11 @@ bool fullBackup() {
 		printf("%s\n", e.what());
 		return false;
 	}
+	//清除位图标记
+	char tmp_inodeBitmap[INODE_NUM];
+	for (int i = 0; i < INODE_NUM; i++) {
+		tmp_inodeBitmap[i] = 0;
+	}
 	return true;
 }
 
