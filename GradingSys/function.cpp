@@ -235,8 +235,7 @@ void cmd(Client& client)
 	strcpy(cmd_str, client.buffer);
 	sscanf(cmd_str, "%s", com1);
 	sscanf(cmd_str, "%s", com1);
-	// Lock the file pointer before execute the cammand which refers to critical rescources
-	lock_guard<std::mutex> lock(workPrt);
+
 	//一级传来com1和com2
 	if (strcmp(com1, "help") == 0) {
 		help(client);

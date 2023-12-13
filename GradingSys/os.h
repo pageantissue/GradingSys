@@ -134,6 +134,8 @@ int ialloc();
 void ifree(int iaddr);
 int balloc();
 void bfree(int baddr);
+void safeFseek(FILE* file, long offset, int origin);
+size_t safeFwrite(const void* ptr, size_t size, size_t count, FILE* file);
 bool recursive_rmdir(Client&, int CHIAddr, char name[]);
 bool recursive_rmfile(Client&, int CHIAddr, char name[]);
 
