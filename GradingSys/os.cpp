@@ -5,10 +5,12 @@
 #include<string.h>
 #include<stdio.h>
 #include<iostream>
+#include<mutex>
 using namespace std;
 
 Client sys;
 std::vector<Client> allClients;
+std::mutex workPrt;
 
 void help(Client& client)
 {
@@ -1454,13 +1456,19 @@ bool chmod(Client& client, int PIAddr, char name[], int pmode,int type) {//修�
 	send(client.client_sock, ms, strlen(ms), 0);
 	return false;
 }
-void cmd(Client& client, int count) {
+void cmd(Client& client, int count)
+{
+
 	char com1[100];
 	char com2[100];
 	char com3[100];
 	char cmd[BUF_SIZE] = "";
 	strcpy(cmd, client.buffer);
 	sscanf(cmd,"%s", com1);
+
+	// Lock the file pointer before execute the cammand which refers to critical rescources
+	lock_guard<std::mutex> lock(workPrt);
+
 	if (strcmp(com1, "ls") == 0) {
 		sscanf(cmd, "%s%s", com1, com2);
 		ls(client, com2);
@@ -1511,7 +1519,8 @@ void cmd(Client& client, int count) {
 	else if(strcmp(com1,"logout")==0){
 		logout(client);
 	}
-	else if (strcmp(com1, "format") == 0) {
+	else if (strcmp(com1, "format") == 0)
+	{
 		if (strcmp(client.Cur_User_Name, "root") != 0) {
 			//cout << "您的权限不足" << endl;
 			char ms[] = "You have no permission!\n";
@@ -1525,6 +1534,7 @@ void cmd(Client& client, int count) {
 		send(client.client_sock, ms, strlen(ms), 0);
 		exit(0);
 	}
+	// mutex would be automatically unlocked and released after the cmd function returned.
 	return;                             
 }
 
