@@ -2015,5 +2015,3 @@ bool passwd(char username[],char pwd[]) {
 	strcmp(Cur_Dir_Name, pro_cur_dir_name);
 	return true;
 }
-
-}
