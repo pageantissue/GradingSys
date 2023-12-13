@@ -779,7 +779,7 @@ void ls(Client& client, char str[]) {//显示当前目录所有文件 ok
 
 					//printf("%s\t", tmp.inode_file_size);
                     char* new_buff3;
-                    sprintf(new_buff3, "%d",tmp.inode_file_size);
+                    sprintf(new_buff3, "%d\t",tmp.inode_file_size);
 
 					//printf("%s\t", ctime(&tmp.file_modified_time));
                     char* new_buff4  = send_init(ctime(&tmp.file_modified_time));
