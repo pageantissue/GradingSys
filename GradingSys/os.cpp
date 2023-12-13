@@ -810,15 +810,6 @@ void gotoRoot(Client& client) { //ok
 	strcpy(client.Cur_Dir_Name , "/");
 }
 
-char* send_init(char* to_send)
-{
-	size_t new_length = strlen(to_send) + 1 + 1;
-	char* new_buff = (char*)malloc(new_length);
-	strcpy(new_buff, to_send);
-	new_buff[strlen(to_send)] = '\t';
-	return new_buff;
-}
-
 void ls(Client& client, char str[]) {//显示当前目录所有文件 ok
 	inode ino;
 	fseek(fr, client.Cur_Dir_Addr, SEEK_SET);
@@ -846,9 +837,9 @@ void ls(Client& client, char str[]) {//显示当前目录所有文件 ok
 		if (ino.i_dirBlock[i] != -1) {//被使用过
 			fseek(fr, ino.i_dirBlock[i], SEEK_SET);
 			fread(ditem, sizeof(ditem), 1, fr);
-			if (strcmp(str, "-l") == 0) {
+			if (strcmp(str, "-l") == 0) 
+			{
 				//取出目录项的inode
-				
 				for (int j = 0; j < DirItem_Size; j++)
 				{
 					char to_send[BUF_SIZE];
@@ -902,30 +893,34 @@ void ls(Client& client, char str[]) {//显示当前目录所有文件 ok
 					to_send[ptr++] = '\t';
 
 					//printf("%s\t", tmp.i_uname);
-					char* new_buff1 = send_init(tmp.i_uname);
+					char new_buff1[1024];
+					sprintf(new_buff1,"%s\t", tmp.i_uname);
 
 					//printf("%s\t", tmp.i_gname);
-					char* new_buff2 = send_init(tmp.i_gname);
+					char new_buff2[1024];
+					sprintf(new_buff2, "%s\t", tmp.i_gname);
 
 					//printf("%s\t", tmp.inode_file_size);
 					/*char* new_buff3;
 					sprintf(new_buff3, "%d\t", tmp.inode_file_size);*/
 
 					//printf("%s\t", ctime(&tmp.file_modified_time));
-					char* new_buff4 = send_init(ctime(&tmp.file_modified_time));
+					char time_str[26];
+					strcpy(time_str, ctime(&tmp.file_modified_time));
+					char new_buff4[30];
+					sprintf(new_buff4, "%s\t", time_str);
 
 					//printf("%s\t", ditem[j].itemName);
-					char* new_buff5 = send_init(ditem[j].itemName);
+					char new_buff5[1024];
+					sprintf(new_buff5, "%s\n", ditem[j].itemName);
 
 					//printf("\n");
-					char newline[] = "\n";
 					send(client.client_sock, to_send, strlen(to_send), 0);
 					send(client.client_sock, new_buff1, strlen(new_buff1), 0);
 					send(client.client_sock, new_buff2, strlen(new_buff2), 0);
 					//send(client.client_sock, new_buff3, strlen(new_buff3), 0);
 					send(client.client_sock, new_buff4, strlen(new_buff4), 0);
-					send(client.client_sock, new_buff5, strlen(new_buff5), 0);
-					send(client.client_sock, newline, strlen(newline), 0);
+;					send(client.client_sock, new_buff5, strlen(new_buff5), 0);
 
 				}
 			}
