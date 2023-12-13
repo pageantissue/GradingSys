@@ -252,6 +252,27 @@ bool chown_func(int CurAddr, char* u_g, char* str) {
 	if (chown(CurAddr,file,name,group))	return true;
 	return false;
 }
+bool passwd_func(char* username) {
+	if ((strcmp(Cur_Group_Name, "root") != 0) && (strlen(username) != 0)) {
+		printf("普通用户无法修改其他用户密码\n");
+		return false;
+	}
+
+	char pwd[100];
+	printf("Changing password for user %s\n", Cur_User_Name);
+	printf("New password: ");
+	gets(pwd);
+	char re_pwd[100];
+	printf("Retype new password:");
+	gets(re_pwd);
+
+	if (strcmp(pwd, re_pwd) == 0) {
+		if (passwd(username, pwd) == 0) {
+			return true;
+		}
+	}
+	return false;
+}
 
 void cmd(char cmd_str[]) {
 	char com1[100];
@@ -315,11 +336,27 @@ void cmd(char cmd_str[]) {
 			return;
 		}
 		inPasswd(passwd);
-		useradd(user, group, passwd);
+		useradd(user,passwd,group);
 	}
 	else if (strcmp(com1, "userdel") == 0) {
 		sscanf(cmd_str, "%s%s", com1, com2);
 		userdel(com2);
+	}
+	else if (strcmp(com1, "groupadd") == 0) {
+		sscanf(cmd_str, "%s%s", com1, com2);
+		groupadd(com2);
+	}
+	else if (strcmp(com1, "groupdel") == 0) {
+		sscanf(cmd_str, "%s%s", com1, com2);
+		groupdel(com2);
+	}
+	else if (strcmp(com1, "passwd") == 0) {
+		if (sscanf(cmd_str, "%s%s", com1, com2) == 1) {
+			passwd_func("");
+		}
+		else {
+			passwd_func(com2);
+		}
 	}
 	else if (strcmp(com1, "logout") == 0) {
 		logout();
