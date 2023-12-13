@@ -11,11 +11,11 @@
 #include<vector>
 #include<cstdlib>
 
-#define MY_PORT 6591//�˿ں�
-#define BUF_SIZE 1024//��󻺴�
-#define MAX_QUEUE_NUM 5//���������
+#define MY_PORT 6591
+#define BUF_SIZE 1024
+#define MAX_QUEUE_NUM 5
 
-struct Client //����˿ͻ�
+struct Client
 {
     int client_sock;
     int ptr = -1;

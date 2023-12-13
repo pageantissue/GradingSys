@@ -702,13 +702,18 @@ void ls(Client& client, char str[]) {//显示当前目录所有文件 ok
 	
 	for (int i = 0; i < 10; ++i) {
 		DirItem ditem[DirItem_Size];
-		if (ino.i_dirBlock[i] != -1) {//被使用过
+		if (ino.i_dirBlock[i] != -1)
+		{//被使用过
 			fseek(fr, ino.i_dirBlock[i], SEEK_SET);
 			fread(ditem, sizeof(ditem), 1, fr);
-			if (strcmp(str, "-l") == 0) {
+			if (strcmp(str, "-l") == 0) 
+			{
 				//取出目录项的inode
-				
-				for (int j = 0; j < DirItem_Size; j++) {
+				char tosend[BUF_SIZE];
+				memset(tosend, '\0', BUFSIZ);
+				int ptr = 0;
+				for (int j = 0; j < DirItem_Size; j++)
+				{
 					inode tmp;
 					fseek(fr, ditem[j].inodeAddr, SEEK_SET);
 					fread(&tmp, sizeof(inode), 1, fr);
@@ -719,10 +724,12 @@ void ls(Client& client, char str[]) {//显示当前目录所有文件 ok
 					}
 
 					if (((tmp.inode_mode >> 9) & 1) == 1) {
-						printf("d");
+						//printf("d");
+						tosend[ptr++] = 'd';
 					}
 					else {
-						printf("-");
+						//printf("-");
+						tosend[ptr++] = '-';
 					}
 					
 					//权限
@@ -732,35 +739,61 @@ void ls(Client& client, char str[]) {//显示当前目录所有文件 ok
 							int mod = count % 3;
 							switch (mod) {
 							case 0:
-								printf("x");
+								//printf("x");
+								tosend[ptr++] = 'x';
 								break;
 							case 1:
-								printf("w");
+								//printf("w");
+								tosend[ptr++] = 'w';
 								break;
 							case 2:
-								printf("r");
+								//printf("r");
+								tosend[ptr++] = 'r';
 								break;
 							default:
-								printf("-");
+								//printf("-");
+								tosend[ptr++] = '-';
 							}
 						}
 						count--;
 					}
-					printf("\t");
-					printf("%s\t", tmp.i_uname);
-					printf("%s\t", tmp.i_gname);
+					//printf("\t");
+					tosend[ptr++] = '\t';
+
+					//printf("%s\t", tmp.i_uname);
+					int bytesWritten = snprintf(tosend + ptr, sizeof(tosend) - ptr, "%s\t", tmp.i_uname);
+					ptr += bytesWritten;
+
+					//printf("%s\t", tmp.i_gname);
+					int bytesWritten = snprintf(tosend + ptr, sizeof(tosend) - ptr, "%s\t", tmp.i_gname);
+					ptr += bytesWritten;
+
 					//printf("%s\t", tmp.inode_file_size);
-					printf("%s\t", ctime(&tmp.file_modified_time));
-					printf("%s\t", ditem[j].itemName);
-					printf("\n");
+					int bytesWritten = snprintf(tosend + ptr, sizeof(tosend) - ptr, "%s\t", tmp.inode_file_size);
+					ptr += bytesWritten;
+
+					//printf("%s\t", ctime(&tmp.file_modified_time));
+					int bytesWritten = snprintf(tosend + ptr, sizeof(tosend) - ptr, "%s\t", ctime(&tmp.file_modified_time));
+
+					//printf("%s\t", ditem[j].itemName);
+					int bytesWritten = snprintf(tosend + ptr, sizeof(tosend) - ptr, "%s\t", ditem[j].itemName);
+					ptr += bytesWritten;
+
+					//printf("\n");
+					tosend[ptr++] = '\n';
+					printf("Here!!! ls -l send buffer is %s", tosend);
+					send(client.client_sock, tosend, strlen(tosend), 0);
 				}
 			}
 			else {
 					for (int j = 0; j < DirItem_Size; ++j) {
-						if (strlen(ditem[j].itemName) != 0) {
+						if (strlen(ditem[j].itemName) != 0)
+						{
+							char tosend[BUF_SIZE]; memset(tosend, '\0', BUF_SIZE);
 							if ((strcmp(ditem[j].itemName, ".") == 0) || (strcmp(ditem[j].itemName, "..") == 0))
 								continue;
-							printf("%s\n", ditem[j].itemName);
+							sprintf(tosend, "%s\n", ditem[j].itemName);
+							send(client.client_sock, tosend, strlen(tosend), 0);
 						}
 					}
 			}
@@ -900,6 +933,7 @@ bool login(Client& client)	//登陆界面
 				flag = true; // 如果找到了
 				allClients[i] = client;
 				client.ptr = i;
+				printf("Client %d has logged into our system!\n");
 				break;
 			}
 		if (!flag) // 如果没有找到
