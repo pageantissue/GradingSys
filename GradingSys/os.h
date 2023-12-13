@@ -3,6 +3,7 @@
 #include<stdio.h>
 #include<time.h>
 #include<string.h>
+#include"server.h"
 #include"function.h"
 
 
@@ -92,11 +93,6 @@ extern const int Disk_Size;					//虚拟磁盘文件大小
 //全局变量声明
 extern char Cur_Host_Name[110];				//当前主机名
 extern int Root_Dir_Addr;					//根目录inode地址
-extern int Cur_Dir_Addr;					//当前目录
-extern char Cur_Dir_Name[310];				//当前目录名
-extern char Cur_User_Name[110];				//当前登陆用户名
-extern char Cur_Group_Name[110];			//当前登陆用户组名
-extern char Cur_User_Dir_Name[310];			//当前登陆用户目录名
 
 extern int nextUID;							//下一个要分配的用户标识号
 extern int nextGID;							//下一个要分配的用户组标识号
@@ -110,49 +106,48 @@ extern bool inode_bitmap[INODE_NUM];		//inode位图
 extern bool block_bitmap[BLOCK_NUM];		//磁盘块位图
 
 extern char buffer[10000000];				//10M，缓存整个虚拟磁盘文件
-
+extern Client sys;							//系统初始化用对象
+extern std::vector<Client> allClients;      //整个系统登录的用户
 
 
 
 
 //大类函数
-bool Format(int count);								//文件系统格式化
+bool Format();								//文件系统格式化
 bool Install();								//安装文件系统
-bool mkdir(int PIAddr, char name[],int count);
-bool mkdir(int PIAddr, char name[]);
-bool mkfile(int PIAddr, char name[], char buf[]);
-bool rm(int PIAddr, char name[],int type);
-bool addfile(inode fileinode, int CHIaddr, char buf[]);
-bool writefile(inode fileinode, int CHIaddr, char buf[]);
-bool echo(int PIAddr, char name[], int type, char* buf);
-bool chmod(int PIAddr, char name[], char* pmode);
-bool cd(int PIAddr, char str[]);
-void gotoRoot();
-void ls(char str[]);
+bool mkdir(Client&, int PIAddr, char name[]);
+bool mkfile(Client&, int PIAddr, char name[], char buf[]);
+bool rm(Client&, int PIAddr, char name[],int type);
+bool addfile(Client&, inode fileinode, int CHIaddr, char buf[]);
+bool writefile(Client&, inode fileinode, int CHIaddr, char buf[]);
+bool echo(Client&, int PIAddr, char name[], int type, char* buf);
+bool chmod(Client&, int PIAddr, char name[], char* pmode);
+bool cd(Client&, int PIAddr, char str[]);
+void gotoRoot(Client&);
+void ls(Client&, char str[]);
 
-bool cat(int PIAddr, char name[]);
-bool chown(int PIAddr, char* pmode, char name[], char group[]);
+bool cat(Client&, int PIAddr, char name[]);
+bool chown(Client&, int PIAddr, char* pmode, char name[], char group[]);
 
 //工具函数
 int ialloc();
 void ifree(int iaddr);
 int balloc();
 void bfree(int baddr);
-bool recursive_rmdir(int CHIAddr, char name[]);
-bool recursive_rmfile(int CHIAddr, char name[]);
+bool recursive_rmdir(Client&, int CHIAddr, char name[]);
+bool recursive_rmfile(Client&, int CHIAddr, char name[]);
 
 //用户&用户组函数
-void inUsername(char* username);							//输入用户名
-void inPasswd(char* passwd);
-void ingroup(char* group);
-bool login();	
-bool logout();
-bool useradd(char username[], char passwd[], char group[]);
-bool userdel(char username[]);
-bool check(char username[], char passwd[]);	//账号&密码
+void inUsername(Client&, char* username);							//输入用户名
+void inPasswd(Client&, char* passwd);
+void ingroup(Client&, char* group);
+bool login(Client&);
+bool logout(Client&);
+bool useradd(Client&, char username[], char passwd[], char group[]);
+bool userdel(Client&, char username[]);
+bool check(Client&, char username[], char passwd[]);	//账号&密码
 //bool check_group(char name[], char s_group[]);//账号&组别
-
-
+bool ever_logging();												//判断系统是否还有用户处于登陆状态
 //bool groupadd(char gname[]);
 //bool groupdel(char gname[]);
 //bool passwd();

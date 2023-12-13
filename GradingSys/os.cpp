@@ -1,16 +1,16 @@
 #include"os.h"
-#include<iomanip>
-#include<time.h>
-#include<string.h>
-#include<stdio.h>
-#include<iostream>
+#include"server.h"
+#include<ctime>
+#include<cstring>
+#include<cstdio>
+#include<mutex>
 #include"snapshot.h"
 
 using namespace std;
 
 
 //****大类函数****
-bool Format(int count) { //ok
+bool Format() { //ok
 	//初始化:超级块,位图
 	char buffer[Disk_Size];
 	memset(buffer, '\0', sizeof(buffer));
@@ -80,34 +80,34 @@ bool Format(int count) { //ok
 
 	fflush(fw);
 	//创建目录及配置文件
-	mkdir(Cur_Dir_Addr, "home");
-	cd(Cur_Dir_Addr, "home");
-	mkdir(Cur_Dir_Addr, "root");
+	mkdir(sys, sys.Cur_Dir_Addr, "home");
+	cd(sys, sys.Cur_Dir_Addr, "home");
+	mkdir(sys, sys.Cur_Dir_Addr, "root");
 
 
 	//DirItem gitem[DirItem_Size];
 	//fseek(fr, 143872, SEEK_SET);
 	//fread(gitem, sizeof(ditem), 1, fr);
 	
-	gotoRoot();
-	mkdir(Cur_Dir_Addr, "etc");
-	cd(Cur_Dir_Addr, "etc");
+	gotoRoot(sys);
+	mkdir(sys, sys.Cur_Dir_Addr, "etc");
+	cd(sys, sys.Cur_Dir_Addr, "etc");
 
 	char buf[1000] = { 0 };
 	sprintf(buf, "root:%d:%d\n", nextUID++, nextGID++);//root:uid-0,gid-0
-	mkfile(Cur_Dir_Addr, "passwd", buf);
+	mkfile(sys, sys.Cur_Dir_Addr, "passwd", buf);
 
 	char* pmode = "0400";//owner:可读
 	sprintf(buf, "root:root\n");
-	mkfile(Cur_Dir_Addr, "shadow", buf);
-	chmod(Cur_Dir_Addr, "shadow", pmode);
+	mkfile(sys, sys.Cur_Dir_Addr, "shadow", buf);
+	chmod(sys, sys.Cur_Dir_Addr, "shadow", pmode);
 
 	sprintf(buf, "root:%d:root\n", ROOT);
 	sprintf(buf + strlen(buf), "teacher:%d:\n", TEACHER);
 	sprintf(buf + strlen(buf), "student:%d:\n", STUDENT);
-	mkfile(Cur_Dir_Addr, "group", buf);
+	mkfile(sys, sys.Cur_Dir_Addr, "group", buf);
 	
-	gotoRoot();
+	gotoRoot(sys);
 	return true;
 }
 
@@ -127,10 +127,11 @@ bool Install() {	//安装文件系统 ok
 
 
 
-bool mkdir(int PIAddr, char name[]) {	//目录创建函数(父目录权限:读写执行)
-	//理论上Cur_Dir_Addr是系统分配的，应该是正确的
+bool mkdir(Client& client, int PIAddr, char name[]) {	//目录创建函数(父目录权限:读写执行)
+	//理论上client.Cur_Dir_Addr是系统分配的，应该是正确的
 	if (strlen(name) > FILE_NAME_MAX_SIZE) {
-		printf("文件名称超过最大长度\n");
+		char ms[] = "Your filename exceeds the max length supported!\n";
+		send(client.client_sock, ms, strlen(ms), 0);
 		return false;
 	}
 	//查找父目录的空位置
@@ -143,14 +144,15 @@ bool mkdir(int PIAddr, char name[]) {	//目录创建函数(父目录权限:读�
 
 	//判断身份
 	int role = 0;	//other 0
-	if (strcmp(Cur_Group_Name, parino.i_gname) == 0) {
+	if (strcmp(client.Cur_Group_Name, parino.i_gname) == 0) {
 		role = 3;	//group 3
 	}
-	if (strcmp(Cur_User_Name, parino.i_uname) == 0) {
+	if (strcmp(client.Cur_User_Name, parino.i_uname) == 0) {
 		role = 6;
 	}
-	if ((((parino.inode_mode >> role >> 1) & 1 == 0) )|| (strcmp(Cur_User_Name, "root") != 0)) { //可写
-		printf("权限不足，无法新建目录\n");
+	if ((((parino.inode_mode >> role >> 1) & 1 == 0)) && (strcmp(client.Cur_User_Name, "root") != 0)) {
+		char ms[] = "Permission denied, cannot create new directory.\n";
+		send(client.client_sock, ms, strlen(ms), 0);
 		return false;
 	}
 
@@ -190,7 +192,8 @@ bool mkdir(int PIAddr, char name[]) {	//目录创建函数(父目录权限:读�
 			}
 		}
 		if (empty_b == -1) {
-			printf("该目录已满，无法添加更多文件");
+			char ms[] = "Current folder is full, no more files can be added into!\n";
+			send(client.client_sock, ms, strlen(ms), 0);
 			return false;
 		}
 		int baddr = balloc();
@@ -198,7 +201,7 @@ bool mkdir(int PIAddr, char name[]) {	//目录创建函数(父目录权限:读�
 
 		parino.i_dirBlock[empty_b] = baddr;
 		parino.inode_file_size += BLOCK_SIZE;
-		fseek(fw, Cur_Dir_Addr, SEEK_SET);
+		fseek(fw, client.Cur_Dir_Addr, SEEK_SET);
 		fwrite(&parino, sizeof(parino), 1, fw);
 		fflush(fw);
 
@@ -240,8 +243,8 @@ bool mkdir(int PIAddr, char name[]) {	//目录创建函数(父目录权限:读�
 	chiino.inode_id = chiiaddr;
 	chiino.inode_mode = MODE_DIR | DIR_DEF_PERMISSION;
 	chiino.inode_file_count = 2; //"."和".."
-	strcpy(chiino.i_uname, Cur_User_Name);
-	strcpy(chiino.i_gname, Cur_Group_Name);
+	strcpy(chiino.i_uname, client.Cur_User_Name);
+	strcpy(chiino.i_gname, client.Cur_Group_Name);
 	chiino.inode_file_size = 1 * BLOCK_SIZE;
 	time(&chiino.inode_change_time);
 	time(&chiino.dir_change_time);
@@ -260,7 +263,7 @@ bool mkdir(int PIAddr, char name[]) {	//目录创建函数(父目录权限:读�
 	}
 	chiitem[0].inodeAddr = chiiaddr;
 	strcpy(chiitem[0].itemName, ".");
-	chiitem[1].inodeAddr = Cur_Dir_Addr;
+	chiitem[1].inodeAddr = client.Cur_Dir_Addr;
 	strcpy(chiitem[1].itemName, "..");
 	fseek(fw, chibaddr, SEEK_SET);
 	fwrite(chiitem, sizeof(chiitem), 1, fw);
@@ -271,10 +274,11 @@ bool mkdir(int PIAddr, char name[]) {	//目录创建函数(父目录权限:读�
 	return true;
 }
 
-bool mkfile(int PIAddr, char name[],char buf[]) {	//文件创建函数
-	//理论上Cur_Dir_Addr是系统分配的，应该是正确的
+bool mkfile(Client& client, int PIAddr, char name[],char buf[]) {	//文件创建函数
+	//理论上client.Cur_Dir_Addr是系统分配的，应该是正确的
 	if (strlen(name) > FILE_NAME_MAX_SIZE) {
-		printf("文件名称超过最大长度\n");
+		char ms[] = "Your filename exceeds the max length supported!\n";
+		send(client.client_sock, ms, strlen(ms), 0);
 		return false;
 	}
 
@@ -288,14 +292,15 @@ bool mkfile(int PIAddr, char name[],char buf[]) {	//文件创建函数
 
 	//判断身份
 	int role = 0;	//other 0
-	if (strcmp(Cur_Group_Name, parino.i_gname) == 0) {
+	if (strcmp(client.Cur_Group_Name, parino.i_gname) == 0) {
 		role = 3;	//group 3
 	}
-	if (strcmp(Cur_User_Name, parino.i_uname) == 0) {
+	if (strcmp(client.Cur_User_Name, parino.i_uname) == 0) {
 		role = 6;
 	}
-	if ((((parino.inode_mode >> role >> 1) & 1 == 0)) || (strcmp(Cur_User_Name, "root") != 0)) {
-		printf("权限不足，无法新建目录\n");
+	if ((((parino.inode_mode >> role >> 1) & 1 == 0)) || (strcmp(client.Cur_User_Name, "root") != 0)) {
+		char ms[] = "Permission denied (Not Previldged), cannot create new directory.\n";
+		send(client.client_sock, ms, strlen(ms), 0);
 		return false;
 	}
 	
@@ -311,7 +316,8 @@ bool mkfile(int PIAddr, char name[],char buf[]) {	//文件创建函数
 					dpos = j;
 				}
 				if (strcmp(ditem[j].itemName, name) == 0) {//判断：存在同名目录
-					printf("该目录下已包含同名目录或文件\n");
+					char ms[] = "Directory already exists!\n";
+					send(client.client_sock, ms, strlen(ms), 0);
 					return false;
 				}
 			}
@@ -327,7 +333,8 @@ bool mkfile(int PIAddr, char name[],char buf[]) {	//文件创建函数
 			}
 		}
 		if (empty_b == -1) {
-			printf("该目录已满，无法添加更多文件");
+			char ms[] = "Current folder is full, no more files can be added into!\n";
+			send(client.client_sock, ms, strlen(ms), 0);
 			return false;
 		}
 		int baddr = balloc();
@@ -335,7 +342,7 @@ bool mkfile(int PIAddr, char name[],char buf[]) {	//文件创建函数
 
 		parino.i_dirBlock[empty_b] = baddr;
 		parino.inode_file_size += BLOCK_SIZE;
-		fseek(fw, Cur_Dir_Addr, SEEK_SET);
+		fseek(fw, client.Cur_Dir_Addr, SEEK_SET);
 		fwrite(&parino, sizeof(parino), 1, fw);
 		fflush(fw);
 
@@ -375,8 +382,8 @@ bool mkfile(int PIAddr, char name[],char buf[]) {	//文件创建函数
 	chiino.inode_id = chiiaddr;
 	chiino.inode_mode = MODE_FILE | FILE_DEF_PERMISSION;
 	chiino.inode_file_count = 1; 
-	strcpy(chiino.i_uname, Cur_User_Name);
-	strcpy(chiino.i_gname, Cur_Group_Name);
+	strcpy(chiino.i_uname, client.Cur_User_Name);
+	strcpy(chiino.i_gname, client.Cur_Group_Name);
 	time(&chiino.inode_change_time);
 	time(&chiino.dir_change_time);
 	time(&chiino.file_modified_time);
@@ -393,7 +400,7 @@ bool mkfile(int PIAddr, char name[],char buf[]) {	//文件创建函数
 	fflush(fw);
 	return true;
 }
-bool rm(int PIAddr, char name[], int type) {	//删除文件or文件夹
+bool rm(Client& client, int PIAddr, char name[], int type) {	//删除文件or文件夹
 	//文件和目录不允许重名
 	inode ino;
 	fseek(fr, PIAddr, SEEK_SET);
@@ -407,8 +414,10 @@ bool rm(int PIAddr, char name[], int type) {	//删除文件or文件夹
 			for (int j = 0; j < DirItem_Size; ++j) {
 				if (strcmp(ditem[j].itemName, name) == 0) { //找到同名
 					if (type == 1) {//1:目录
-						if (recursive_rmdir(ditem[j].inodeAddr, name)) {	//成功删除
-							printf("已经成功删除目录及其子文件!\n");
+						if (recursive_rmdir(client, ditem[j].inodeAddr, name)) {	//成功删除
+							//printf("已经成功删除目录及其子文件!\n");
+							char ms[] = "Directory and all its inner files have been removed successfully!\n";
+							send(client.client_sock, ms, strlen(ms), 0);
 							strcpy(ditem[j].itemName, "");
 							ditem[j].inodeAddr = -1;
 							fseek(fw, ino.i_dirBlock[i], SEEK_SET);
@@ -420,8 +429,10 @@ bool rm(int PIAddr, char name[], int type) {	//删除文件or文件夹
 					}
 
 					if (type == 0) {	//0:文件
-						if (recursive_rmfile(ditem[j].inodeAddr, name)) {	//成功删除
-							printf("已经成功删除该文件!\n");
+						if (recursive_rmfile(client, ditem[j].inodeAddr, name)) {	//成功删除
+							//printf("已经成功删除该文件!\n")
+							char ms[] = "Successfully removed the file!\n";
+							send(client.client_sock, ms, strlen(ms), 0);
 							strcpy(ditem[j].itemName, "");
 							ditem[j].inodeAddr = -1;
 
@@ -462,13 +473,16 @@ bool rm(int PIAddr, char name[], int type) {	//删除文件or文件夹
 	fwrite(&ino, sizeof(ino), 1, fw);
 	return true;
 }
-bool recursive_rmdir(int CHIAddr, char name[]) {//删除当前目录(父亲block和inode处的记录没删，不能直接用！！）
+bool recursive_rmdir(Client& client, int CHIAddr, char name[]) {//删除当前目录(父亲block和inode处的记录没删，不能直接用！！）
 	if (strlen(name) > FILE_NAME_MAX_SIZE) {
-		printf("文件名称超过最大长度\n");
+		char ms[] = "Your filename exceeds the max length supported!\n";
+		send(client.client_sock, ms, strlen(ms), 0);
 		return false;
 	}
 	if ((strcmp(name, ".") == 0) || strcmp(name, "..") == 0 ){
-		printf("文件无法删除\n");
+		//printf("文件无法删除\n");
+		char ms[] = "Cannot delete the file!\n";
+		send(client.client_sock, ms, strlen(ms), 0);
 		return false;
 	}
 
@@ -478,14 +492,17 @@ bool recursive_rmdir(int CHIAddr, char name[]) {//删除当前目录(父亲block
 	fread(&ino, sizeof(inode), 1, fr);
 
 	int mode = 0;//other
-	if (strcmp(Cur_Group_Name, ino.i_gname) == 0) {//group
+	if (strcmp(client.Cur_Group_Name, ino.i_gname) == 0) {//group
 		mode = 3;
 	}
-	if (strcmp(Cur_User_Name, ino.i_uname) == 0) {//owner
+	if (strcmp(client.Cur_User_Name, ino.i_uname) == 0) {//owner
 		mode = 6;
 	}
-	if ((((ino.inode_mode >> mode >> 1) & 1) == 0) || (strcmp(Cur_User_Name, "root") != 0)) {//是否可写：2
-		printf("没有权限删除该文件夹\n");
+	if ((((ino.inode_mode >> mode >> 1) & 1) == 0) || (strcmp(client.Cur_User_Name, "root") != 0)) {//是否可写：2
+		//printf("没有权限删除该文件夹\n");
+		char ms[] = "No permission to delete this folder!\n";
+		send(client.client_sock, ms, strlen(ms), 0);
+		return false;
 		return false;
 	}
 
@@ -506,10 +523,10 @@ bool recursive_rmdir(int CHIAddr, char name[]) {//删除当前目录(父亲block
 					fseek(fr, ditem[j].inodeAddr, SEEK_SET);
 					fread(&chiino, sizeof(inode), 1, fr);
 					if ((chiino.inode_mode >> 9) & 1 == 1) {	//目录
-						recursive_rmdir(ditem[j].inodeAddr, ditem[j].itemName);
+						recursive_rmdir(client, ditem[j].inodeAddr, ditem[j].itemName);
 					}
 					else {										//文件
-						recursive_rmfile(ditem[j].inodeAddr, ditem[j].itemName);
+						recursive_rmfile(client, ditem[j].inodeAddr, ditem[j].itemName);
 					}
 				}
 				ditem[j].inodeAddr = -1;
@@ -526,9 +543,10 @@ bool recursive_rmdir(int CHIAddr, char name[]) {//删除当前目录(父亲block
 	ifree(CHIAddr);
 	return true;
 }
-bool recursive_rmfile(int CHIAddr, char name[]) {	//删除当前文件（父亲inode和block处的节点没删，不能直接用）
+bool recursive_rmfile(Client& client, int CHIAddr, char name[]) {	//删除当前文件（父亲inode和block处的节点没删，不能直接用）
 	if (strlen(name) > FILE_NAME_MAX_SIZE) {
-		printf("文件名称超过最大长度\n");
+		char ms[] = "Filename exceeds the max length supported!\n";
+		send(client.client_sock, ms, strlen(ms), 0);
 		return false;
 	}
 
@@ -538,14 +556,15 @@ bool recursive_rmfile(int CHIAddr, char name[]) {	//删除当前文件（父亲i
 	fread(&ino, sizeof(inode), 1, fr);
 
 	int mode = 0;//other
-	if (strcmp(Cur_Group_Name, ino.i_gname) == 0) {//group
+	if (strcmp(client.Cur_Group_Name, ino.i_gname) == 0) {//group
 		mode = 3;
 	}
-	if (strcmp(Cur_User_Name, ino.i_uname) == 0) {//owner
+	if (strcmp(client.Cur_User_Name, ino.i_uname) == 0) {//owner
 		mode = 6;
 	}
-	if ((((ino.inode_mode >> mode >> 1) & 1) == 0) || (strcmp(Cur_User_Name, "root") != 0)) {//是否可写：2
-		printf("没有权限删除该文件\n");
+	if ((((ino.inode_mode >> mode >> 1) & 1) == 0) || (strcmp(client.Cur_User_Name, "root") != 0)) {//是否可写：2
+		char ms[] = "No permission to delete this file!\n";
+		send(client.client_sock, ms, strlen(ms), 0);
 		return false;
 	}
 
@@ -562,7 +581,7 @@ bool recursive_rmfile(int CHIAddr, char name[]) {	//删除当前文件（父亲i
 	ifree(CHIAddr);
 	return true;
 }
-bool cat(int PIAddr, char name[]) {	//查看文件内容
+bool cat(Client& client, int PIAddr, char name[]) {	//查看文件内容
 	inode parino;
 	fseek(fr, PIAddr, SEEK_SET);
 	fread(&parino, sizeof(parino), 1, fr);
@@ -584,7 +603,11 @@ bool cat(int PIAddr, char name[]) {	//查看文件内容
 								char content[BLOCK_SIZE];
 								fseek(fr, chiino.i_dirBlock[k], SEEK_SET);
 								fread(content, sizeof(content), 1, fr);
-								printf("%s\n", content);
+								//printf("%s\n", content);
+								char sendbuff[strlen(content) + 1];
+								strcpy(sendbuff, content);
+								sendbuff[strlen(content)] = '\n';
+								send(client.client_sock, sendbuff, strlen(sendbuff), 0);
 							}	
 						}
 					}
@@ -594,11 +617,11 @@ bool cat(int PIAddr, char name[]) {	//查看文件内容
 	}
 	
 }
-bool echo(int PIAddr, char name[], int type, char* buf) {	//文件新增or重写or补全
+bool echo(Client& client, int PIAddr, char name[], int type, char* buf) {	//文件新增or重写or补全
 	buf += 1;
 	buf[strlen(buf) - 1] = '\0';
 	if (type == 0) {
-		if (mkfile(PIAddr, name, buf)) {
+		if (mkfile(client, PIAddr, name, buf)) {
 			return true;
 		}
 	}
@@ -627,7 +650,7 @@ bool echo(int PIAddr, char name[], int type, char* buf) {	//文件新增or重写
 						}
 						//1：追加
 						if (type == 1) {
-							if (addfile(chiino, ditem[j].inodeAddr, buf)) {
+							if (addfile(client, chiino, ditem[j].inodeAddr, buf)) {
 								return true;
 							}
 							else {
@@ -669,10 +692,12 @@ bool writefile(inode fileinode, int iaddr, char buf[]) { //文件写入
 	fwrite(&fileinode, sizeof(fileinode), 1, fw);
 	return true;
 }
-bool addfile(inode fileinode, int iaddr, char buf[]) { //文件续写ok
+bool addfile(Client& client, inode fileinode, int iaddr, char buf[]) { //文件续写ok
 	//前提：假设是按照block顺序存储
 	if ((fileinode.inode_file_size + strlen(buf)) > 10 * BLOCK_SIZE) {
-		printf("文件内存不足，无法继续添加内容\n");
+		//printf("文件内存不足，无法继续添加内容\n");
+		char ms[] = "Running out file storage, cannot add more content!\n";
+		send(client.client_sock, ms, strlen(ms), 0);
 		return false;
 	}
 
@@ -722,7 +747,7 @@ bool addfile(inode fileinode, int iaddr, char buf[]) { //文件续写ok
 	fflush(fw);
 	return true;
 }
-bool cd(int PIAddr, char name[]) {//切换目录
+bool cd(Client& client, int PIAddr, char name[]) {//切换目录
 
 	inode pinode;
 	fseek(fr, PIAddr, SEEK_SET);
@@ -730,10 +755,10 @@ bool cd(int PIAddr, char name[]) {//切换目录
 
 	//判断身份
 	int role = 0;	//other 0
-	if (strcmp(Cur_Group_Name, pinode.i_gname) == 0) {
+	if (strcmp(client.Cur_Group_Name, pinode.i_gname) == 0) {
 		role = 3;	//group 3
 	}
-	if (strcmp(Cur_User_Name, pinode.i_uname) == 0) {
+	if (strcmp(client.Cur_User_Name, pinode.i_uname) == 0) {
 		role = 6;
 	}
 
@@ -748,14 +773,14 @@ bool cd(int PIAddr, char name[]) {//切换目录
 						return true;
 					}
 					if (strcmp(name, "..") == 0) {
-						if (strcmp(Cur_Dir_Name, "/") ==0){
+						if (strcmp(client.Cur_Dir_Name, "/") ==0){
 							return true;
 						}
-						//char* p = strrchr(Cur_Dir_Addr, '/'); 跑不了啊
-						char* p = Cur_Dir_Name+strlen(Cur_Dir_Name);
+						//char* p = strrchr(client.Cur_Dir_Addr, '/'); 跑不了啊
+						char* p = client.Cur_Dir_Name+strlen(client.Cur_Dir_Name);
 						while ((*p) != '/')p--;
 						*p = '\0'; //打断它
-						Cur_Dir_Addr = ditem[j].inodeAddr;
+						client.Cur_Dir_Addr = ditem[j].inodeAddr;
 						return true;
 					}
 					inode chiino;
@@ -763,41 +788,55 @@ bool cd(int PIAddr, char name[]) {//切换目录
 					fread(&chiino, sizeof(inode), 1, fr);
 					fflush(fr);
 					if (((chiino.inode_mode >> role) & 1) == 1) {	//是否有执行权限
-						if (strcmp(Cur_Dir_Name, "/") != 0) {
-							strcat(Cur_Dir_Name, "/");
+						if (strcmp(client.Cur_Dir_Name, "/") != 0) {
+							strcat(client.Cur_Dir_Name, "/");
 						}
-						strcat(Cur_Dir_Name, name);
-						Cur_Dir_Addr = ditem[j].inodeAddr;
+						strcat(client.Cur_Dir_Name, name);
+						client.Cur_Dir_Addr = ditem[j].inodeAddr;
 						return true;
 					}
 				}
 			}
 		}
 	}
-	printf("该文件夹不存在，无法进入\n");
+	//printf("该文件夹不存在，无法进入\n");
+	char mes[] = ("Folder not exists! Cannot access.\n");
+	send(client.client_sock, mes, strlen(mes), 0);
 	return false;
 }
-void gotoRoot() { //ok
-	Cur_Dir_Addr= Root_Dir_Addr;
-	strcpy(Cur_Dir_Name , "/");
+void gotoRoot(Client& client) { //ok
+	client.Cur_Dir_Addr= Root_Dir_Addr;
+	strcpy(client.Cur_Dir_Name , "/");
 }
-void ls(char str[]) {//显示当前目录所有文件 ok
+
+char* send_init(char* to_send)
+{
+	size_t new_length = strlen(to_send) + 1 + 1;
+	char* new_buff = (char*)malloc(new_length);
+	strcpy(new_buff, to_send);
+	new_buff[strlen(to_send)] = '\t';
+	return new_buff;
+}
+
+void ls(Client& client, char str[]) {//显示当前目录所有文件 ok
 	inode ino;
-	fseek(fr, Cur_Dir_Addr, SEEK_SET);
+	fseek(fr, client.Cur_Dir_Addr, SEEK_SET);
 	fread(&ino, sizeof(inode), 1, fr);
 	fflush(fr);
 	//printf("%s\n", ino);
 	
 	//查看权限
 	int mode = 0;//other
-	if (strcmp(Cur_Group_Name, ino.i_gname) == 0) {//group
+	if (strcmp(client.Cur_Group_Name, ino.i_gname) == 0) {//group
 		mode = 3;
 	}
-	if (strcmp(Cur_User_Name, ino.i_uname) == 0) {//owner
+	if (strcmp(client.Cur_User_Name, ino.i_uname) == 0) {//owner
 		mode = 6;
 	}
-	if ((((ino.inode_mode >> mode >> 2) & 1 )== 0) &&(strcmp(Cur_User_Name, "root") != 0)) {//是否可读：4
-		printf("没有权限查看该文件夹\n");
+	if ((((ino.inode_mode >> mode >> 2) & 1 )== 0) &&(strcmp(client.Cur_User_Name, "root") != 0)) {//是否可读：4
+		//printf("没有权限查看该文件夹\n");
+		char mes[] = "You have no access to this folder!\n";
+		send(client.client_sock, mes, strlen(mes), 0);
 		return;
 	}
 	
@@ -809,7 +848,11 @@ void ls(char str[]) {//显示当前目录所有文件 ok
 			if (strcmp(str, "-l") == 0) {
 				//取出目录项的inode
 				
-				for (int j = 0; j < DirItem_Size; j++) {
+				for (int j = 0; j < DirItem_Size; j++)
+				{
+					char to_send[BUF_SIZE];
+					memset(to_send, '\0', BUF_SIZE);
+					int ptr = 0;
 					inode tmp;
 					fseek(fr, ditem[j].inodeAddr, SEEK_SET);
 					fread(&tmp, sizeof(inode), 1, fr);
@@ -820,10 +863,12 @@ void ls(char str[]) {//显示当前目录所有文件 ok
 					}
 
 					if (((tmp.inode_mode >> 9) & 1) == 1) {
-						printf("d");
+						//printf("d");
+						to_send[ptr++] = 'd';
 					}
 					else {
-						printf("-");
+						//printf("-");
+						to_send[ptr++] = '-';
 					}
 					
 					//权限
@@ -833,36 +878,65 @@ void ls(char str[]) {//显示当前目录所有文件 ok
 							int mod = count % 3;
 							switch (mod) {
 							case 0:
-								printf("x");
+								//printf("x");
+								to_send[ptr++] = 'x';
 								break;
 							case 1:
-								printf("w");
+								//printf("w");
+								to_send[ptr++] = 'w';
 								break;
 							case 2:
-								printf("r");
+								//printf("r");
+								to_send[ptr++] = 'r';
 								break;	
 							}
 						}
 						else {
-							printf("-");
+							//printf("-");
+							to_send[ptr++] = '-';
 						}
 						count--;
 					}
-					printf("\t");
-					printf("%s\t", tmp.i_uname);
-					printf("%s\t", tmp.i_gname);
+					//printf("\t");
+					to_send[ptr++] = '\t';
+
+					//printf("%s\t", tmp.i_uname);
+					char* new_buff1 = send_init(tmp.i_uname);
+
+					//printf("%s\t", tmp.i_gname);
+					char* new_buff2 = send_init(tmp.i_gname);
+
 					//printf("%s\t", tmp.inode_file_size);
-					printf("%s\t", ctime(&tmp.file_modified_time));
-					printf("%s\t", ditem[j].itemName);
-					printf("\n");
+					/*char* new_buff3;
+					sprintf(new_buff3, "%d\t", tmp.inode_file_size);*/
+
+					//printf("%s\t", ctime(&tmp.file_modified_time));
+					char* new_buff4 = send_init(ctime(&tmp.file_modified_time));
+
+					//printf("%s\t", ditem[j].itemName);
+					char* new_buff5 = send_init(ditem[j].itemName);
+
+					//printf("\n");
+					char newline[] = "\n";
+					send(client.client_sock, to_send, strlen(to_send), 0);
+					send(client.client_sock, new_buff1, strlen(new_buff1), 0);
+					send(client.client_sock, new_buff2, strlen(new_buff2), 0);
+					//send(client.client_sock, new_buff3, strlen(new_buff3), 0);
+					send(client.client_sock, new_buff4, strlen(new_buff4), 0);
+					send(client.client_sock, new_buff5, strlen(new_buff5), 0);
+					send(client.client_sock, newline, strlen(newline), 0);
+
 				}
 			}
 			else {
 					for (int j = 0; j < DirItem_Size; ++j) {
-						if (strlen(ditem[j].itemName) != 0) {
+						if (strlen(ditem[j].itemName) != 0) 
+						{
+							char tosend[BUF_SIZE]; memset(tosend, '\0', BUF_SIZE);
 							if ((strcmp(ditem[j].itemName, ".") == 0) || (strcmp(ditem[j].itemName, "..") == 0))
 								continue;
-							printf("%s\n", ditem[j].itemName);
+							sprintf(tosend, "%s\n", ditem[j].itemName);
+							send(client.client_sock, tosend, strlen(tosend), 0);
 						}
 					}
 			}
@@ -954,22 +1028,34 @@ void bfree(int baddr) {
 }
 
 //****用户&用户组函数****
-void inUsername(char* username)	//输入用户名
+void inUsername(Client& client, char* username)	//输入用户名
 {
-	printf("username:\n");
-	scanf("%s", username);	//用户名
+	char tosend[] = "username: ";
+	auto i = send(client.client_sock, tosend, strlen(tosend), 0);
+	memset(client.buffer, '\0', sizeof(client.buffer));
+	i = recv(client.client_sock, client.buffer, sizeof(client.buffer), 0);
+	strcpy(username, client.buffer);	//用户名
 }
  
-void inPasswd(char *passwd)	//输入密码
+void inPasswd(Client& client, char* passwd)	//输入密码
 {
-	printf("password:\n");
-	scanf("%s", passwd);
+	char tosend[] = "password: ";
+	auto i = send(client.client_sock, tosend, strlen(tosend), 0);
+	memset(client.buffer, '\0', sizeof(client.buffer));
+	i = recv(client.client_sock, client.buffer, sizeof(client.buffer), 0);
+	strcpy(passwd, client.buffer);
 }
-void ingroup(char* group) {
-	printf("group:(root;teacher;student)\n");
-	scanf("%s", group);
+
+void ingroup(Client& client, char* group) 
+{
+	char tosend[] = "group (root;teacher;student): ";
+	auto i = send(client.client_sock, tosend, strlen(tosend), 0);
+	memset(client.buffer, '\0', sizeof(client.buffer));
+	i = recv(client.client_sock, client.buffer, sizeof(client.buffer), 0);
+	strcpy(group, client.buffer);
 }
-bool login()	//登陆界面
+
+bool login(Client& client)	//登陆界面
 {	
 	//DirItem ditem[DirItem_Size];
 	//fseek(fr,143872, SEEK_SET);
@@ -977,11 +1063,32 @@ bool login()	//登陆界面
 
 	char username[100] = { 0 };
 	char passwd[100] = { 0 };
-	inUsername(username);	//输入用户名
-	inPasswd(passwd);		//输入用户密码
-	if (check(username, passwd)) {			//核对用户名和密码
+	memset(username, '\0', sizeof(username));
+	memset(passwd, '\0', sizeof(passwd));
+	inUsername(client, username);	//输入用户名
+	inPasswd(client, passwd);		//输入用户密码
 
+	if (check(client, username, passwd))
+	{
+		//核对用户名和密码
+		client.islogin = true;
 		isLogin = true;
+		bool flag = false;
+		for (size_t i = 0; i < allClients.size(); i++)
+			if (strcmp(allClients[i].Cur_User_Name, client.Cur_User_Name) == 0)
+			{
+				flag = true; // 如果找到了
+				allClients[i] = client;
+				client.ptr = i;
+				break;
+			}
+
+		if (!flag) // 如果没有找到
+		{
+			allClients.emplace_back(client);
+			size_t sub_ptr = allClients.size() - 1;
+			client.ptr = sub_ptr;
+		}
 		return true;
 	}
 	else {
@@ -990,50 +1097,57 @@ bool login()	//登陆界面
 	}
 }
 
-bool logout() {	//用户注销
-	gotoRoot();
-	strcmp(Cur_User_Name, "");
-	strcmp(Cur_Group_Name, "");
-	strcmp(Cur_User_Dir_Name, "");
-	isLogin = false;
-	printf("账户注销成功！\n");
+bool logout(Client& client) {	//用户注销
+	gotoRoot(client);
+	strcmp(client.Cur_User_Name, "");
+	strcmp(client.Cur_Group_Name, "");
+	strcmp(client.Cur_User_Dir_Name, "");
+	//isLogin = false; // 多用户时这个判定逻辑失效
+	client.islogin = false;
+	isLogin = ever_logging(); // 构造函数，只要有用户还处于登陆状态返回 true
+	//printf("账户注销成功！\n");
+	char ms[] = "Successfully logged out our system!\n";
+	send(client.client_sock, ms, strlen(ms), 0);
+	close(client.client_sock);
 	return true;
 	//pause
 }
-bool useradd(char username[], char passwd[], char group[]) {	//用户注册
+bool useradd(Client& client, char username[], char passwd[], char group[]) {	//用户注册
 	//权限判断
-	if (strcmp(Cur_User_Name, "root") != 0) {
-		printf("权限不足，无法添加用户！\n");
+	if (strcmp(client.Cur_User_Name, "root") != 0) {
+		char mess[] = "Permission denied! You have no previlidge to add users!\n";
+		send(client.client_sock, mess, strlen(mess), 0);
+		//printf("权限不足，无法添加用户！\n");
 		return false;
 	}
 	//保护现场并更改信息
-	int pro_cur_dir_addr = Cur_Dir_Addr;
+	int pro_cur_dir_addr = client.Cur_Dir_Addr;
 	char pro_cur_dir_name[310], pro_cur_user_name[110], pro_cur_group_name[110], pro_cur_user_dir_name[310];
-	strcpy(pro_cur_dir_name, Cur_Dir_Name);
-	strcpy(pro_cur_user_name, Cur_User_Name);
-	strcpy(pro_cur_group_name, Cur_Group_Name);
-	strcpy(pro_cur_user_dir_name, Cur_User_Dir_Name);
+	strcpy(pro_cur_dir_name, client.Cur_Dir_Name);
+	strcpy(pro_cur_user_name, client.Cur_User_Name);
+	strcpy(pro_cur_group_name, client.Cur_Group_Name);
+	strcpy(pro_cur_user_dir_name, client.Cur_User_Dir_Name);
 
 	
 	//创建用户目录
 
-	gotoRoot();
-	cd(Cur_Dir_Addr, "home");
-	mkdir(Cur_Dir_Addr, username);
+	gotoRoot(client);
+	cd(client, client.Cur_Dir_Addr, "home");
+	mkdir(client, client.Cur_Dir_Addr, username);
 
 	//更改文件所有者&更改文件者
 	//char name[100];
-	//strcpy(Cur_User_Name, username);
-	//strcpy(Cur_Group_Name, group);
+	//strcpy(client.Cur_User_Name, username);
+	//strcpy(client.Cur_Group_Name, group);
 	//sprintf(name, "/home/%s", username);
-	//strcpy(Cur_User_Dir_Name, name);
+	//strcpy(client.Cur_User_Dir_Name, name);
 
 	//获取etc三文件
 	inode etcino,shadowino,passwdino,groupino;
 	int shadowiddr, passwdiddr,groupiddr;
-	gotoRoot();
-	cd(Cur_Dir_Addr, "etc");
-	fseek(fr, Cur_Dir_Addr, SEEK_SET);
+	gotoRoot(client);
+	cd(client, client.Cur_Dir_Addr, "etc");
+	fseek(fr, client.Cur_Dir_Addr, SEEK_SET);
 	fread(&etcino, sizeof(inode), 1, fr);
 	for (int i = 0; i < 10; ++i) {
 		DirItem ditem[DirItem_Size];
@@ -1075,7 +1189,8 @@ bool useradd(char username[], char passwd[], char group[]) {	//用户注册
 		g = 2;
 	}
 	else {
-		printf("用户组别不正确，请重新输入");
+		char mes[] = "Invalid group entered, please try again!\n";
+		send(client.client_sock, mes, strlen(mes), 0);
 		return false;
 	}
 
@@ -1091,7 +1206,9 @@ bool useradd(char username[], char passwd[], char group[]) {	//用户注册
 	}
 	//buf[strlen(buf)] = '\0'; (strcat可能会自动添加？）
 	if (strstr(buf, username)!= NULL) {
-		printf("该用户名已存在\n");
+		//printf("该用户名已存在\n");
+		char mes[] = "Username already exists!\n";
+		send(client.client_sock, mes, strlen(mes), 0);
 		return false;
 	}
 	sprintf(buf + strlen(buf), "%s:%d:%d\n", username, nextUID++, g);
@@ -1176,37 +1293,41 @@ bool useradd(char username[], char passwd[], char group[]) {	//用户注册
 	fread(t, BLOCK_SIZE, 1, fr);//不知道能否成功
 	fflush(fr);
 
-	Cur_Dir_Addr = pro_cur_dir_addr;
-	strcpy(Cur_Dir_Name, pro_cur_dir_name);
+	client.Cur_Dir_Addr = pro_cur_dir_addr;
+	strcpy(client.Cur_Dir_Name, pro_cur_dir_name);
 	return true;
 }
-bool userdel(char username[]) {	//用户删除
-	if (strcmp(Cur_User_Name, "root") != 0) {
-		printf("权限不足，无法删除用户\n");
+bool userdel(Client& client, char username[]) {	//用户删除
+	if (strcmp(client.Cur_User_Name, "root") != 0) {
+		//printf("权限不足，无法删除用户\n");
+		char ms[] = "Permission denied! Cannot remove the user!\n";
+		send(client.client_sock, ms, strlen(ms), 0);
 		return false;
 	}
 	if (strcmp(username, "root") == 0) {
-		printf("无法删除管理员\n");
+		//printf("无法删除管理员\n");
+		char ms[] = "Cannot remove admin!\n";
+		send(client.client_sock, ms, strlen(ms), 0);
 		return false;
 	}
 	//保护现场并更改信息
-	int pro_cur_dir_addr = Cur_Dir_Addr;
+	int pro_cur_dir_addr = client.Cur_Dir_Addr;
 	char pro_cur_dir_name[310];
-	strcpy(pro_cur_dir_name, Cur_Dir_Name);
+	strcpy(pro_cur_dir_name, client.Cur_Dir_Name);
 	//char pro_cur_user_name[110], pro_cur_group_name[110], pro_cur_user_dir_name[310];
-	//strcpy(pro_cur_user_name, Cur_User_Name);
-	//strcpy(pro_cur_group_name, Cur_Group_Name);
-	//strcpy(pro_cur_user_dir_name, Cur_User_Dir_Name);
+	//strcpy(pro_cur_user_name, client.Cur_User_Name);
+	//strcpy(pro_cur_group_name, client.Cur_Group_Name);
+	//strcpy(pro_cur_user_dir_name, client.Cur_User_Dir_Name);
 
-	//strcpy(Cur_User_Name, username);
-	//strcpy(Cur_Group_Name, "");
+	//strcpy(client.Cur_User_Name, username);
+	//strcpy(client.Cur_Group_Name, "");
 
 	//获取etc三文件
 	inode etcino, shadowino, passwdino, groupino;
 	int shadowiddr, passwdiddr, groupiddr;
-	gotoRoot();
-	cd(Cur_Dir_Addr, "etc");
-	fseek(fr, Cur_Dir_Addr, SEEK_SET);
+	gotoRoot(client);
+	cd(client, client.Cur_Dir_Addr, "etc");
+	fseek(fr, client.Cur_Dir_Addr, SEEK_SET);
 	fread(&etcino, sizeof(inode), 1, fr);
 	for (int i = 0; i < 10; ++i) {
 		DirItem ditem[DirItem_Size];
@@ -1250,7 +1371,9 @@ bool userdel(char username[]) {	//用户删除
 	//buf[strlen(buf)] = '\0'; (strcat可能会自动添加？）
 	char* p = strstr(buf, username);
 	if (strstr(buf, username) == NULL) {
-		printf("该用户名不存在，无法删除\n");
+		//printf("该用户名不存在，无法删除\n");
+		char ms[] = "Username does not exist, cannot remove it!\n";
+		send(client.client_sock, ms, strlen(ms), 0);
 		return false;
 	}
 	*p = '\0';
@@ -1312,30 +1435,31 @@ bool userdel(char username[]) {	//用户删除
 	groupino.inode_file_size = strlen(buf);
 	writefile(groupino, groupiddr, buf);
 
-	gotoRoot();
-	cd(Cur_Dir_Addr, "home");
-	rm(Cur_Dir_Addr, username,1);	//找到父目录home即可进入
+	gotoRoot(client);
+	cd(client, client.Cur_Dir_Addr, "home");
+	rm(client, client.Cur_Dir_Addr, username,1);	//找到父目录home即可进入
 
 	//恢复现场
 	if ((p=strstr(pro_cur_dir_name, username)) == NULL) { //原路径不包含删除文件夹
-		Cur_Dir_Addr = pro_cur_dir_addr;
-		strcpy(Cur_Dir_Name, pro_cur_dir_name);
+		client.Cur_Dir_Addr = pro_cur_dir_addr;
+		strcpy(client.Cur_Dir_Name, pro_cur_dir_name);
 	}
 	else {	//包含删除文件夹
 		*(--p) = '\0';
-		strcpy(Cur_Dir_Name, pro_cur_dir_name);
+		strcpy(client.Cur_Dir_Name, pro_cur_dir_name);
 	}
-	printf("用户删除成功!\n");
-
+	//printf("用户删除成功!\n");
+	char ms[] = "User deletion succeeded!\n";
+	send(client.client_sock, ms, strlen(ms), 0);
 	return true;
 }
-bool check(char username[], char passwd[]) {//核验身份登录&设置 ok
+bool check(Client& client, char username[], char passwd[]) {//核验身份登录&设置 ok
 	//获取三文件
 	inode etcino, shadowino, passwdino, groupino;
 	int shadowiddr, passwdiddr, groupiddr;
-	gotoRoot();
-	cd(Cur_Dir_Addr, "etc");
-	fseek(fr, Cur_Dir_Addr, SEEK_SET);
+	gotoRoot(sys);
+	cd(sys, sys.Cur_Dir_Addr, "etc");
+	fseek(fr, sys.Cur_Dir_Addr, SEEK_SET);
 	fread(&etcino, sizeof(inode), 1, fr);
 	for (int i = 0; i < 10; ++i) {
 		DirItem ditem[DirItem_Size];
@@ -1382,7 +1506,9 @@ bool check(char username[], char passwd[]) {//核验身份登录&设置 ok
 	}
 	char* p = strstr(buf, username);
 	if (p == NULL) {
-		printf("该用户不存在。请创建用户后重新登陆.\n");
+		//printf("该用户不存在。请创建用户后重新登陆.\n");
+		char ms[] = "Non-existent user! Please create your role before logging.\n";
+		send(client.client_sock, ms, strlen(ms), 0);
 		return false;
 	}
 	while ((*p) != ':') {
@@ -1395,7 +1521,9 @@ bool check(char username[], char passwd[]) {//核验身份登录&设置 ok
 		p++;
 	}
 	if (strcmp(checkpw, passwd) != 0) {
-		printf("密码不正确，请重新尝试！\n");
+		//printf("密码不正确，请重新尝试！\n");
+		char ms[] = "Incorrect password! Please try again!\n";
+		send(client.client_sock, ms, strlen(ms), 0);
 		return false;
 	}
 
@@ -1426,29 +1554,33 @@ bool check(char username[], char passwd[]) {//核验身份登录&设置 ok
 
 	//成功登录后的设置
 	if(strcmp(group,"0")==0){
-		strcpy(Cur_Group_Name, "root");
+		strcpy(client.Cur_Group_Name, "root");
 	}
 	else if (strcmp(group, "1") == 0) {
-		strcpy(Cur_Group_Name, "teacher");
+		strcpy(client.Cur_Group_Name, "teacher");
 	}
 	else if (strcmp(group, "2") == 0) {
-		strcpy(Cur_Group_Name, "student");
+		strcpy(client.Cur_Group_Name, "student");
 	}
-	strcpy(Cur_User_Name,username);
-	sprintf(Cur_User_Dir_Name, "/home/%s", username);
-	gotoRoot();
-	cd(Cur_Dir_Addr, "home");
-	cd(Cur_Dir_Addr, username);
+	strcpy(client.Cur_User_Name,username);
+	sprintf(client.Cur_User_Dir_Name, "/home/%s", username);
+	gotoRoot(client);
+	cd(client, client.Cur_Dir_Addr, "home");
+	cd(client, client.Cur_Dir_Addr, username);
 
 	return true;
 }
-bool chmod(int PIAddr, char name[], char* pmode) {//修改文件or目录权限（假定文件和目录也不能重名）
+bool chmod(Client& client, int PIAddr, char name[], char* pmode) {//修改文件or目录权限（假定文件和目录也不能重名）
 	if (strlen(name) > FILENAME_MAX) {
-		printf("文件名称超过最大长度\n");
+		//printf("文件名称超过最大长度\n");
+		char ms[] = "Your filename exceeds the max length supported!\n";
+		send(client.client_sock, ms, strlen(ms), 0);
 		return false;
 	}
 	if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0) {
-		printf("该文件无法修改权限\n");
+		//printf("该文件无法修改权限\n");
+		char ms[] = "Cannot change the previlidge of current file!\n";
+		send(client.client_sock, ms, strlen(ms), 0);
 		return false;
 	}
 	inode ino;
@@ -1470,7 +1602,7 @@ bool chmod(int PIAddr, char name[], char* pmode) {//修改文件or目录权限�
 				//	continue;
 				//}
 				//只有创建者和管理员可以更改权限
-				if ((strcmp(chiino.i_uname, Cur_User_Name) == 0) || strcmp(Cur_User_Name, "root") == 0) {
+				if ((strcmp(chiino.i_uname, client.Cur_User_Name) == 0) || strcmp(client.Cur_User_Name, "root") == 0) {
 					unsigned short i_mode = chiino.inode_mode;
 
 					//修改权限
@@ -1479,7 +1611,9 @@ bool chmod(int PIAddr, char name[], char* pmode) {//修改文件or目录权限�
 						char* endptr;
 						mode = strtol(pmode, &endptr, 8);
 						if (strlen(endptr)!=0) {
-							printf("请使用正确的八进制数字\n");
+							//printf("请使用正确的八进制数字\n");
+							char ms[] = "Please use correct octal number!\n";
+							send(client.client_sock, ms, strlen(ms), 0);
 							return false;
 						}
 						i_mode = (i_mode >> 9 << 9) | mode;
@@ -1513,7 +1647,9 @@ bool chmod(int PIAddr, char name[], char* pmode) {//修改文件or目录权限�
 								symbol = 0;//001
 							}
 							else {
-								printf("命令格式错误\n");
+								//printf("命令格式错误\n");
+								char ms[] = "Incorrect command format!\n";
+								send(client.client_sock, ms, strlen(ms), 0);
 								return false;
 							}
 
@@ -1527,7 +1663,9 @@ bool chmod(int PIAddr, char name[], char* pmode) {//修改文件or目录权限�
 								opo = 0;
 							}
 							else {
-								printf("命令格式错误\n");
+								//printf("命令格式错误\n");
+								char ms[] = "Incorrect command format!\n";
+								send(client.client_sock, ms, strlen(ms), 0);
 								return false;
 							}
 
@@ -1536,7 +1674,9 @@ bool chmod(int PIAddr, char name[], char* pmode) {//修改文件or目录权限�
 							for (int i = 0; i < strlen(permit); ++i) {
 								char s_user = permit[i];
 								if ((s_user != 'u') && (s_user != 'g') && (s_user != 'o') && (s_user != 'a')) {
-									printf("命令格式错误\n");
+									//printf("命令格式错误\n");
+									char ms[] = "Incorrect command format!\n";
+									send(client.client_sock, ms, strlen(ms), 0);
 									return false;
 								}
 
@@ -1581,13 +1721,18 @@ bool chmod(int PIAddr, char name[], char* pmode) {//修改文件or目录权限�
 					return true;
 				}
 				else {
-				printf("权限不足\n");
-				return false;
+					//printf("权限不足\n");
+					char ms[] = "Permission denied!\n";
+					send(client.client_sock, ms, strlen(ms), 0);
+					return false;
 				}
 			}
 		}
 	}
-	printf("没有找到该文件，无法修改权限\n");
+	//printf("没有找到该文件，无法修改权限\n");
+	char ms[] = "File not found! Aborted changes!\n";
+	send(client.client_sock, ms, strlen(ms), 0);
+	return false;
 	return false;
 }
 //bool check_group(char name[], char s_group[]) { //验证name和group是否存在和匹配
@@ -1604,8 +1749,8 @@ bool chmod(int PIAddr, char name[], char* pmode) {//修改文件or目录权限�
 //	char temp[BLOCK_SIZE];
 //	char group[100];
 //	gotoRoot();
-//	cd(Cur_Dir_Addr, "etc");
-//	fseek(fr, Cur_Dir_Addr, SEEK_SET);
+//	cd(client.Cur_Dir_Addr, "etc");
+//	fseek(fr, client.Cur_Dir_Addr, SEEK_SET);
 //	fread(&etcino, sizeof(inode), 1, fr);
 //	for (int i = 0; i < 10; ++i) {
 //		DirItem ditem[DirItem_Size];
@@ -1656,18 +1801,22 @@ bool chmod(int PIAddr, char name[], char* pmode) {//修改文件or目录权限�
 //	}
 //	return false;
 //}
-bool chown(int PIAddr,char* filename, char name[], char group[]) {//修改文件所属用户和用户组
+bool chown(Client& client, int PIAddr,char* filename, char name[], char group[]) {//修改文件所属用户和用户组
 	//判断
 	if (strlen(filename) > FILENAME_MAX) {
-		printf("文件名称超过最大长度\n");
+		char ms[] = "Your filename exceeds the max length supported!\n";
+		send(client.client_sock, ms, strlen(ms), 0);
 		return false;
 	}
 	if (strcmp(filename, ".") == 0 || strcmp(filename, "..") == 0) {
-		printf("该文件无法修改权限\n");
+		//printf("该文件无法修改权限\n");
+		char ms[] = "Unable to modify the permissions of this file!\n";
+		send(client.client_sock, ms, strlen(ms), 0);
 		return false;
 	}
 	if ((strcmp(group, "root") != 0) && (strcmp(group, "teacher") != 0) && (strcmp(group, "student") != 0)) {
-		printf("组别不正确！请重新输入！\n");
+		char ms[] = "Invalid group entered! Please try again...\n";
+		send(client.client_sock, ms, strlen(ms), 0);
 		return false;
 	}
 
@@ -1690,7 +1839,7 @@ bool chown(int PIAddr,char* filename, char name[], char group[]) {//修改文件
 				//	continue;
 				//}
 				//只有创建者和管理员可以更改用户组or用户
-				if ((strcmp(chiino.i_uname, Cur_User_Name) == 0) || strcmp(Cur_User_Name, "root") == 0) {
+				if ((strcmp(chiino.i_uname, client.Cur_User_Name) == 0) || strcmp(client.Cur_User_Name, "root") == 0) {
 					if (strlen(name) != 0) { strcpy(chiino.i_uname, name); }
 					if (strlen(group) != 0) { strcpy(chiino.i_gname, group); }
 					fseek(fw, ditem[j].inodeAddr, SEEK_SET);
@@ -1699,13 +1848,17 @@ bool chown(int PIAddr,char* filename, char name[], char group[]) {//修改文件
 					return true;
 				}
 				else {
-					printf("权限不足\n");
+					//printf("权限不足\n");
+					char ms[] = "Permission Denied!\n";
+					send(client.client_sock, ms, strlen(ms), 0);
 					return false;
 				}
 			}
 		}
 	}
-	printf("没有找到该文件，无法修改权限\n");
+	//printf("没有找到该文件，无法修改权限\n");
+	char ms[] = "File not found! Changes aborted!\n";
+	send(client.client_sock, ms, strlen(ms), 0);
 	return false;
 }
 

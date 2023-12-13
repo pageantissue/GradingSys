@@ -1,12 +1,16 @@
-#include <cstdio>
+#include<cstdio>
 #include<cstdlib>
-#include <iostream>
+#include<sys/wait.h>
+#include<sys/types.h>
+#include<sys/socket.h>
+#include<netinet/in.h>
+#include<arpa/inet.h>
+#include<limits>
+#include<unistd.h>
+#include"server.h"
 #include"os.h"
 #include"snapshot.h"
 #include"function.h"
-#include<limits>
-#include <unistd.h>
-
 
 const int Superblock_Start_Addr=0;     //44B:1block
 const int InodeBitmap_Start_Addr = 1 * BLOCK_SIZE; //1024B:2block
@@ -48,129 +52,54 @@ using namespace std;
 
 int main()
 {
-    int count = -1;
-    printf("%s 向你问好!\n", "GradingSys");
-    //###############打不开文件################
-    if ((fr = fopen(GRADE_SYS_NAME, "rb")) == NULL) {
-        fw = fopen(GRADE_SYS_NAME, "wb");
-        if (fw == NULL) {
-            printf("虚拟磁盘文件打开失败！");
-            return 0;
-        }
-        fr = fopen(GRADE_SYS_NAME, "rb");
-        printf("虚拟磁盘文件打开成功！\n");
-
-        //初始化变量
-        nextUID = 0;
-        nextGID = 0;
-        isLogin = false;
-        strcpy(Cur_User_Name, "root");
-        strcpy(Cur_Group_Name, "root");
-
-        //获取主机名
-        memset(Cur_Host_Name, 0, sizeof(Cur_Host_Name));
-        if (gethostname(Cur_Host_Name, sizeof(Cur_Host_Name)) != 0) {
-            perror("Error getting hostname");
-            return 1;
-        }
-
-        Root_Dir_Addr = Inode_Start_Addr;
-        Cur_Dir_Addr = Root_Dir_Addr;
-        strcpy(Cur_Dir_Name, "/");
-        printf("文件系统正在格式化\n");
-
-        //系统格式化
-        if (!Format(count)) {
-            printf("格式化失败\n");
-            return 0;
-        }
-        printf("格式化完成\n\n");
-
-        //Install
-        if (!Install()) {
-            printf("文件系统安装失败！\n");
-            return 0;
-        }
+    nextUID = 0;
+    nextGID = 0;
+    Initialize(); // 初始化文件系统
+    int server_sock = socket(AF_INET, SOCK_STREAM, 0);
+    struct sockaddr_in server_sockaddr;
+    server_sockaddr.sin_family = AF_INET;//ipv4
+    server_sockaddr.sin_port = htons(MY_PORT);
+    server_sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    if (::bind(server_sock, (struct sockaddr*)&server_sockaddr, sizeof(server_sockaddr)) == -1)
+    {//绑定本地ip与端口
+        perror("Bind Failure\n");
+        printf("Error: %s\n", strerror(errno));//输出错误信息
+        return -1;
     }
-    else {
-        fw = fopen(GRADE_SYS_NAME, "rb+"); //在原来的基础上修改文件
+    printf("Listen Port : %d\n", MY_PORT);
+    if (listen(server_sock, MAX_QUEUE_NUM) == -1)
+    {
+        perror("Listen Error");
+        close(server_sock);
+        return -1;
+    }
 
-        if (fw == NULL) {
-            printf("磁盘文件打开失败！/n");
-            return false;
-        }
-
-        //初始化变量
-        nextUID = 0;
-        nextGID = 0;
-        isLogin = false;
-        strcpy(Cur_User_Name, "root");
-        strcpy(Cur_Group_Name, "root");
-
-        //获取主机名
-        memset(Cur_Host_Name, 0, sizeof(Cur_Host_Name));
-        if (gethostname(Cur_Host_Name, sizeof(Cur_Host_Name)) != 0) {
-            perror("Error getting hostname");
-            return 1;
-        }
-
-        //获取根目录
-        Root_Dir_Addr = Inode_Start_Addr;
-        Cur_Dir_Addr = Root_Dir_Addr;
-        strcpy(Cur_Dir_Name, "/");
-
-        //是否需要格式化
-        printf("是否需要格式化：[y/n]\n");
-        char a = getchar();
-        if (a == 'y') {
-            if (!Format(count)) {
-                printf("格式化失败！\n");
-                return 0;
+    printf("Waiting for connection!\n");
+    while (true)
+    {
+        if (fork() == 0)
+        {
+            // 子进程
+            Client client;
+            client.client_sock = accept(server_sock, (struct sockaddr*)&client.client_addr, &client.length);
+            if (client.client_sock == -1)
+            {
+                perror("Connect Error");
+                return -1;
             }
-            printf("格式化完成！\n");
+            printf("Client %d Connected Successful\n", client.client_sock);
+            Welcome(client);
+            handleClient(client); // 处理客户端请求
+            close(client.client_sock); // 关闭套接字
+            exit(0); // 子进程退出
         }
-
-        //Install
-        if (!Install()) {
-            printf("文件系统安装失败！\n");
-            return 0;
-        }
-        printf("安装文件系统成功！\n");
+        else wait(NULL); // 等待子进程退出
     }
-    count = 0;  //记录操作次数
-    while (1) {
-        if (isLogin) {
-            char str[100];
-            memset(str, '\0', sizeof(str));
-            char* p;
-            count++;
-            
-            if ((p = strstr(Cur_Dir_Name, Cur_User_Dir_Name)) == NULL) {	//当前是否在用户目录下
-                printf("[%s@%s %s]# ", Cur_Host_Name, Cur_User_Name, Cur_Dir_Name);
-            } //[Linux@yhl /etc]
-            else {
-                printf("[%s@%s ~%s]# ", Cur_Host_Name, Cur_User_Name, Cur_Dir_Name + strlen(Cur_User_Dir_Name));//[Linux@yhl ~/app]
-            }
-            //scanf("%s",str);
-            gets(str);
-            initial();
-            cmd(str);
-            count++;
-            printf("\n");
-        }
-        else {
-            printf("欢迎来到GradingSysOS，请先登录\n");
-            while (!login());	//登陆
-            printf("登陆成功！\n");
-        }
-    }
-    cout << "登陆成功" << endl;
-    help();
+    close(server_sock);//关闭服务器响应socket
     //system("pause");
     system("cls");
     fclose(fw);		//释放文件指针
     fclose(fr);		//释放文件指针
-
     return 0;
 }
 
