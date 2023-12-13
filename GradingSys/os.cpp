@@ -719,9 +719,7 @@ void ls(Client& client, char str[]) {//显示当前目录所有文件 ok
 			fread(ditem, sizeof(ditem), 1, fr);
 			if (strcmp(str, "-l") == 0) 
 			{
-                printf("Here we entered ls -l\n");
 				//取出目录项的inode
-                printf("Ready\n");
 				for(auto & j : ditem)
 				{
                     char to_send[BUF_SIZE];
@@ -902,7 +900,7 @@ void bfree(int baddr) {
 //****用户&用户组函数****
 void inUsername(Client& client, char* username)	//输入用户名
 {
-	char tosend[] = "username:";
+	char tosend[] = "username: ";
 	auto i = send(client.client_sock, tosend, strlen(tosend), 0);
 	memset(client.buffer, '\0', sizeof(client.buffer));
 	i = recv(client.client_sock, client.buffer, sizeof(client.buffer), 0);
@@ -911,7 +909,7 @@ void inUsername(Client& client, char* username)	//输入用户名
  
 void inPasswd(Client& client, char* passwd)	//输入密码
 {
-	char tosend[] = "password:";
+	char tosend[] = "password: ";
 	auto i = send(client.client_sock, tosend, strlen(tosend), 0);
 	memset(client.buffer, '\0', sizeof(client.buffer));
 	i = recv(client.client_sock, client.buffer, sizeof(client.buffer), 0);
