@@ -288,7 +288,7 @@ void cmd(Client& client)
 		char group[100];
 		char user[100];
 		char passwd[100];
-		sscanf(cmd_str, "%s%s%s%s%s", com1, com2, group,com3,user);
+		sscanf(cmd_str, "%s%s%s%s%s", com1, com2, group, com3, user);
 		if ((strcmp(com2, "-g") != 0) || ((strcmp(com3, "-m") != 0))) {
 			//printf("命令格式错误!\n");
 			char ms[] = "Command format error!\n";

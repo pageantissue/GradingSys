@@ -2,6 +2,8 @@
 #include"os.h"
 #include"function.h"
 #include<limits>
+#include<chrono>
+#include<thread>
 #include<unistd.h>
 #include<cstdio>
 #include<mutex>
@@ -144,6 +146,7 @@ void handleClient(Client& client)
             while (!login(client));
             strcpy(buff, "Successfully logged into our system!\n");
             send(client_sock, buff, strlen(buff), 0);
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
             help(client);
         }
     }
