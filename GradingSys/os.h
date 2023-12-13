@@ -119,7 +119,7 @@ bool mkdir(Client&, int PIAddr, char name[]);
 bool mkfile(Client&, int PIAddr, char name[], char buf[]);
 bool rm(Client&, int PIAddr, char name[],int type);
 bool addfile(Client&, inode fileinode, int CHIaddr, char buf[]);
-bool writefile(Client&, inode fileinode, int CHIaddr, char buf[]);
+bool writefile(inode fileinode, int CHIaddr, char buf[]);
 bool echo(Client&, int PIAddr, char name[], int type, char* buf);
 bool chmod(Client&, int PIAddr, char name[], char* pmode);
 bool cd(Client&, int PIAddr, char str[]);

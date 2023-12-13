@@ -5,7 +5,8 @@
 #include<unistd.h>
 #include<cstdio>
 #include<mutex>
-
+using namespace std;
+Client sys;
 
 void Welcome(Client& client)
 {
