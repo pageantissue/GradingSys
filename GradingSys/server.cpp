@@ -75,12 +75,10 @@ int Initialize()
             return 1;
         }
 
-        //��ȡ��Ŀ¼
         Root_Dir_Addr = Inode_Start_Addr;
         sys.Cur_Dir_Addr = Root_Dir_Addr;
         strcpy(sys.Cur_Dir_Name, "/");
 
-        //�Ƿ���Ҫ��ʽ��
         printf("Format the file system? [y/n]\n");
         char str;
         scanf("%s", &str);

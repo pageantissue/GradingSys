@@ -86,6 +86,7 @@ bool Format() { //ok
 	fwrite(ditem, sizeof(ditem), 1, fw);
 
 	fflush(fw);
+
 	//创建目录及配置文件
 	mkdir(sys, sys.Cur_Dir_Addr, "home");
 	cd(sys, sys.Cur_Dir_Addr, "home");
