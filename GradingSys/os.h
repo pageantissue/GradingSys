@@ -29,10 +29,6 @@
 #define FILE_DEF_PERMISSION 0664			//文件默认权限 owner,group:读写 other:读 
 #define DIR_DEF_PERMISSION	0755			//目录默认权限 owner：全部 group,other:读执行
 
-#define ROOT 0	  //管理员
-#define TEACHER 1 //老师
-#define STUDENT 2 //学生
-
 #define GRADE_SYS_NAME "grading_sys.sys"	//文件系统名
 
 
@@ -126,13 +122,14 @@ bool mkfile(int PIAddr, char name[], char buf[]);
 bool rm(int PIAddr, char name[],int type);
 bool addfile(inode fileinode, int CHIaddr, char buf[]);
 bool writefile(inode fileinode, int CHIaddr, char buf[]);
-bool chmod(int PIAddr, char name[], int pmode, int type);
+bool echo(int PIAddr, char name[], int type, char* buf);
+bool chmod(int PIAddr, char name[], char* pmode);
 bool cd(int PIAddr, char str[]);
 void gotoRoot();
 void ls(char str[]);
 
 bool cat(int PIAddr, char name[]);
-bool chown(int PIAddr, char name[], char uname[], char gname[]);
+bool chown(int PIAddr, char* pmode, char name[], char group[]);
 
 //工具函数
 int ialloc();
@@ -150,16 +147,16 @@ bool login();
 bool logout();
 bool useradd(char username[], char passwd[], char group[]);
 bool userdel(char username[]);
-bool check(char username[], char passwd[]);	
+bool groupadd(char* group);
+bool groupdel(char* group);
+bool check(char username[], char passwd[]);	//账号&密码
+bool passwd(char username[], char pwd[]);
+char* is_group(char* group,char *gid);//判断是否在组内
+//bool check_group(char name[], char s_group[]);//账号&组别
 
-bool Format();
-bool login();
-void cmd(char cmd[],int count);
-void ls(char str[]);
-bool mkdir(int parinodeAddr, char name[],int count);
-void backup();
-void cmd(char cmd[], int count);
-bool groupadd(char gname[]);
-bool groupdel(char gname[]);
-bool passwd();
+
+//bool groupadd(char gname[]);
+//bool groupdel(char gname[]);
+//bool passwd();
+
 
