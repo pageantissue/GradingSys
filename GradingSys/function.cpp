@@ -31,22 +31,15 @@ void help() {
 	cout.width(30);
 	cout << "chmod" << "Modify the access right" << endl;    //修改文件权限
 	cout.width(30);
-	//cat，chown
-
 	cout << "useradd" << "Add user" << endl;		//新增用户
 	cout.width(30);
 	cout << "userdel" << "Delete user" << endl;		//删除用户
 	cout.width(30);
-
 	cout << "logout" << "Logout the account" << endl;		//退出账号
 	cout.width(30);
 	//usergrpadd,userfrpdel,密码修改，
-
-
 	cout << "snapshot" << "Back up the system" << endl;			//备份系统
 	cout.width(30);
-	//备份系统&恢复系统
-
 	cout << "exit" << "Exit the system" << endl;		//退出系统
 }
 

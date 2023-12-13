@@ -15,6 +15,9 @@ const int Inode_Start_Addr = BlockBitmap_Start_Addr + 20 * BLOCK_SIZE;//120<128:
 const int Block_Start_Addr = Inode_Start_Addr + INODE_NUM / (BLOCK_SIZE / INODE_SIZE) * BLOCK_SIZE;//32*16=512  //num 1024 * size 128 / block_size 512 = x block
 const int Modified_inodeBitmap_Start_Addr = Block_Start_Addr + 2 * BLOCK_SIZE;      //用于增量转储的inode位图
 
+const int Backup_Start_Addr = 0;
+const int Backup_Block_Start_Addr = Backup_Start_Addr + INODE_NUM;
+
 const int Disk_Size= Block_Start_Addr + (BLOCK_NUM+2) * BLOCK_SIZE;//增加板块
 const int File_Max_Size = 10 * BLOCK_SIZE;
 
@@ -42,6 +45,8 @@ bool modified_inode_bitmap[INODE_NUM];      //增量转储 0:未被修改；1:�
 
 FILE* bfw;
 FILE* bfr;
+
+time_t last_backup_time;
 
 char buffer[10000000] = { 0 };				//10M，缓存整个虚拟磁盘文件
 //extern const int count;

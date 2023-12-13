@@ -40,6 +40,9 @@ bool Format(int count) { //ok
 	fseek(fw, BlockBitmap_Start_Addr, SEEK_SET);
 	fwrite(block_bitmap, sizeof(block_bitmap), 1, fw);
 
+	memset(modified_inode_bitmap, 0, sizeof(modified_inode_bitmap));
+	fseek(fw, Modified_inodeBitmap_Start_Addr, SEEK_SET);
+	fwrite(modified_inode_bitmap, sizeof(modified_inode_bitmap), 1, fw);
 	//inode和block板块暂时不需要内容
 	fflush(fw);//将上面内容放入fw中
 
@@ -266,7 +269,7 @@ bool mkdir(int PIAddr, char name[]) {	//目录创建函数(父目录权限:读�
 	fwrite(chiitem, sizeof(chiitem), 1, fw);
 
 	fflush(fw);
-	DirItem ditem[DirItem_Size];
+	//DirItem ditem[DirItem_Size];
 	//backup(count, 0);
 	return true;
 }

@@ -5,6 +5,7 @@
 #include<ctime>
 #include"snapshot.h"
 #include"os.h"
+#include<dirent.h>
 
 using namespace std;
 
@@ -34,14 +35,14 @@ bool fullBackup() {
 	//把备份的空间初始化
 	char backup_buf[10000000];
 	memset(backup_buf, '\0', sizeof(backup_buf));
-	fseek(bfw, Start_Addr, SEEK_SET);
+	fseek(bfw, Backup_Start_Addr, SEEK_SET);
 	fwrite(backup_buf, sizeof(backup_buf), 1, bfw);
 
 	try {
 		char tmp_backup[10000000];
-		fseek(fr, Start_Addr, SEEK_SET);
+		fseek(fr, Backup_Start_Addr, SEEK_SET);
 		fread(&tmp_backup, sizeof(tmp_backup), 1, fr);
-		fseek(bfw, Start_Addr, SEEK_SET);
+		fseek(bfw, Backup_Start_Addr, SEEK_SET);
 		fwrite(&tmp_backup, sizeof(tmp_backup), 1, bfw);
 	}
 	catch (exception e) {
@@ -109,7 +110,7 @@ bool incrementalBackup() {
 	fwrite(&tmp_inodeBitmap, sizeof(modified_inode_bitmap), 1, fw);
 	
 	//在备份文件中先记录modified inode bitmap
-	fseek(bfw, Start_Addr, SEEK_SET);
+	fseek(bfw, Backup_Start_Addr, SEEK_SET);
 	fwrite(&tmp_inodeBitmap, sizeof(modified_inode_bitmap), 1, bfw);
 
 	//去每一个被修改的inode里找被对应修改的直接块
@@ -153,5 +154,13 @@ bool incrementalBackup() {
 }
 
 bool recovery() {
+	//获取当前文件夹下的所有文件
+	DIR* dir;
+	struct dirent* ent;
+	if ((dir = opendir("./")) != NULL) {
+		while ((ent = readdir(dir)) != NULL) {
+			cout << ent->d_name<<"  " << endl;
 
+		}
+	}
 }
