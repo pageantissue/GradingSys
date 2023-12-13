@@ -40,7 +40,7 @@ bool cd_func(Client& client, int CurAddr, char* str) {
 			name[i++] = str[0];
 			str += 1;
 		}
-		if((*str) == '/') str += 1;
+		if ((*str) == '/') str += 1;
 		if (strlen(name) != 0) {
 			if (cd(client, client.Cur_Dir_Addr, name)==false) {
 				flag = 0;
@@ -222,7 +222,28 @@ bool chown_func(Client& client, int CurAddr, char* u_g, char* str) {
 		p += 1;
 		strcpy(group, p);
 	}
-	if (chown(client, CurAddr, file, name, group))	return true;
+	if (chown(CurAddr, file, name, group))	return true;
+	return false;
+}
+bool passwd_func(char* username) {
+	if ((strcmp(Cur_Group_Name, "root") != 0) && (strlen(username) != 0)) {
+		printf("普通用户无法修改其他用户密码\n");
+		return false;
+	}
+
+	char pwd[100];
+	printf("Changing password for user %s\n", Cur_User_Name);
+	printf("New password: ");
+	gets(pwd);
+	char re_pwd[100];
+	printf("Retype new password:");
+	gets(re_pwd);
+
+	if (strcmp(pwd, re_pwd) == 0) {
+		if (passwd(username, pwd) == 0) {
+			return true;
+		}
+	}
 	return false;
 }
 
@@ -302,10 +323,25 @@ void cmd(Client& client)
 		sscanf(cmd_str, "%s%s", com1, com2);
 		userdel(client, com2);
 	}
+	else if (strcmp(com1, "groupadd") == 0) {
+		sscanf(cmd_str, "%s%s", com1, com2);
+		groupadd(com2);
+	}
+	else if (strcmp(com1, "groupdel") == 0) {
+		sscanf(cmd_str, "%s%s", com1, com2);
+		groupdel(com2);
+	}
+	else if (strcmp(com1, "passwd") == 0) {
+		if (sscanf(cmd_str, "%s%s", com1, com2) == 1) {
+			passwd_func("");
+		}
+		else {
+			passwd_func(com2);
+		}
+	}
 	else if (strcmp(com1, "logout") == 0) {
 		logout(client);
 	}
-	//usergrpadd,userfrpdel,密码修改，
 
 	//备份系统&恢复系统
 	else if (strcmp(com1, "exit") == 0) {

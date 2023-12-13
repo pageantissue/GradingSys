@@ -30,10 +30,6 @@
 #define FILE_DEF_PERMISSION 0664			//文件默认权限 owner,group:读写 other:读 
 #define DIR_DEF_PERMISSION	0755			//目录默认权限 owner：全部 group,other:读执行
 
-#define ROOT 0	  //管理员
-#define TEACHER 1 //老师
-#define STUDENT 2 //学生
-
 #define GRADE_SYS_NAME "grading_sys.sys"	//文件系统名
 
 
@@ -86,6 +82,7 @@ extern const int InodeBitmap_Start_Addr;		//inode位图 偏移地址，占两个
 extern const int BlockBitmap_Start_Addr;		//block位图 偏移地址，占二十个磁盘块，最多监控 10240 个磁盘块（5120KB）的状态
 extern const int Inode_Start_Addr;			//inode节点区 偏移地址，占 INODE_NUM/(BLOCK_SIZE/INODE_SIZE) 个磁盘块
 extern const int Block_Start_Addr;			//block数据区 偏移地址 ，占 INODE_NUM 个磁盘块
+extern const int Modified_inodeBitmap_Start_Addr;		//逻辑转储
 extern const int File_Max_Size;				//单个文件最大大小
 extern const int Disk_Size;					//虚拟磁盘文件大小
 
@@ -104,6 +101,7 @@ extern FILE* fr;							//虚拟磁盘文件 读文件指针
 extern SuperBlock* superblock;				//超级块指针
 extern bool inode_bitmap[INODE_NUM];		//inode位图
 extern bool block_bitmap[BLOCK_NUM];		//磁盘块位图
+extern bool modified_inode_bitmap[INODE_NUM];
 
 extern char buffer[10000000];				//10M，缓存整个虚拟磁盘文件
 extern Client sys;							//系统初始化用对象
@@ -148,6 +146,18 @@ bool logout(Client&);
 bool useradd(Client&, char username[], char passwd[], char group[]);
 bool userdel(Client&, char username[]);
 bool check(Client&, char username[], char passwd[]);	//账号&密码
+void inUsername(char* username);							//输入用户名
+void inPasswd(char* passwd);
+void ingroup(char* group);
+bool login();	
+bool logout();
+bool useradd(char username[], char passwd[], char group[]);
+bool userdel(char username[]);
+bool groupadd(char* group);
+bool groupdel(char* group);
+bool check(char username[], char passwd[]);	//账号&密码
+bool passwd(char username[], char pwd[]);
+char* is_group(char* group,char *gid);//判断是否在组内
 //bool check_group(char name[], char s_group[]);//账号&组别
 bool ever_logging();												//判断系统是否还有用户处于登陆状态
 //bool groupadd(char gname[]);

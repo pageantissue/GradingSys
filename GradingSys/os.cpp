@@ -7,7 +7,6 @@
 #include"snapshot.h"
 
 using namespace std;
-using namespace std;
 
 
 //****大类函数****
@@ -41,6 +40,9 @@ bool Format() { //ok
 	safeFseek(fw, BlockBitmap_Start_Addr, SEEK_SET);
 	safeFwrite(block_bitmap, sizeof(block_bitmap), 1, fw);
 
+	memset(modified_inode_bitmap, 0, sizeof(modified_inode_bitmap));
+	fseek(fw, Modified_inodeBitmap_Start_Addr, SEEK_SET);
+	fwrite(modified_inode_bitmap, sizeof(modified_inode_bitmap), 1, fw);
 	//inode和block板块暂时不需要内容
 	fflush(fw);//将上面内容放入fw中
 
@@ -95,31 +97,31 @@ bool Format() { //ok
 	cd(sys, sys.Cur_Dir_Addr, "etc");
 
 	char buf[1000] = { 0 };
-	sprintf(buf, "root:%d:%d\n", nextUID++, nextGID++);//root:uid-0,gid-0
-	mkfile(sys, sys.Cur_Dir_Addr, "passwd", buf);
+	sprintf(buf, "root:%d:%d\n", nextUID++, nextGID);//root:uid-0,gid-0
+	mkfile(Cur_Dir_Addr, "passwd", buf);
 
 	char* pmode = "0400";//owner:可读
 	sprintf(buf, "root:root\n");
 	mkfile(sys, sys.Cur_Dir_Addr, "shadow", buf);
 	chmod(sys, sys.Cur_Dir_Addr, "shadow", pmode);
 
-	sprintf(buf, "root:%d:root\n", ROOT);
-	sprintf(buf + strlen(buf), "teacher:%d:\n", TEACHER);
-	sprintf(buf + strlen(buf), "student:%d:\n", STUDENT);
-	mkfile(sys, sys.Cur_Dir_Addr, "group", buf);
+	sprintf(buf, "root:%d:root\n", nextGID++);
+	sprintf(buf + strlen(buf), "teacher:%d:\n", nextGID++);
+	sprintf(buf + strlen(buf), "student:%d:\n", nextGID++);
+	mkfile(Cur_Dir_Addr, "group", buf);
 	
 	gotoRoot(sys);
 	return true;
 }
 
 bool Install() {	//安装文件系统 ok
-	safeFseek(fr, Superblock_Start_Addr, SEEK_SET);
+	fseek(fr, Superblock_Start_Addr, SEEK_SET);
 	fread(superblock, sizeof(superblock), 1, fr);
 
-	safeFseek(fr, InodeBitmap_Start_Addr, SEEK_SET);
+	fseek(fr, InodeBitmap_Start_Addr, SEEK_SET);
 	fread(inode_bitmap, sizeof(inode_bitmap), 1, fr);
 
-	safeFseek(fr, BlockBitmap_Start_Addr, SEEK_SET);
+	fseek(fr, BlockBitmap_Start_Addr, SEEK_SET);
 	fread(block_bitmap, sizeof(block_bitmap), 1, fr);
 
 	fflush(fr);
@@ -270,7 +272,7 @@ bool mkdir(Client& client, int PIAddr, char name[]) {	//目录创建函数(父�
 	safeFwrite(chiitem, sizeof(chiitem), 1, fw);
 
 	fflush(fw);
-	DirItem ditem[DirItem_Size];
+	//DirItem ditem[DirItem_Size];
 	//backup(count, 0);
 	return true;
 }
@@ -617,10 +619,14 @@ bool cat(Client& client, int PIAddr, char name[]) {	//查看文件内容
 							}	
 						}
 					}
+					return true;
 				}
 			}
 		}
 	}
+
+	printf("未找到该文件\n");
+	return false;
 	
 }
 bool echo(Client& client, int PIAddr, char name[], int type, char* buf) {	//文件新增or重写or补全
@@ -1150,12 +1156,8 @@ bool useradd(Client& client, char username[], char passwd[], char group[]) {	//�
 	cd(client, client.Cur_Dir_Addr, "home");
 	mkdir(client, client.Cur_Dir_Addr, username);
 
-	//更改文件所有者&更改文件者
-	//char name[100];
-	//strcpy(client.Cur_User_Name, username);
-	//strcpy(client.Cur_Group_Name, group);
-	//sprintf(name, "/home/%s", username);
-	//strcpy(client.Cur_User_Dir_Name, name);
+	//更改文件夹所有者
+	chown(Cur_Dir_Addr, username, username, group);
 
 	//获取etc三文件
 	inode etcino,shadowino,passwdino,groupino;
@@ -1193,21 +1195,13 @@ bool useradd(Client& client, char username[], char passwd[], char group[]) {	//�
 	//读取三文件内容并修改三文件
 	char buf[BLOCK_SIZE * 10]; //1char:1B
 	char temp[BLOCK_SIZE];
-	int g = -1;
-	if (strcmp(group, "root")==0) {
-		g = 0;
-	}
-	else if (strcmp(group, "teacher")==0) {
-		g = 1;
-	}
-	else if (strcmp(group, "student")==0) {
-		g = 2;
-	}
-	else {
-		char mes[] = "Invalid group entered, please try again!\n";
-		send(client.client_sock, mes, strlen(mes), 0);
+	char a[10];
+	char *gid= is_group(group,a);
+	if (strcmp(gid,"-1")==0) {
+		printf("用户组别不正确，请重新输入");
 		return false;
 	}
+	int g = atoi(gid);
 
 	//passwd
 	memset(buf, '\0', sizeof(buf));
@@ -1264,8 +1258,12 @@ bool useradd(Client& client, char username[], char passwd[], char group[]) {	//�
 		}
 	}
 	//拼接状增加
-	if (g == 0) {	//root
-		char* p = strstr(buf, "teacher");
+	if (g != (nextGID - 1)) {
+		char* p = strstr(buf, gid);
+		while ((*p) != '\n') {
+			p++;
+		}
+		p++;
 		char temp[strlen(p) + 1];
 		strncpy(temp, p, strlen(p));
 		temp[sizeof(temp) - 1] = '\0';
@@ -1277,23 +1275,8 @@ bool useradd(Client& client, char username[], char passwd[], char group[]) {	//�
 			sprintf(buf + strlen(buf) - 1, ",%s\n", username);
 		}
 		strcat(buf, temp);
-
 	}
-	else if (g == 1) {//teacher
-		char* p = strstr(buf, "student");
-		char temp[strlen(p)+1];
-		strncpy(temp, p, strlen(p));
-		temp[sizeof(temp) - 1] = '\0';
-		*p = '\0';
-		if (buf[strlen(buf) - 2] == ':') {
-			sprintf(buf + strlen(buf) - 1, "%s\n", username);
-		}
-		else {
-			sprintf(buf + strlen(buf) - 1, ",%s\n", username);
-		}
-		strcat(buf, temp);
-	}
-	else {//student
+	else {
 		if (buf[strlen(buf) - 2] == ':') {
 			sprintf(buf + strlen(buf) - 1, "%s\n", username);
 		}
@@ -1304,12 +1287,8 @@ bool useradd(Client& client, char username[], char passwd[], char group[]) {	//�
 	groupino.inode_file_size = strlen(buf);
 	writefile(groupino, groupiddr, buf);
 
-	safeFseek(fr, groupino.i_dirBlock[0], SEEK_SET);
-	fread(t, BLOCK_SIZE, 1, fr);//不知道能否成功
-	fflush(fr);
-
-	client.Cur_Dir_Addr = pro_cur_dir_addr;
-	strcpy(client.Cur_Dir_Name, pro_cur_dir_name);
+	Cur_Dir_Addr = pro_cur_dir_addr;
+	strcpy(Cur_Dir_Name, pro_cur_dir_name);
 	return true;
 }
 bool userdel(Client& client, char username[]) {	//用户删除
@@ -1399,7 +1378,7 @@ bool userdel(Client& client, char username[]) {	//用户删除
 	strcat(buf, p);
 	passwdino.inode_file_size = strlen(buf);
 	writefile(passwdino, passwdiddr, buf);
-	//buf即使是好的也是补充写入
+	nextUID--;
 
 	//shadow
 	memset(buf, '\0', sizeof(temp));
@@ -1816,7 +1795,258 @@ bool chmod(Client& client, int PIAddr, char name[], char* pmode) {//修改文件
 //	}
 //	return false;
 //}
-bool chown(Client& client, int PIAddr,char* filename, char name[], char group[]) {//修改文件所属用户和用户组
+bool groupadd(char* group) {
+	//判断权限
+	if (strcmp(Cur_User_Name, "root")!=0) {
+		printf("权限不足，无法增加用户组.\n");
+		return false;
+	}
+
+	//保护现场并更改信息
+	int pro_cur_dir_addr = Cur_Dir_Addr;
+	char pro_cur_dir_name[310], pro_cur_user_name[110], pro_cur_group_name[110], pro_cur_user_dir_name[310];
+	strcpy(pro_cur_dir_name, Cur_Dir_Name);
+	strcpy(pro_cur_user_name, Cur_User_Name);
+	strcpy(pro_cur_group_name, Cur_Group_Name);
+	strcpy(pro_cur_user_dir_name, Cur_User_Dir_Name);
+
+	//去到etc目录
+	if (cd_func(Cur_Dir_Addr, "/etc") == false) {
+		return false;
+	}
+	
+	//获取group文件
+	inode etcino,groupino;
+	int groupiddr;
+	gotoRoot();
+	cd(Cur_Dir_Addr, "etc");
+	fseek(fr, Cur_Dir_Addr, SEEK_SET);
+	fread(&etcino, sizeof(inode), 1, fr);
+	for (int i = 0; i < 10; ++i) {
+		DirItem ditem[DirItem_Size];
+		int baddr = etcino.i_dirBlock[i];
+		if (baddr != -1) {
+			fseek(fr, baddr, SEEK_SET);
+			fread(&ditem, BLOCK_SIZE, 1, fr);
+			for (int j = 0; j < DirItem_Size; ++j) {
+				if (strcmp(ditem[j].itemName, "group") == 0) {
+					groupiddr = ditem[j].inodeAddr;
+					fseek(fr, groupiddr, SEEK_SET);
+					fread(&groupino, sizeof(inode), 1, fr);
+				}
+			}
+		}
+	}
+
+	//读取三文件内容并修改三文件
+	char buf[BLOCK_SIZE * 10]; //1char:1B
+	char temp[BLOCK_SIZE];
+	//group(root:0:XX,XX)
+	memset(buf, '\0', sizeof(temp));
+	for (int i = 0; i < 10; ++i) {
+		if (groupino.i_dirBlock[i] != -1) {
+			memset(temp, '\0', sizeof(temp));
+			fseek(fr, groupino.i_dirBlock[i], SEEK_SET);
+			fread(&temp, BLOCK_SIZE, 1, fr);//不知道能否成功
+			strcat(buf, temp);
+		}
+	}
+	
+	//判断group是否重复
+	if (strstr(buf, group) != NULL) {
+		printf("组别已存在\n");
+		Cur_Dir_Addr = pro_cur_dir_addr;
+		strcpy(Cur_Dir_Name, pro_cur_dir_name);
+		return false;
+	}
+
+	sprintf(buf + strlen(buf), "%s:%d:\n", group, nextGID++);
+	if (writefile(groupino, groupiddr, buf) == false) {
+		Cur_Dir_Addr = pro_cur_dir_addr;
+		strcpy(Cur_Dir_Name, pro_cur_dir_name);
+		return false;
+	}
+
+	Cur_Dir_Addr = pro_cur_dir_addr;
+	strcpy(Cur_Dir_Name, pro_cur_dir_name);
+
+	return true;
+}
+bool groupdel(char* group) {
+	//判断权限
+	if (strcmp(Cur_User_Name, "root") != 0) {
+		printf("权限不足，无法增加用户组.\n");
+		return false;
+	}
+	if (strcmp(group, "root") == 0) {
+		printf("无法删除主用户群\n");
+		return false;
+	}
+
+	//保护现场并更改信息
+	int pro_cur_dir_addr = Cur_Dir_Addr;
+	char pro_cur_dir_name[310], pro_cur_user_name[110], pro_cur_group_name[110], pro_cur_user_dir_name[310];
+	strcpy(pro_cur_dir_name, Cur_Dir_Name);
+	strcpy(pro_cur_user_name, Cur_User_Name);
+	strcpy(pro_cur_group_name, Cur_Group_Name);
+	strcpy(pro_cur_user_dir_name, Cur_User_Dir_Name);
+
+	//去到etc目录
+	if (cd_func(Cur_Dir_Addr, "/etc") == false) {
+		return false;
+	}
+
+	//获取group文件
+	inode etcino, groupino;
+	int groupiddr;
+	gotoRoot();
+	cd(Cur_Dir_Addr, "etc");
+	fseek(fr, Cur_Dir_Addr, SEEK_SET);
+	fread(&etcino, sizeof(inode), 1, fr);
+	for (int i = 0; i < 10; ++i) {
+		DirItem ditem[DirItem_Size];
+		int baddr = etcino.i_dirBlock[i];
+		if (baddr != -1) {
+			fseek(fr, baddr, SEEK_SET);
+			fread(&ditem, BLOCK_SIZE, 1, fr);
+			for (int j = 0; j < DirItem_Size; ++j) {
+				if (strcmp(ditem[j].itemName, "group") == 0) {
+					groupiddr = ditem[j].inodeAddr;
+					fseek(fr, groupiddr, SEEK_SET);
+					fread(&groupino, sizeof(inode), 1, fr);
+				}
+			}
+		}
+	}
+
+	//读取group
+	char buf[BLOCK_SIZE * 10]; //1char:1B
+	char temp[BLOCK_SIZE];
+	for (int i = 0; i < 10; ++i) {
+		if (groupino.i_dirBlock[i] != -1) {
+			memset(temp, '\0', sizeof(temp));
+			fseek(fr, groupino.i_dirBlock[i], SEEK_SET);
+			fread(&temp, BLOCK_SIZE, 1, fr);//不知道能否成功
+			strcat(buf, temp);
+		}
+	}
+	char* names = strstr(buf, group);
+	if (strlen(names) == 0) {
+		printf("该组别不存在\n");
+		return false;
+	}
+	int flag = 0;
+	*names = '\0';
+	names++;
+	while (true) {	//指向组内用户
+		if (flag == 2) {
+			break;
+		}
+		if ((*names) == ':') {
+			flag++;
+		}
+		names++;
+	}
+
+	//删除组内用户
+	while (true) {
+		char name[20];
+		memset(name, '\0', sizeof(name));
+		char* p = strstr(names, ",");
+		if (p==NULL) {
+			strncpy(name, names,strlen(names)-1);
+			userdel(name);
+			break;
+		}
+		else {
+			strncpy(name, names, p - names);
+			names = p + 1;
+			userdel(name);
+		}
+	}
+
+	//更新group
+	writefile(groupino, groupiddr, buf);
+	nextGID--;
+	
+	Cur_Dir_Addr = pro_cur_dir_addr;
+	strcpy(Cur_Dir_Name, pro_cur_dir_name);
+	return true;
+}
+char* is_group(char* group,char *gid) {
+	//保护现场并更改信息
+	int pro_cur_dir_addr = Cur_Dir_Addr;
+	char pro_cur_dir_name[310], pro_cur_user_name[110], pro_cur_group_name[110], pro_cur_user_dir_name[310];
+	strcpy(pro_cur_dir_name, Cur_Dir_Name);
+	strcpy(pro_cur_user_name, Cur_User_Name);
+	strcpy(pro_cur_group_name, Cur_Group_Name);
+	strcpy(pro_cur_user_dir_name, Cur_User_Dir_Name);
+
+	//去到etc目录
+	if (cd_func(Cur_Dir_Addr, "/etc") == false) {
+		return "-1";
+	}
+
+	//获取group文件
+	inode etcino, groupino;
+	int groupiddr;
+	gotoRoot();
+	cd(Cur_Dir_Addr, "etc");
+	fseek(fr, Cur_Dir_Addr, SEEK_SET);
+	fread(&etcino, sizeof(inode), 1, fr);
+	for (int i = 0; i < 10; ++i) {
+		DirItem ditem[DirItem_Size];
+		int baddr = etcino.i_dirBlock[i];
+		if (baddr != -1) {
+			fseek(fr, baddr, SEEK_SET);
+			fread(&ditem, BLOCK_SIZE, 1, fr);
+			for (int j = 0; j < DirItem_Size; ++j) {
+				if (strcmp(ditem[j].itemName, "group") == 0) {
+					groupiddr = ditem[j].inodeAddr;
+					fseek(fr, groupiddr, SEEK_SET);
+					fread(&groupino, sizeof(inode), 1, fr);
+				}
+			}
+		}
+	}
+
+	//读取三文件内容并修改三文件
+	char buf[BLOCK_SIZE * 10]; //1char:1B
+	char temp[BLOCK_SIZE];
+	//group(root:0:XX,XX)
+	memset(buf, '\0', sizeof(temp));
+	for (int i = 0; i < 10; ++i) {
+		if (groupino.i_dirBlock[i] != -1) {
+			memset(temp, '\0', sizeof(temp));
+			fseek(fr, groupino.i_dirBlock[i], SEEK_SET);
+			fread(&temp, BLOCK_SIZE, 1, fr);//不知道能否成功
+			strcat(buf, temp);
+		}
+	}
+
+	//判断group是否存在
+	char* p = strstr(buf, group);
+	memset(gid, '\0', sizeof(gid));
+	int i = 0;
+	if (p == NULL) {
+		Cur_Dir_Addr = pro_cur_dir_addr;
+		strcpy(Cur_Dir_Name, pro_cur_dir_name);
+		return "-1";
+	}
+	else {
+		p = strstr(p, ":");
+		p++;
+		while ((*p) != ':') {
+			gid[i++] = (*p);
+			p++;
+		}
+	}
+
+	Cur_Dir_Addr = pro_cur_dir_addr;
+	strcpy(Cur_Dir_Name, pro_cur_dir_name);
+	return gid;
+}
+bool chown(int PIAddr,char* filename, char name[], char group[]) {//修改文件所属用户和用户组
 	//判断
 	if (strlen(filename) > FILENAME_MAX) {
 		char ms[] = "Your filename exceeds the max length supported!\n";
@@ -1829,9 +2059,9 @@ bool chown(Client& client, int PIAddr,char* filename, char name[], char group[])
 		send(client.client_sock, ms, strlen(ms), 0);
 		return false;
 	}
-	if ((strcmp(group, "root") != 0) && (strcmp(group, "teacher") != 0) && (strcmp(group, "student") != 0)) {
-		char ms[] = "Invalid group entered! Please try again...\n";
-		send(client.client_sock, ms, strlen(ms), 0);
+	char gid[10];
+	if (is_group(group,gid)==false) {
+		printf("组别不正确！请重新输入！\n");
 		return false;
 	}
 
@@ -1876,9 +2106,82 @@ bool chown(Client& client, int PIAddr,char* filename, char name[], char group[])
 	send(client.client_sock, ms, strlen(ms), 0);
 	return false;
 }
+bool passwd(char username[],char pwd[]) {
 
+	//设定修改用户名称
+	char uname[100];
+	if (strlen(username) == 0) {
+		strcpy(uname, Cur_User_Name);
+	}
+	else {
+		strcpy(uname, username);
+	}
+	
+	//保护现场并更改信息
+	int pro_cur_dir_addr = Cur_Dir_Addr;
+	char pro_cur_dir_name[310], pro_cur_user_name[110], pro_cur_group_name[110], pro_cur_user_dir_name[310];
+	strcpy(pro_cur_dir_name, Cur_Dir_Name);
+	strcpy(pro_cur_user_name, Cur_User_Name);
+	strcpy(pro_cur_group_name, Cur_Group_Name);
+	strcpy(pro_cur_user_dir_name, Cur_User_Dir_Name);
 
-void backup() {
-	inode pinode, childinode;
+	//获取etc三文件
+	inode etcino, shadowino;
+	int shadowiddr;
+	gotoRoot();
+	cd(Cur_Dir_Addr, "etc");
+	fseek(fr, Cur_Dir_Addr, SEEK_SET);
+	fread(&etcino, sizeof(inode), 1, fr);
+	for (int i = 0; i < 10; ++i) {
+		DirItem ditem[DirItem_Size];
+		int baddr = etcino.i_dirBlock[i];
+		if (baddr != -1) {
+			fseek(fr, baddr, SEEK_SET);
+			fread(&ditem, BLOCK_SIZE, 1, fr);
+			for (int j = 0; j < DirItem_Size; ++j) {
+				if (strcmp(ditem[j].itemName, "shadow") == 0) {	//不判断是否为文件了
+					shadowiddr = ditem[j].inodeAddr;
+					fseek(fr, shadowiddr, SEEK_SET);
+					fread(&shadowino, sizeof(inode), 1, fr);
+				}
+			}
+		}
+	}
+
+	//shadow
+	char buf[BLOCK_SIZE * 10]; //1char:1B
+	char temp[BLOCK_SIZE];
+	memset(buf, '\0', sizeof(temp));
+	for (int i = 0; i < 10; ++i) {
+		if (shadowino.i_dirBlock[i] != -1) {
+			memset(temp, '\0', sizeof(temp));
+			fseek(fr, shadowino.i_dirBlock[i], SEEK_SET);
+			fread(&temp, BLOCK_SIZE, 1, fr);//不知道能否成功
+			strcat(buf, temp);
+		}
+	}
+	char* p = strstr(buf, uname);
+	if (p == NULL) {
+		printf("该用户不存在\n");
+		Cur_Dir_Addr = pro_cur_dir_addr;
+		strcmp(Cur_Dir_Name, pro_cur_dir_name);
+		return false;
+	}
+	*p = '\0';
+	while ((*p) != '\n') {
+		p++;
+	}
+	p++;
+	char content[BLOCK_SIZE * 10];
+	memset(content, '\0', sizeof(content));
+	strcpy(content, p);
+	sprintf(buf + strlen(buf), "%s:%s\n", uname, pwd);
+	strcat(buf, content);
+	writefile(shadowino, shadowiddr, buf);
+
+	Cur_Dir_Addr = pro_cur_dir_addr;
+	strcmp(Cur_Dir_Name, pro_cur_dir_name);
+	return true;
+}
 
 }
