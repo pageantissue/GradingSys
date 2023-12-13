@@ -1,80 +1,63 @@
+#include<iostream>
+#include<stdio.h>
+#include<time.h>
+#include<string>
+#include<ctime>
 #include"snapshot.h"
 #include"os.h"
 
-void initial() {
-	if ((bfr = fopen(BACKUP_SYS_NAME, "rb")) == NULL) {
-		bfw = fopen(BACKUP_SYS_NAME, "wb");
+using namespace std;
+
+void Initial() {
+	time_t cur_time;
+	char backupSysName[256] = { 0 };
+	time(&cur_time);
+	strftime(backupSysName, sizeof(backupSysName), "%Y.%m.%d %H-%M-%S backup.sys", localtime(&cur_time));
+	
+	if ((bfr = fopen(backupSysName, "rb")) == NULL) {
+		bfw = fopen(backupSysName, "wb");
 		if (bfw == NULL) {
 			printf("备份文件打开失败！");
 			return;
 		}
-		bfr = fopen(BACKUP_SYS_NAME, "rb");
+		bfr = fopen(backupSysName, "rb");
 		printf("备份文件打开成功");
 	}
 	else {
-		bfw = fopen(BACKUP_SYS_NAME, "rb+");
+		bfw = fopen(backupSysName, "rb+");
 		if (bfw == NULL) {
 			printf("备份文件打开失败");
 			return;
 		}
 	}
 	//把备份的空间初始化
-	char backup_buf[500000];
+	char backup_buf[10000000];
 	memset(backup_buf, '\0', sizeof(backup_buf));
 	fseek(bfw, Start_Addr, SEEK_SET);
 	fwrite(backup_buf, sizeof(backup_buf), 1, bfw);
 	return;
 }
-bool backup(int count,int parAddr,int chidAddr) {
-	if (count == -1) {
-		return true;
+
+bool fullBackup() {
+	try {
+		char tmp_backup[10000000];
+		fseek(fr, Start_Addr, SEEK_SET);
+		fread(&tmp_backup, sizeof(tmp_backup), 1, fr);
+		fseek(bfw, Start_Addr, SEEK_SET);
+		fwrite(&tmp_backup, sizeof(tmp_backup), 1, bfw);
 	}
-	Backup tmp_backup;
-	//备份inodebitmap
-	char tmp_inodeBitMap[1024];
-	fseek(fr, InodeBitmap_Start_Addr, SEEK_SET);
-	fread(&tmp_inodeBitMap, sizeof(tmp_inodeBitMap), 1, fr);
-	fseek(bfw, count % Operation_Num * (Backup_Block_Num * BLOCK_SIZE), SEEK_SET);
-	fwrite(&tmp_inodeBitMap, sizeof(tmp_inodeBitMap), 1, bfw);
-	
-	//备份blcokbitmap
-	char tmp_blockBitMap[10240];
-	fseek(fr, BlockBitmap_Start_Addr, SEEK_SET);
-	fread(&tmp_blockBitMap, sizeof(tmp_blockBitMap), 1, fr);
-	fseek(bfw, (count % Operation_Num * (Backup_Block_Num * BLOCK_SIZE) + sizeof(tmp_inodeBitMap)), SEEK_SET);
-	fwrite(&tmp_blockBitMap, sizeof(tmp_blockBitMap), 1, bfw);
-
-
-	//备份parinode
-	inode grad_parinode;
-	//inode tmp_parinode;
-	fseek(fr, parAddr, SEEK_SET);
-	fread(&grad_parinode, sizeof(inode), 1, fr);
-	fseek(bfw, (count % Operation_Num * (Backup_Block_Num * BLOCK_SIZE)) + sizeof(tmp_inodeBitMap) + sizeof(tmp_blockBitMap), SEEK_SET);
-	fwrite(&grad_parinode, sizeof(grad_parinode), 1, bfw);
-
-
-	//备份childinode
-	inode grad_childinode;
-	//inode tmp_childinode;
-	fseek(fr, chidAddr, SEEK_SET);
-	fread(&grad_childinode, sizeof(inode), 1, fr);
-	fseek(bfw, (count % Operation_Num * (Backup_Block_Num * BLOCK_SIZE)) + sizeof(tmp_inodeBitMap) + sizeof(tmp_blockBitMap)+sizeof(inode), SEEK_SET);
-	fwrite(&grad_childinode, sizeof(grad_childinode), 1, bfw);
-
-	//备份parinode直接块
-	int baddr = -1;
-	for (int i = 0; i < 10; i++) {
-		baddr = grad_parinode.i_dirBlock[i];
-		char tmp_block[512];
-
+	catch (exception e) {
+		printf("%s\n", e.what());
+		return false;
 	}
-
-
-
 	return true;
 }
 
-bool recovery(int count) {
-	return true;
+//增量转存
+bool incrementalBackup() {
+	//对每一个修改过的文件&全部目录在位图中做标记
+
+	//找到要被转储的inode
+
+	//
 }
