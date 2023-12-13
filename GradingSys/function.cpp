@@ -296,7 +296,8 @@ void cmd(Client& client)
 			return;
 		}
 		inPasswd(client, passwd);
-		useradd(client, user, group, passwd);
+		useradd(client, user, passwd, group);
+		printf("Here user = %s, group = %s, passwd = %s", user, group, passwd);
 	}
 	else if (strcmp(com1, "userdel") == 0) {
 		sscanf(cmd_str, "%s%s", com1, com2);

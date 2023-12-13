@@ -77,23 +77,22 @@ int main()
     printf("Waiting for connection!\n");
     while (true)
     {
+        Client client;
+        client.client_sock = accept(server_sock, (struct sockaddr*)&client.client_addr, &client.length);
+        if (client.client_sock == -1)
+        {
+            perror("Connect Error");
+            return -1;
+        }
+        printf("Client %d Connected Successful\n", client.client_sock);
         if (fork() == 0)
         {
             // 子进程
-            Client client;
-            client.client_sock = accept(server_sock, (struct sockaddr*)&client.client_addr, &client.length);
-            if (client.client_sock == -1)
-            {
-                perror("Connect Error");
-                return -1;
-            }
-            printf("Client %d Connected Successful\n", client.client_sock);
             Welcome(client);
             handleClient(client); // 处理客户端请求
             close(client.client_sock); // 关闭套接字
             exit(0); // 子进程退出
         }
-        else wait(NULL); // 等待子进程退出
     }
     close(server_sock);//关闭服务器响应socket
     //system("pause");

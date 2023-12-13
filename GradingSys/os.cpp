@@ -1180,7 +1180,6 @@ bool useradd(Client& client, char username[], char passwd[], char group[]) {	//ç
 	char buf[BLOCK_SIZE * 10]; //1char:1B
 	char temp[BLOCK_SIZE];
 	int g = -1;
-	printf("Here group entered is %s", group);
 	if (strcmp(group, "root")==0) {
 		g = 0;
 	}
