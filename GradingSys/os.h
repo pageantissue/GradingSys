@@ -81,6 +81,7 @@ extern const int InodeBitmap_Start_Addr;		//inode位图 偏移地址，占两个
 extern const int BlockBitmap_Start_Addr;		//block位图 偏移地址，占二十个磁盘块，最多监控 10240 个磁盘块（5120KB）的状态
 extern const int Inode_Start_Addr;			//inode节点区 偏移地址，占 INODE_NUM/(BLOCK_SIZE/INODE_SIZE) 个磁盘块
 extern const int Block_Start_Addr;			//block数据区 偏移地址 ，占 INODE_NUM 个磁盘块
+extern const int Modified_inodeBitmap_Start_Addr;		//逻辑转储
 extern const int File_Max_Size;				//单个文件最大大小
 extern const int Disk_Size;					//虚拟磁盘文件大小
 
@@ -104,6 +105,7 @@ extern FILE* fr;							//虚拟磁盘文件 读文件指针
 extern SuperBlock* superblock;				//超级块指针
 extern bool inode_bitmap[INODE_NUM];		//inode位图
 extern bool block_bitmap[BLOCK_NUM];		//磁盘块位图
+extern bool modified_inode_bitmap[INODE_NUM];
 
 extern char buffer[10000000];				//10M，缓存整个虚拟磁盘文件
 
@@ -114,7 +116,7 @@ extern char buffer[10000000];				//10M，缓存整个虚拟磁盘文件
 //大类函数
 bool Format(int count);								//文件系统格式化
 bool Install();								//安装文件系统
-bool mkdir(int PIAddr, char name[],int count);
+//bool mkdir(int PIAddr, char name[],int count);
 bool mkdir(int PIAddr, char name[]);
 bool mkfile(int PIAddr, char name[], char buf[]);
 bool rm(int PIAddr, char name[],int type);
