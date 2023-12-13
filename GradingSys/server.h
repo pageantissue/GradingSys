@@ -33,7 +33,5 @@ struct Client
 
 void Welcome(Client&);
 void handleClient(Client&);
-void localize(Client&);
-void globalize(Client&);
 int Initialize();
 bool ever_logging();
