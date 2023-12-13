@@ -5,8 +5,6 @@
 #include<cstdio>
 #include <mutex>
 
-char Cur_Host_Name[110];
-int Root_Dir_Addr;
 
 void Welcome(Client& client)
 {
@@ -16,7 +14,6 @@ void Welcome(Client& client)
 }
 int Initialize()
 {
-    //###############�򲻿��ļ�################
     if ((fr = fopen(GRADE_SYS_NAME, "rb")) == NULL)
     {
         fw = fopen(GRADE_SYS_NAME, "wb");
@@ -26,12 +23,10 @@ int Initialize()
         }
         fr = fopen(GRADE_SYS_NAME, "rb");
         printf("Virtual disc file openned successfully!\n");
-        //��ʼ������
         isLogin = false;
         strcpy(sys.Cur_User_Name, "root");
         strcpy(sys.Cur_Group_Name, "root");
 
-        //��ȡ������
         memset(Cur_Host_Name, 0, sizeof(Cur_Host_Name));
         if (gethostname(Cur_Host_Name, sizeof(Cur_Host_Name)) != 0) {
             perror("Error getting hostname");
@@ -43,7 +38,6 @@ int Initialize()
         strcpy(sys.Cur_Dir_Name, "/");
         printf("Formatting the file system...\n");
 
-        //ϵͳ��ʽ��
         if (!Format()) {
             printf("Formatting file system failed!\n");
             return 0;
@@ -58,17 +52,16 @@ int Initialize()
     }
     else
     {
-        fw = fopen(GRADE_SYS_NAME, "rb+"); //��ԭ���Ļ������޸��ļ�
+        fw = fopen(GRADE_SYS_NAME, "rb+");
         if (fw == NULL) {
             printf("Disk files openning failure!\n");
             return false;
         }
-        //��ʼ������
+
         isLogin = false;
         strcpy(sys.Cur_User_Name, "root");
         strcpy(sys.Cur_Group_Name, "root");
 
-        //��ȡ������
         memset(Cur_Host_Name, 0, sizeof(Cur_Host_Name));
         if (gethostname(Cur_Host_Name, sizeof(Cur_Host_Name)) != 0) {
             perror("Error getting hostname");
