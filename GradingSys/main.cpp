@@ -55,7 +55,7 @@ int main()
     server_sockaddr.sin_family = AF_INET;//ipv4
     server_sockaddr.sin_port = htons(MY_PORT);
     server_sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    if (bind(server_sock, (struct sockaddr*)&server_sockaddr, sizeof(server_sockaddr)) == -1)
+    if (::bind(server_sock, (struct sockaddr*)&server_sockaddr, sizeof(server_sockaddr)) == -1)
     {//绑定本地ip与端口
         perror("Bind Failure\n");
         printf("Error: %s\n", strerror(errno));//输出错误信息

@@ -3,11 +3,8 @@
 #include<limits>
 #include<unistd.h>
 #include<cstdio>
-#include<cstdlib>
-#include<iostream>
 #include <mutex>
 
-std::mutex workPrt;
 char Cur_Host_Name[110];
 int Root_Dir_Addr;
 
@@ -19,7 +16,7 @@ void Welcome(Client& client)
 }
 int Initialize()
 {
-    //###############打不开文件################
+    //###############锟津不匡拷锟侥硷拷################
     if ((fr = fopen(GRADE_SYS_NAME, "rb")) == NULL)
     {
         fw = fopen(GRADE_SYS_NAME, "wb");
@@ -29,12 +26,12 @@ int Initialize()
         }
         fr = fopen(GRADE_SYS_NAME, "rb");
         printf("Virtual disc file openned successfully!\n");
-        //初始化变量
+        //锟斤拷始锟斤拷锟斤拷锟斤拷
         isLogin = false;
         strcpy(sys.Cur_User_Name, "root");
         strcpy(sys.Cur_Group_Name, "root");
 
-        //获取主机名
+        //锟斤拷取锟斤拷锟斤拷锟斤拷
         memset(Cur_Host_Name, 0, sizeof(Cur_Host_Name));
         if (gethostname(Cur_Host_Name, sizeof(Cur_Host_Name)) != 0) {
             perror("Error getting hostname");
@@ -46,7 +43,7 @@ int Initialize()
         strcpy(sys.Cur_Dir_Name, "/");
         printf("Formatting the file system...\n");
 
-        //系统格式化
+        //系统锟斤拷式锟斤拷
         if (!Format()) {
             printf("Formatting file system failed!\n");
             return 0;
@@ -61,29 +58,29 @@ int Initialize()
     }
     else
     {
-        fw = fopen(GRADE_SYS_NAME, "rb+"); //在原来的基础上修改文件
+        fw = fopen(GRADE_SYS_NAME, "rb+"); //锟斤拷原锟斤拷锟侥伙拷锟斤拷锟斤拷锟睫革拷锟侥硷拷
         if (fw == NULL) {
             printf("Disk files openning failure!\n");
             return false;
         }
-        //初始化变量
+        //锟斤拷始锟斤拷锟斤拷锟斤拷
         isLogin = false;
         strcpy(sys.Cur_User_Name, "root");
         strcpy(sys.Cur_Group_Name, "root");
 
-        //获取主机名
+        //锟斤拷取锟斤拷锟斤拷锟斤拷
         memset(Cur_Host_Name, 0, sizeof(Cur_Host_Name));
         if (gethostname(Cur_Host_Name, sizeof(Cur_Host_Name)) != 0) {
             perror("Error getting hostname");
             return 1;
         }
 
-        //获取根目录
+        //锟斤拷取锟斤拷目录
         Root_Dir_Addr = Inode_Start_Addr;
         sys.Cur_Dir_Addr = Root_Dir_Addr;
         strcpy(sys.Cur_Dir_Name, "/");
 
-        //是否需要格式化
+        //锟角凤拷锟斤拷要锟斤拷式锟斤拷
         printf("Format the file system? [y/n]\n");
         char str;
         scanf("%s", &str);
@@ -117,17 +114,16 @@ bool ever_logging()
 void handleClient(Client& client)
 {
     int client_sock = client.client_sock;
-    int count = 0;  //记录操作次数
+    int count = 0;
     while (1)
     {
         if (client.islogin)
         {
             char* p;
             count++;
-            if ((p = strstr(client.Cur_Dir_Name, client.Cur_User_Dir_Name)) == NULL)	//当前是否在用户目录下
+            if ((p = strstr(client.Cur_Dir_Name, client.Cur_User_Dir_Name)) == NULL)	//锟斤拷前锟角凤拷锟斤拷锟矫伙拷目录锟斤拷
             {
                 char output_buffer[BUF_SIZE];
-                // 使用snprintf将格式化的字符串存储到output_buffer中
                 snprintf(output_buffer, BUF_SIZE, "[%s@%s %s]# ", Cur_Host_Name, client.Cur_User_Name, client.Cur_Dir_Name);
                 //[Linux@yhl /etc]
                 send(client_sock, output_buffer, strlen(output_buffer), 0);
@@ -139,7 +135,6 @@ void handleClient(Client& client)
                 //[Linux@yhl ~/app]
                 send(client_sock, output_buffer, strlen(output_buffer), 0);
             }
-            // 准备接收用户输入
             memset(client.buffer, '\0', sizeof(client.buffer));
             int len = recv(client_sock, client.buffer, sizeof(client.buffer), 0);
             if (strcmp(client.buffer, "exit\n") == 0 || len <= 0)
@@ -154,11 +149,11 @@ void handleClient(Client& client)
         {
             char buff[] = "Welcome to GradingSysOS! Login first, please!\n";
             send(client_sock, buff, strlen(buff), 0);
-            while (!login(client));	//登陆
+            while (!login(client));
             strcpy(buff, "Successfully logged into our system!\n");
             send(client_sock, buff, strlen(buff), 0);
-            //fclose(fw);		//释放文件指针
-            //fclose(fr);		//释放文件指针
+            //fclose(fw);
+            //fclose(fr);
         }
     }
 }

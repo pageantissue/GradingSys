@@ -1,10 +1,8 @@
 #include"os.h"
 #include"server.h"
-#include<iomanip>
-#include<time.h>
-#include<string.h>
-#include<stdio.h>
-#include<iostream>
+#include<ctime>
+#include<cstring>
+#include<cstdio>
 #include<mutex>
 using namespace std;
 
@@ -676,10 +674,21 @@ bool cd(Client& client, int PIAddr, char name[]) {//切换目录(ok
 	send(client.client_sock, mes, strlen(mes), 0);
 	return false;
 }
+
 void gotoRoot(Client& client) { //ok
 	client.Cur_Dir_Addr = Root_Dir_Addr;
 	strcpy(client.Cur_Dir_Name , "/");
 }
+
+char* send_init(char* to_send)
+{
+    size_t new_length = strlen(to_send) + 1 + 1;
+    char* new_buff = (char*)malloc(new_length);
+    strcpy(new_buff, to_send);
+    new_buff[strlen(to_send)] = '\t';
+    return new_buff;
+}
+
 void ls(Client& client, char str[]) {//显示当前目录所有文件 ok
 	inode ino;
 	fseek(fr, client.Cur_Dir_Addr, SEEK_SET);
@@ -710,81 +719,85 @@ void ls(Client& client, char str[]) {//显示当前目录所有文件 ok
 			fread(ditem, sizeof(ditem), 1, fr);
 			if (strcmp(str, "-l") == 0) 
 			{
+                printf("Here we entered ls -l\n");
 				//取出目录项的inode
-				char tosend[BUF_SIZE];
-				memset(tosend, '\0', BUFSIZ);
-				int ptr = 0;
-				for (int j = 0; j < DirItem_Size; j++)
+                printf("Ready\n");
+				for(auto & j : ditem)
 				{
+                    char to_send[BUF_SIZE];
+                    memset(to_send, '\0', BUF_SIZE);
+                    int ptr = 0;
 					inode tmp;
-					fseek(fr, ditem[j].inodeAddr, SEEK_SET);
+					fseek(fr, j.inodeAddr, SEEK_SET);
 					fread(&tmp, sizeof(inode), 1, fr);
 					fflush(fr);
 
-					if (strcmp(ditem[j].itemName, "") == 0|| (strcmp(ditem[j].itemName, ".") == 0) || (strcmp(ditem[j].itemName, "..") == 0)) {
+					if (strcmp(j.itemName, "") == 0|| (strcmp(j.itemName, ".") == 0) || (strcmp(j.itemName, "..") == 0)) {
 						continue;
 					}
 
 					if (((tmp.inode_mode >> 9) & 1) == 1) {
 						//printf("d");
-						tosend[ptr++] = 'd';
+						to_send[ptr++] = 'd';
 					}
 					else {
 						//printf("-");
-						tosend[ptr++] = '-';
+						to_send[ptr++] = '-';
 					}
-					
 					//权限
 					int count = 8;
-					while (count >= 0) {
+					while (count >= 0)
+                    {
 						if (((tmp.inode_mode >> count) & 1) == 1) {
 							int mod = count % 3;
 							switch (mod) {
 							case 0:
 								//printf("x");
-								tosend[ptr++] = 'x';
+								to_send[ptr++] = 'x';
 								break;
 							case 1:
 								//printf("w");
-								tosend[ptr++] = 'w';
+								to_send[ptr++] = 'w';
 								break;
 							case 2:
 								//printf("r");
-								tosend[ptr++] = 'r';
+								to_send[ptr++] = 'r';
 								break;
 							default:
 								//printf("-");
-								tosend[ptr++] = '-';
+								to_send[ptr++] = '-';
 							}
 						}
 						count--;
 					}
 					//printf("\t");
-					tosend[ptr++] = '\t';
+					to_send[ptr++] = '\t';
 
 					//printf("%s\t", tmp.i_uname);
-					int bytesWritten = snprintf(tosend + ptr, sizeof(tosend) - ptr, "%s\t", tmp.i_uname);
-					ptr += bytesWritten;
+                    char* new_buff1 = send_init(tmp.i_uname);
 
 					//printf("%s\t", tmp.i_gname);
-					int bytesWritten = snprintf(tosend + ptr, sizeof(tosend) - ptr, "%s\t", tmp.i_gname);
-					ptr += bytesWritten;
+                    char* new_buff2 = send_init(tmp.i_gname);
 
 					//printf("%s\t", tmp.inode_file_size);
-					int bytesWritten = snprintf(tosend + ptr, sizeof(tosend) - ptr, "%s\t", tmp.inode_file_size);
-					ptr += bytesWritten;
+                    char* new_buff3;
+                    sprintf(new_buff3, "%d",tmp.inode_file_size);
 
 					//printf("%s\t", ctime(&tmp.file_modified_time));
-					int bytesWritten = snprintf(tosend + ptr, sizeof(tosend) - ptr, "%s\t", ctime(&tmp.file_modified_time));
+                    char* new_buff4  = send_init(ctime(&tmp.file_modified_time));
 
 					//printf("%s\t", ditem[j].itemName);
-					int bytesWritten = snprintf(tosend + ptr, sizeof(tosend) - ptr, "%s\t", ditem[j].itemName);
-					ptr += bytesWritten;
+                    char* new_buff5 = send_init(j.itemName);
 
 					//printf("\n");
-					tosend[ptr++] = '\n';
-					printf("Here!!! ls -l send buffer is %s", tosend);
-					send(client.client_sock, tosend, strlen(tosend), 0);
+					char newline[] = "\n";
+                    send(client.client_sock, to_send, strlen(to_send), 0);
+                    send(client.client_sock, new_buff1, strlen(new_buff1), 0);
+                    send(client.client_sock, new_buff2, strlen(new_buff2), 0);
+                    send(client.client_sock, new_buff3, strlen(new_buff3), 0);
+                    send(client.client_sock, new_buff4, strlen(new_buff4), 0);
+                    send(client.client_sock, new_buff5, strlen(new_buff5), 0);
+					send(client.client_sock, newline, strlen(newline), 0);
 				}
 			}
 			else {
@@ -918,7 +931,6 @@ bool login(Client& client)	//登陆界面
 	//DirItem ditem[DirItem_Size];
 	//fseek(fr,143872, SEEK_SET);
 	//fread(ditem, sizeof(ditem), 1, fr);
-	printf("Client sock %d is trying logging...\n", client.client_sock);
 	char username[100];
 	char passwd[100];
 	memset(username, '\0', sizeof(username));
@@ -935,7 +947,6 @@ bool login(Client& client)	//登陆界面
 				flag = true; // 如果找到了
 				allClients[i] = client;
 				client.ptr = i;
-				printf("Client %d has logged into our system!\n");
 				break;
 			}
 		if (!flag) // 如果没有找到
@@ -1296,9 +1307,9 @@ bool check(Client& client, char username[], char passwd[]) {//核验身份登录
 	//获取三文件
 	inode etcino, shadowino, passwdino, groupino;
 	int shadowiddr, passwdiddr, groupiddr;
-	gotoRoot(client);
-	cd(client, client.Cur_Dir_Addr, "etc");
-	fseek(fr, client.Cur_Dir_Addr, SEEK_SET);
+	gotoRoot(sys);
+	cd(sys, sys.Cur_Dir_Addr, "etc");
+	fseek(fr, sys.Cur_Dir_Addr, SEEK_SET);
 	fread(&etcino, sizeof(inode), 1, fr);
 	for (int i = 0; i < 10; ++i) {
 		DirItem ditem[DirItem_Size];
@@ -1331,7 +1342,7 @@ bool check(Client& client, char username[], char passwd[]) {//核验身份登录
 	char temp[BLOCK_SIZE];
 	char checkpw[100];
 	char group[10];
-
+    memset(checkpw, '\0', sizeof(checkpw));
 
 	//shadow
 	memset(buf, '\0', sizeof(temp));
@@ -1361,6 +1372,7 @@ bool check(Client& client, char username[], char passwd[]) {//核验身份登录
 	}
 	if (strcmp(checkpw, passwd) != 0) {
 		//printf("密码不正确，请重新尝试！\n");
+        printf("checkpw = %s\nyou entered = %s", checkpw, passwd);
 		char ms[] = "Incorrect password! Please try again!\n";
 		send(client.client_sock, ms, strlen(ms), 0);
 		return false;
