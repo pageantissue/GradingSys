@@ -123,13 +123,14 @@ bool mkfile(int PIAddr, char name[], char buf[]);
 bool rm(int PIAddr, char name[],int type);
 bool addfile(inode fileinode, int CHIaddr, char buf[]);
 bool writefile(inode fileinode, int CHIaddr, char buf[]);
-bool chmod(int PIAddr, char name[], int pmode, int type);
+bool echo(int PIAddr, char name[], int type, char* buf);
+bool chmod(int PIAddr, char name[], char* pmode);
 bool cd(int PIAddr, char str[]);
 void gotoRoot();
 void ls(char str[]);
 
 bool cat(int PIAddr, char name[]);
-bool chown(int PIAddr, char name[], char uname[], char gname[]);
+bool chown(int PIAddr, char* pmode, char name[], char group[]);
 
 //工具函数
 int ialloc();
@@ -147,11 +148,12 @@ bool login();
 bool logout();
 bool useradd(char username[], char passwd[], char group[]);
 bool userdel(char username[]);
-bool check(char username[], char passwd[]);	
+bool check(char username[], char passwd[]);	//账号&密码
+//bool check_group(char name[], char s_group[]);//账号&组别
 
-bool groupadd(char gname[]);
-bool groupdel(char gname[]);
-bool passwd();
+//bool groupadd(char gname[]);
+//bool groupdel(char gname[]);
+//bool passwd();
 
 
 

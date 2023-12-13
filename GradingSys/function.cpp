@@ -23,11 +23,7 @@ void help() {
 	cout.width(30);
 	cout << "touch" << "Create a blank file" << endl;			//创建空文件
 	cout.width(30);
-	cout << "echo" << "Create a non-empty file" << endl;		//创建含内容文件
-	cout.width(30);
-	cout << "writefile" << "write a blank file" << endl;		//写入文件
-	cout.width(30);
-	cout << "addfile" << "continue to write file" << endl;		//续写文件
+	cout << "echo" << "Create a non-empty file" << endl;		//新增/重写/续写
 	cout.width(30);
 	cout << "chmod" << "Modify the access right" << endl;    //修改文件权限
 	cout.width(30);
@@ -115,6 +111,39 @@ bool mkdir_func(int CurAddr, char* str) {//在任意目录下创建目录
 		return false;
 	}
 }
+bool rm_func(int CurAddr, char* str, char* s_type) {//在任意目录下删除
+	//文件类型
+	int type = -1;
+	if (strcmp(s_type, "-rf") == 0) {
+		type = 1;
+	}
+	else if (strcmp(s_type, "-f") == 0) {
+		type = 0;
+	}
+	else {
+		printf("无法确认文件删除类型，请重新输入！\n");
+		return false;
+	}
+
+	//绝对,相对,直接创建
+	char* p = strrchr(str, '/');
+	if (p == NULL) {	//直接删除
+		if (rm(CurAddr, str, type))	return true;
+		return false;
+	}
+	else {
+		char name[File_Max_Size];
+		memset(name, '\0', sizeof(name));
+		p++;
+		strcpy(name, p);
+		*p = '\0';
+		if (cd_func(CurAddr, str)) {
+			if (rm(Cur_Dir_Addr, name, type))
+				return true;
+		}
+		return false;
+	}
+}
 bool touch_func(int CurAddr, char* str,char *buf) {//在任意目录下创建文件
 	//绝对,相对,直接创建
 	char* p = strrchr(str, '/');
@@ -153,7 +182,7 @@ bool echo_func(int CurAddr, char* str, char* s_type,char* buf) {//在任意目录下创
 	char* p = strrchr(str, '/');
 	char name[File_Max_Size];
 	memset(name, '\0', sizeof(name));
-	if (p != NULL) {	//直接创建
+	if (p != NULL) {
 		p++;
 		strcpy(name, p);
 		*p = '\0';
@@ -168,67 +197,67 @@ bool echo_func(int CurAddr, char* str, char* s_type,char* buf) {//在任意目录下创
 	//类型执行
 	if (echo(Cur_Dir_Addr, name, type, buf))	return true;
 	return false;
-
-	//if (type == 0) {
-	//	if (mkfile(Cur_Dir_Addr, name, buf) == false) {
-	//		inode ino;
-	//		fseek(fr, Cur_Dir_Addr, SEEK_SET);
-	//		fread(&ino, sizeof(ino), 1, fr);
-	//		
-	//	}
-	//}
-	//else {
-	//	char name[File_Max_Size];
-	//	memset(name, '\0', sizeof(name));
-	//	p++;
-	//	strcpy(name, p);
-	//	*p = '\0';
-	//	if (cd_func(CurAddr, str)) {
-	//		if (mkfile(Cur_Dir_Addr, name, buf))
-	//			return true;
-	//	}
-	//	return false;
-	//}
 }
-bool rm_func(int CurAddr, char* str,char* s_type) {//在任意目录下删除
-	//文件类型
-	int type = -1;
-	if (strcmp(s_type, "-rf") == 0) {
-		type = 1;
-	}
-	else if (strcmp(s_type, "-f") == 0) {
-		type = 0;
-	}
-	else {
-		printf("无法确认文件删除类型，请重新输入！\n");
-		return false;
-	}
-
-	//绝对,相对,直接创建
+bool chmod_func(int CurAddr, char* pmode, char* str) {
+	//寻找直接地址
 	char* p = strrchr(str, '/');
-	if (p == NULL) {	//直接删除
-		if (rm(CurAddr, str,type))	return true;
-		return false;
-	}
-	else {
-		char name[File_Max_Size];
-		memset(name, '\0', sizeof(name));
+	char name[File_Max_Size];
+	memset(name, '\0', sizeof(name));
+	if (p != NULL) {
 		p++;
 		strcpy(name, p);
 		*p = '\0';
-		if (cd_func(CurAddr, str)) {
-			if (rm(Cur_Dir_Addr, name,type))
-				return true;
+		if (cd_func(CurAddr, str) == false) {
+			return false;
 		}
-		return false;
 	}
+	else {
+		strcpy(name, str);
+	}
+
+	//类型执行
+	if (chmod(CurAddr,name,pmode))	return true;
+	return false;
 }
+bool chown_func(int CurAddr, char* u_g, char* str) {
+	//寻找直接地址
+	char* p = strrchr(str, '/');
+	char file[File_Max_Size];
+	memset(file, '\0', sizeof(file));
+	if (p != NULL) {
+		p++;
+		strcpy(file, p);
+		*p = '\0';
+		if (cd_func(CurAddr, str) == false) {
+			return false;
+		}
+	}
+	else {
+		strcpy(file, str);
+	}
+
+	//获取用户和用户组
+	p = strstr(u_g, ":");
+	char name[20], group[20];
+	memset(name, '\0', strlen(name));
+	memset(group, '\0', strlen(group));
+	if (p == NULL) {
+		strcpy(name, u_g);
+	}
+	else {
+		strncpy(name, u_g, p - u_g);
+		p += 1;
+		strcpy(group, p);
+	}
+	if (chown(CurAddr,file,name,group))	return true;
+	return false;
+}
+
 
 void cmd(char cmd_str[], int count) {
 	char com1[100];
 	char com2[100];
 	char com3[100];
-	char com4[100];
 	sscanf(cmd_str, "%s", com1);
 	//一级传来com1和com2
 	if (strcmp(com1, "help") == 0) {
@@ -259,6 +288,7 @@ void cmd(char cmd_str[], int count) {
 	}
 	else if (strcmp(com1, "echo") == 0) {
 		//注意文字里面不要有空格
+		char com4[100];
 		sscanf(cmd_str, "%s%s%s%s", com1, com2,com3,com4);
 		echo_func(Cur_Dir_Addr, com4,com3,com2);
 	}
@@ -266,15 +296,27 @@ void cmd(char cmd_str[], int count) {
 		sscanf(cmd_str, "%s%s", com1, com2);
 		cat(Cur_Dir_Addr, com2);
 	}
-	//writefile&addfile需要改一下
-	//cat,chown
-	//chmod
+	else if (strcmp(com1, "chmod") == 0) {
+		sscanf(cmd_str, "%s%s%s", com1, com2,com3);
+		chmod_func(Cur_Dir_Addr, com2, com3);
+	}
+	else if (strcmp(com1, "chown") == 0) {
+		sscanf(cmd_str, "%s%s%s", com1, com2, com3);
+		chown_func(Cur_Dir_Addr, com2, com3);
+	}
 
 	else if (strcmp(com1, "useradd") == 0) {
-		inUsername(com1);
-		inPasswd(com2);
-		ingroup(com3);
-		useradd(com1, com2, com3);
+		//useradd -g group -m user
+		char group[100];
+		char user[100];
+		char passwd[100];
+		sscanf(cmd_str, "%s%s%s%s%s", com1, com2, group,com3,user);
+		if ((strcmp(com2, "-g") != 0) || ((strcmp(com3, "-m") != 0))) {
+			printf("命令格式错误!\n");
+			return;
+		}
+		inPasswd(passwd);
+		useradd(user, group, passwd);
 	}
 	else if (strcmp(com1, "userdel") == 0) {
 		sscanf(cmd_str, "%s%s", com1, com2);
