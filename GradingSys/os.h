@@ -29,10 +29,6 @@
 #define FILE_DEF_PERMISSION 0664			//文件默认权限 owner,group:读写 other:读 
 #define DIR_DEF_PERMISSION	0755			//目录默认权限 owner：全部 group,other:读执行
 
-#define ROOT 0	  //管理员
-#define TEACHER 1 //老师
-#define STUDENT 2 //学生
-
 #define GRADE_SYS_NAME "grading_sys.sys"	//文件系统名
 #define BACKUP_SYS_NAME "backup_sys.sys"	//备份系统名
 
@@ -148,7 +144,11 @@ bool login();
 bool logout();
 bool useradd(char username[], char passwd[], char group[]);
 bool userdel(char username[]);
+bool groupadd(char* group);
+bool groupdel(char* group);
 bool check(char username[], char passwd[]);	//账号&密码
+bool passwd(char username[], char pwd[]);
+char* is_group(char* group,char *gid);//判断是否在组内
 //bool check_group(char name[], char s_group[]);//账号&组别
 
 //bool groupadd(char gname[]);
