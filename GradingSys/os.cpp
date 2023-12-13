@@ -2077,7 +2077,7 @@ bool chown(Client& client, int PIAddr,char* filename, char name[], char group[])
 		return false;
 	}
 	char gid[10];
-	if (is_group(client, group, gid)==false) {
+	if (strcmp(is_group(client, group, gid), "-1") == 0) {
 		//printf("组别不正确！请重新输入！\n");
 		char ms[] = "Invalid group entered! Please try again!\n";
 		send(client.client_sock, ms, strlen(ms), 0);
