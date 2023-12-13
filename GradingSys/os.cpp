@@ -4,12 +4,13 @@
 #include<string.h>
 #include<stdio.h>
 #include<iostream>
+#include"snapshot.h"
 
 using namespace std;
 
 
 //****大类函数****
-bool Format() { //ok
+bool Format(int count) { //ok
 	//初始化:超级块,位图
 	char buffer[Disk_Size];
 	memset(buffer, '\0', sizeof(buffer));
@@ -109,6 +110,7 @@ bool Format() { //ok
 	gotoRoot();
 	return true;
 }
+
 bool Install() {	//安装文件系统 ok
 	fseek(fr, Superblock_Start_Addr, SEEK_SET);
 	fread(superblock, sizeof(superblock), 1, fr);
@@ -122,6 +124,8 @@ bool Install() {	//安装文件系统 ok
 	fflush(fr);
 	return true;
 }
+
+
 
 bool mkdir(int PIAddr, char name[]) {	//目录创建函数(父目录权限:读写执行)
 	//理论上Cur_Dir_Addr是系统分配的，应该是正确的
@@ -262,8 +266,11 @@ bool mkdir(int PIAddr, char name[]) {	//目录创建函数(父目录权限:读�
 	fwrite(chiitem, sizeof(chiitem), 1, fw);
 
 	fflush(fw);
+	DirItem ditem[DirItem_Size];
+	//backup(count, 0);
 	return true;
 }
+
 bool mkfile(int PIAddr, char name[],char buf[]) {	//文件创建函数
 	//理论上Cur_Dir_Addr是系统分配的，应该是正确的
 	if (strlen(name) > FILE_NAME_MAX_SIZE) {
@@ -1703,3 +1710,7 @@ bool chown(int PIAddr,char* filename, char name[], char group[]) {//修改文件
 }
 
 
+void backup() {
+	inode pinode, childinode;
+
+}

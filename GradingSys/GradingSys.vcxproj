@@ -78,6 +78,7 @@
     <ClCompile Include="function.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="os.cpp" />
+    <ClCompile Include="snapshot.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="function.h" />
