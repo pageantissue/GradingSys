@@ -7,7 +7,7 @@
 
 //提示函数
 void help();
-void cmd(char cmd[], int count);							//命令行函数(二级命令处理中心）
+void cmd(char cmd[]);							//命令行函数(二级命令处理中心）
 
 //应用函数
 bool cd_func(int CurAddr, char* str);
