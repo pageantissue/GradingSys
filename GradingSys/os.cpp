@@ -711,11 +711,11 @@ void ls(Client& client, char str[]) {//显示当前目录所有文件 ok
 		return;
 	}
 	
-	for (int i = 0; i < 10; ++i) {
+	for (int i : ino.i_dirBlock) {
 		DirItem ditem[DirItem_Size];
-		if (ino.i_dirBlock[i] != -1)
+		if (i != -1)
 		{//被使用过
-			fseek(fr, ino.i_dirBlock[i], SEEK_SET);
+			fseek(fr, i, SEEK_SET);
 			fread(ditem, sizeof(ditem), 1, fr);
 			if (strcmp(str, "-l") == 0) 
 			{
