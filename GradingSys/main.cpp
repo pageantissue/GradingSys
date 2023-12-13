@@ -12,7 +12,7 @@
 #include"snapshot.h"
 #include"function.h"
 #include<limits>
-#include <unistd.h>
+#include<unistd.h>
 
 
 const int Superblock_Start_Addr=0;     //44B:1block
@@ -31,12 +31,7 @@ const int File_Max_Size = 10 * BLOCK_SIZE;
 const int Start_Addr = 0;
 
 int Root_Dir_Addr;							//根目录inode地址
-int Cur_Dir_Addr;							//当前目录:存inode地址
-char Cur_Dir_Name[310];						//当前目录名
 char Cur_Host_Name[110];					//当前主机名
-char Cur_User_Name[110];					//当前登陆用户名
-char Cur_Group_Name[110];					//当前登陆用户组名
-char Cur_User_Dir_Name[310];				//当前登陆用户目录名
 
 int nextUID;								//下一个要分配的用户标识号
 int nextGID;								//下一个要分配的用户组标识号

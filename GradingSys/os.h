@@ -146,18 +146,11 @@ bool logout(Client&);
 bool useradd(Client&, char username[], char passwd[], char group[]);
 bool userdel(Client&, char username[]);
 bool check(Client&, char username[], char passwd[]);	//账号&密码
-void inUsername(char* username);							//输入用户名
-void inPasswd(char* passwd);
-void ingroup(char* group);
-bool login();	
-bool logout();
-bool useradd(char username[], char passwd[], char group[]);
-bool userdel(char username[]);
-bool groupadd(char* group);
-bool groupdel(char* group);
-bool check(char username[], char passwd[]);	//账号&密码
-bool passwd(char username[], char pwd[]);
-char* is_group(char* group,char *gid);//判断是否在组内
+bool groupadd(Client&, char* group);
+bool groupdel(Client&, char* group);
+bool check(Client&, char username[], char passwd[]);	//账号&密码
+bool passwd(Client&, char username[], char pwd[]);
+char* is_group(Client&, char* group,char *gid);//判断是否在组内
 //bool check_group(char name[], char s_group[]);//账号&组别
 bool ever_logging();												//判断系统是否还有用户处于登陆状态
 //bool groupadd(char gname[]);
