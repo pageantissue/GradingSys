@@ -983,6 +983,7 @@ bool login()	//登陆界面
 	char passwd[100] = { 0 };
 	inUsername(username);	//输入用户名
 	inPasswd(passwd);		//输入用户密码
+    printf("input password: %s, input username: %s\n", passwd, username);
 	if (check(username, passwd)) {			//核对用户名和密码
 
 		isLogin = true;
@@ -1345,6 +1346,7 @@ bool check(char username[], char passwd[]) {//核验身份登录&设置 ok
 	char buf[BLOCK_SIZE * 10]; //1char:1B
 	char temp[BLOCK_SIZE];
 	char checkpw[100];
+    memset(checkpw, '\0', 100);
 	char group[10];
 
 
@@ -1373,6 +1375,7 @@ bool check(char username[], char passwd[]) {//核验身份登录&设置 ok
 		p++;
 	}
 	if (strcmp(checkpw, passwd) != 0) {
+        printf("Here!!! checkpw is %s, passwd is %s\n", checkpw, passwd);
 		printf("密码不正确，请重新尝试！\n");
 		return false;
 	}

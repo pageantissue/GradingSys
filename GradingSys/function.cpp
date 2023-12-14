@@ -1,38 +1,36 @@
 #include"os.h"
 #include"function.h"
-#include<iomanip>
-#include<time.h>
-#include<string.h>
-#include<stdio.h>
+#include<cstring>
+#include<cstdio>
 #include<iostream>
 #include"role.h"
 
 using namespace std;
 
 void help() {
-	cout.setf(ios::left); //ÉèÖÃ¶ÔÆë·½Ê½Îªleft 
-	cout.width(30); //ÉèÖÃ¿í¶È£¬²»×ãÓÃ¿Õ¸ñÌî³ä 
-	cout << "ls" << "Display the current directory listing" << endl;	//ÁÐ³öµ±Ç°Ä¿Â¼Çåµ¥(ls/ls -l)
+	cout.setf(ios::left); //ï¿½ï¿½ï¿½Ã¶ï¿½ï¿½ë·½Ê½Îªleft 
+	cout.width(30); //ï¿½ï¿½ï¿½Ã¿ï¿½È£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã¿Õ¸ï¿½ï¿½ï¿½ï¿½ 
+	cout << "ls" << "Display the current directory listing" << endl;	//ï¿½Ð³ï¿½ï¿½ï¿½Ç°Ä¿Â¼ï¿½åµ¥(ls/ls -l)
 	cout.width(30);
-	cout << "cd" << "Enter the specific directory " << endl;		//Ç°ÍùÖ¸¶¨Ä¿Â¼(cd home)
+	cout << "cd" << "Enter the specific directory " << endl;		//Ç°ï¿½ï¿½Ö¸ï¿½ï¿½Ä¿Â¼(cd home)
 	cout.width(30);
-	cout << "gotoRoot" << "Return to the root directory " << endl;		//·µ»Ø¸ùÄ¿Â¼
+	cout << "gotoRoot" << "Return to the root directory " << endl;		//ï¿½ï¿½ï¿½Ø¸ï¿½Ä¿Â¼
 	cout.width(30);
-	cout << "mkdir" << "Create directory" << endl;					//´´½¨Ä¿Â¼
+	cout << "mkdir" << "Create directory" << endl;					//ï¿½ï¿½ï¿½ï¿½Ä¿Â¼
 	cout.width(30);
-	cout << "rm" << "Delete directory or file" << endl;					//É¾³ýÄ¿Â¼»òÎÄ¼þ
+	cout << "rm" << "Delete directory or file" << endl;					//É¾ï¿½ï¿½Ä¿Â¼ï¿½ï¿½ï¿½Ä¼ï¿½
 	cout.width(30);
-	cout << "touch" << "Create a blank file" << endl;			//´´½¨¿ÕÎÄ¼þ
+	cout << "touch" << "Create a blank file" << endl;			//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½
 	cout.width(30);
-	cout << "echo" << "Create a non-empty file" << endl;		//ÐÂÔö/ÖØÐ´/ÐøÐ´
+	cout << "echo" << "Create a non-empty file" << endl;		//ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½Ð´/ï¿½ï¿½Ð´
 	cout.width(30);
-	cout << "chmod" << "Modify the access right" << endl;    //ÐÞ¸ÄÎÄ¼þÈ¨ÏÞ
+	cout << "chmod" << "Modify the access right" << endl;    //ï¿½Þ¸ï¿½ï¿½Ä¼ï¿½È¨ï¿½ï¿½
 	cout.width(30);
-	//cat£¬chown
+	//catï¿½ï¿½chown
 
-	cout << "useradd" << "Add user" << endl;		//ÐÂÔöÓÃ»§
+	cout << "useradd" << "Add user" << endl;		//ï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½
 	cout.width(30);
-	cout << "userdel" << "Delete user" << endl;		//É¾³ýÓÃ»§
+	cout << "userdel" << "Delete user" << endl;		//É¾ï¿½ï¿½ï¿½Ã»ï¿½
 	cout.width(30);
 	cout << "groupadd" << "Add group" << endl;		
 	cout.width(30);
@@ -40,32 +38,32 @@ void help() {
 	cout.width(30);
 	cout << "passwd" << "Modify the password" << endl;	
 	cout.width(30);
-	cout << "logout" << "Logout the account" << endl;		//ÍË³öÕËºÅ
+	cout << "logout" << "Logout the account" << endl;		//ï¿½Ë³ï¿½ï¿½Ëºï¿½
 	cout.width(30);
-	//usergrpadd,userfrpdel,ÃÜÂëÐÞ¸Ä£¬
+	//usergrpadd,userfrpdel,ï¿½ï¿½ï¿½ï¿½ï¿½Þ¸Ä£ï¿½
 
 
-	cout << "snapshot" << "Back up the system" << endl;			//±¸·ÝÏµÍ³
+	cout << "snapshot" << "Back up the system" << endl;			//ï¿½ï¿½ï¿½ï¿½ÏµÍ³
 	cout.width(30);
-	//±¸·ÝÏµÍ³&»Ö¸´ÏµÍ³
+	//ï¿½ï¿½ï¿½ï¿½ÏµÍ³&ï¿½Ö¸ï¿½ÏµÍ³
 
-	cout << "exit" << "Exit the system" << endl;		//ÍË³öÏµÍ³
+	cout << "exit" << "Exit the system" << endl;		//ï¿½Ë³ï¿½ÏµÍ³
 }
 
 bool cd_func(int CurAddr, char* str) {
-	//cdÖÁÈÎÒ»¾ø¶ÔÂ·¾¶orÏà¶ÔÂ·¾¶
-	//±£´æÏÖ³¡£¨Ê§°Ü»Ö¸´£©
+	//cdï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½orï¿½ï¿½ï¿½Â·ï¿½ï¿½
+	//ï¿½ï¿½ï¿½ï¿½ï¿½Ö³ï¿½ï¿½ï¿½Ê§ï¿½Ü»Ö¸ï¿½ï¿½ï¿½
 	int pro_cur_dir_addr = Cur_Dir_Addr;
 	char pro_cur_dir_name[310];
 	strcpy(pro_cur_dir_name, Cur_Dir_Name);
 	int flag = 1;
 
-	//²é¿´cdÀàÐÍ£º¾ø¶ÔÂ·¾¶orÏà¶ÔÂ·¾¶
-	if (strcmp(str, "/") == 0) {//Ç°Íù¸ùÄ¿Â¼
+	//ï¿½é¿´cdï¿½ï¿½ï¿½Í£ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½orï¿½ï¿½ï¿½Â·ï¿½ï¿½
+	if (strcmp(str, "/") == 0) {//Ç°ï¿½ï¿½ï¿½ï¿½Ä¿Â¼
 		gotoRoot();
 		return true;
 	}
-	if (str[0] == '/') {	//¾ø¶ÔÂ·¾¶
+	if (str[0] == '/') {	//ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½
 		gotoRoot();
 		str += 1;
 	}
@@ -89,18 +87,18 @@ bool cd_func(int CurAddr, char* str) {
 		}
 	}
 
-	//ÅÐ¶ÏÊÇ·ñ³É¹¦
-	if (flag == 0) {//Ê§°Ü£¬»Ö¸´ÏÖ³¡
+	//ï¿½Ð¶ï¿½ï¿½Ç·ï¿½É¹ï¿½
+	if (flag == 0) {//Ê§ï¿½Ü£ï¿½ï¿½Ö¸ï¿½ï¿½Ö³ï¿½
 		Cur_Dir_Addr = pro_cur_dir_addr;
 		strcpy(Cur_Dir_Name, pro_cur_dir_name);
 		return false;
 	}
 	return true;
 }
-bool mkdir_func(int CurAddr, char* str) {//ÔÚÈÎÒâÄ¿Â¼ÏÂ´´½¨Ä¿Â¼
-	//¾ø¶Ô,Ïà¶Ô,Ö±½Ó´´½¨
+bool mkdir_func(int CurAddr, char* str) {//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿Â¼ï¿½Â´ï¿½ï¿½ï¿½Ä¿Â¼
+	//ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½,Ö±ï¿½Ó´ï¿½ï¿½ï¿½
 	char* p = strrchr(str, '/');
-	if (p == NULL) {	//Ö±½Ó´´½¨
+	if (p == NULL) {	//Ö±ï¿½Ó´ï¿½ï¿½ï¿½
 		if (mkdir(CurAddr, str)) { return true; }
 		else { return false; }
 	}
@@ -117,8 +115,8 @@ bool mkdir_func(int CurAddr, char* str) {//ÔÚÈÎÒâÄ¿Â¼ÏÂ´´½¨Ä¿Â¼
 		return false;
 	}
 }
-bool rm_func(int CurAddr, char* str, char* s_type) {//ÔÚÈÎÒâÄ¿Â¼ÏÂÉ¾³ý
-	//ÎÄ¼þÀàÐÍ
+bool rm_func(int CurAddr, char* str, char* s_type) {//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿Â¼ï¿½ï¿½É¾ï¿½ï¿½
+	//ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½
 	int type = -1;
 	if (strcmp(s_type, "-rf") == 0) {
 		type = 1;
@@ -127,13 +125,13 @@ bool rm_func(int CurAddr, char* str, char* s_type) {//ÔÚÈÎÒâÄ¿Â¼ÏÂÉ¾³ý
 		type = 0;
 	}
 	else {
-		printf("ÎÞ·¨È·ÈÏÎÄ¼þÉ¾³ýÀàÐÍ£¬ÇëÖØÐÂÊäÈë£¡\n");
+		printf("ï¿½Þ·ï¿½È·ï¿½ï¿½ï¿½Ä¼ï¿½É¾ï¿½ï¿½ï¿½ï¿½ï¿½Í£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ë£¡\n");
 		return false;
 	}
 
-	//¾ø¶Ô,Ïà¶Ô,Ö±½Ó´´½¨
+	//ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½,Ö±ï¿½Ó´ï¿½ï¿½ï¿½
 	char* p = strrchr(str, '/');
-	if (p == NULL) {	//Ö±½ÓÉ¾³ý
+	if (p == NULL) {	//Ö±ï¿½ï¿½É¾ï¿½ï¿½
 		if (rm(CurAddr, str, type))	return true;
 		return false;
 	}
@@ -150,10 +148,10 @@ bool rm_func(int CurAddr, char* str, char* s_type) {//ÔÚÈÎÒâÄ¿Â¼ÏÂÉ¾³ý
 		return false;
 	}
 }
-bool touch_func(int CurAddr, char* str, char* buf) {//ÔÚÈÎÒâÄ¿Â¼ÏÂ´´½¨ÎÄ¼þ
-	//¾ø¶Ô,Ïà¶Ô,Ö±½Ó´´½¨
+bool touch_func(int CurAddr, char* str, char* buf) {//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿Â¼ï¿½Â´ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½
+	//ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½,Ö±ï¿½Ó´ï¿½ï¿½ï¿½
 	char* p = strrchr(str, '/');
-	if (p == NULL) {	//Ö±½Ó´´½¨
+	if (p == NULL) {	//Ö±ï¿½Ó´ï¿½ï¿½ï¿½
 		if (mkfile(CurAddr, str, buf))	return true;
 		return false;
 	}
@@ -170,8 +168,8 @@ bool touch_func(int CurAddr, char* str, char* buf) {//ÔÚÈÎÒâÄ¿Â¼ÏÂ´´½¨ÎÄ¼þ
 		return false;
 	}
 }
-bool echo_func(int CurAddr, char* str, char* s_type, char* buf) {//ÔÚÈÎÒâÄ¿Â¼ÏÂ´´½¨or¸²¸ÇÐ´Èëor×·¼Ó
-	//ÅÐ¶ÏÀàÐÍ 0£º¸²¸ÇÐ´Èë 1£º×·¼Ó
+bool echo_func(int CurAddr, char* str, char* s_type, char* buf) {//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿Â¼ï¿½Â´ï¿½ï¿½ï¿½orï¿½ï¿½ï¿½ï¿½Ð´ï¿½ï¿½or×·ï¿½ï¿½
+	//ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½ï¿½ 0ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð´ï¿½ï¿½ 1ï¿½ï¿½×·ï¿½ï¿½
 	int type = -1;
 	if (strcmp(s_type, ">") == 0) {
 		type = 0;
@@ -180,11 +178,11 @@ bool echo_func(int CurAddr, char* str, char* s_type, char* buf) {//ÔÚÈÎÒâÄ¿Â¼ÏÂ´
 		type = 1;
 	}
 	else {
-		printf("echoÊäÈë¸ñÊ½´íÎó£¬ÇëÊäÈëÕýÈ·¸ñÊ½!\n");
+		printf("echoï¿½ï¿½ï¿½ï¿½ï¿½Ê½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È·ï¿½ï¿½Ê½!\n");
 		return false;
 	}
 
-	//Ñ°ÕÒÖ±½ÓµØÖ·
+	//Ñ°ï¿½ï¿½Ö±ï¿½Óµï¿½Ö·
 	char* p = strrchr(str, '/');
 	char name[File_Max_Size];
 	memset(name, '\0', sizeof(name));
@@ -200,12 +198,12 @@ bool echo_func(int CurAddr, char* str, char* s_type, char* buf) {//ÔÚÈÎÒâÄ¿Â¼ÏÂ´
 		strcpy(name, str);
 	}
 
-	//ÀàÐÍÖ´ÐÐ
+	//ï¿½ï¿½ï¿½ï¿½Ö´ï¿½ï¿½
 	if (echo(Cur_Dir_Addr, name, type, buf))	return true;
 	return false;
 }
 bool chmod_func(int CurAddr, char* pmode, char* str) {
-	//Ñ°ÕÒÖ±½ÓµØÖ·
+	//Ñ°ï¿½ï¿½Ö±ï¿½Óµï¿½Ö·
 	char* p = strrchr(str, '/');
 	char name[File_Max_Size];
 	memset(name, '\0', sizeof(name));
@@ -221,12 +219,12 @@ bool chmod_func(int CurAddr, char* pmode, char* str) {
 		strcpy(name, str);
 	}
 
-	//ÀàÐÍÖ´ÐÐ
+	//ï¿½ï¿½ï¿½ï¿½Ö´ï¿½ï¿½
 	if (chmod(CurAddr, name, pmode))	return true;
 	return false;
 }
 bool chown_func(int CurAddr, char* u_g, char* str) {
-	//Ñ°ÕÒÖ±½ÓµØÖ·
+	//Ñ°ï¿½ï¿½Ö±ï¿½Óµï¿½Ö·
 	char* p = strrchr(str, '/');
 	char file[File_Max_Size];
 	memset(file, '\0', sizeof(file));
@@ -242,7 +240,7 @@ bool chown_func(int CurAddr, char* u_g, char* str) {
 		strcpy(file, str);
 	}
 
-	//»ñÈ¡ÓÃ»§ºÍÓÃ»§×é
+	//ï¿½ï¿½È¡ï¿½Ã»ï¿½ï¿½ï¿½ï¿½Ã»ï¿½ï¿½ï¿½
 	p = strstr(u_g, ":");
 	char name[20], group[20];
 	memset(name, '\0', strlen(name));
@@ -260,7 +258,7 @@ bool chown_func(int CurAddr, char* u_g, char* str) {
 }
 bool passwd_func(char* username) {
 	if ((strcmp(Cur_Group_Name, "root") != 0) && (strlen(username) != 0)) {
-		printf("ÆÕÍ¨ÓÃ»§ÎÞ·¨ÐÞ¸ÄÆäËûÓÃ»§ÃÜÂë\n");
+		printf("ï¿½ï¿½Í¨ï¿½Ã»ï¿½ï¿½Þ·ï¿½ï¿½Þ¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½\n");
 		return false;
 	}
 
@@ -284,8 +282,9 @@ void cmd(char cmd_str[]) {
 	char com1[100];
 	char com2[100];
 	char com3[100];
+    char com4[100];
 	sscanf(cmd_str, "%s", com1);
-	//Ò»¼¶´«À´com1ºÍcom2
+	//Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½com1ï¿½ï¿½com2
 	if (strcmp(com1, "help") == 0) {
 		help();
 	}
@@ -300,7 +299,7 @@ void cmd(char cmd_str[]) {
 	else if (strcmp(com1, "gotoRoot") == 0) {
 		gotoRoot();
 	}
-	else if (strcmp(com1, "mkdir") == 0) {	//cdÖÁ¸¸Ä¿Â¼--> mkdir
+	else if (strcmp(com1, "mkdir") == 0) {	//cdï¿½ï¿½ï¿½ï¿½Ä¿Â¼--> mkdir
 		sscanf(cmd_str, "%s%s", com1, com2);
 		mkdir_func(Cur_Dir_Addr, com2);
 	}
@@ -313,7 +312,7 @@ void cmd(char cmd_str[]) {
 		touch_func(Cur_Dir_Addr, com2, "");
 	}
 	else if (strcmp(com1, "echo") == 0) {
-		//×¢ÒâÎÄ×ÖÀïÃæ²»ÒªÓÐ¿Õ¸ñ
+		//×¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½æ²»Òªï¿½Ð¿Õ¸ï¿½
 		char com4[100];
 		sscanf(cmd_str, "%s%s%s%s", com1, com2, com3, com4);
 		echo_func(Cur_Dir_Addr, com4, com3, com2);
@@ -338,11 +337,11 @@ void cmd(char cmd_str[]) {
 		char passwd[100];
 		sscanf(cmd_str, "%s%s%s%s%s", com1, com2, group, com3, user);
 		if ((strcmp(com2, "-g") != 0) || ((strcmp(com3, "-m") != 0))) {
-			printf("ÃüÁî¸ñÊ½´íÎó!\n");
+			printf("ï¿½ï¿½ï¿½ï¿½ï¿½Ê½ï¿½ï¿½ï¿½ï¿½!\n");
 			return;
 		}
 		inPasswd(passwd);
-		useradd(user, group, passwd);
+		useradd(user, passwd, group);
 	}
 	else if (strcmp(com1, "userdel") == 0) {
 		sscanf(cmd_str, "%s%s", com1, com2);
@@ -368,9 +367,9 @@ void cmd(char cmd_str[]) {
 		logout();
 	}
 
-	//±¸·ÝÏµÍ³&»Ö¸´ÏµÍ³
+	//ï¿½ï¿½ï¿½ï¿½ÏµÍ³&ï¿½Ö¸ï¿½ÏµÍ³
 	else if (strcmp(com1, "exit") == 0) {
-		cout << "ÍË³ö³É¼¨¹ÜÀíÏµÍ³£¬°Ý°Ý£¡" << endl;
+		cout << "ï¿½Ë³ï¿½ï¿½É¼ï¿½ï¿½ï¿½ï¿½ï¿½ÏµÍ³ï¿½ï¿½ï¿½Ý°Ý£ï¿½" << endl;
 		exit(0);
 	}
 	
@@ -381,6 +380,29 @@ void cmd(char cmd_str[]) {
 			sscanf(cmd_str, "%s%s", com1, com2);
 			add_users(com2);
 		}
+        if (strcmp(com1, "checkhw") == 0)
+        {
+            // checkhw teacher lesson hw
+            sscanf(cmd_str, "%s%s%s%s", com1, com2, com3, com4);
+            printf("Here!! teacher name is %s, lesson is %s, hwname is %s\n", com2, com3, com4);
+            check_hw_content(com2, com3, com4);
+        }
+        if (strcmp(com1, "checkhwscore") == 0)
+        {
+            // checkhwscore teacher lesson hw
+            sscanf(cmd_str, "%s%s%s%s", com1, com2, com3, com4);
+            printf("Here!! teacher name is %s, lesson is %s, hwname is %s\n", com2, com3, com4);
+            check_hw_score(com2, com3, com4);
+        }
+        if (strcmp(com1, "submitmyhw") == 0)
+        {
+            // submit lesson hw
+            sscanf(cmd_str, "%s%s%s", com1, com2, com3);
+            printf("Here!! student name is %s, lesson is %s, hwname is %s\n", Cur_Dir_Name, com2, com3);
+//          submit_assignment(Cur_User_Name, com3, com4);
+            submit_assignment(Cur_Dir_Name, com2, com3);
+
+        }
 	}
 	return;
 }
