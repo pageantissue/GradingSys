@@ -9,7 +9,7 @@ using namespace std;
 
 
 //****大类函数****
-bool Format(int count) { //ok
+bool Format() { //ok
 	//初始化:超级块,位图
 	char buffer[Disk_Size];
 	memset(buffer, '\0', sizeof(buffer));
@@ -123,6 +123,9 @@ bool Install() {	//安装文件系统 ok
 	fseek(fr, BlockBitmap_Start_Addr, SEEK_SET);
 	fread(block_bitmap, sizeof(block_bitmap), 1, fr);
 
+	fseek(fr, Modified_inodeBitmap_Start_Addr, SEEK_SET);
+	fread(modified_inode_bitmap, sizeof(modified_inode_bitmap), 1, fr);
+
 	fflush(fr);
 	return true;
 }
@@ -225,6 +228,7 @@ bool mkdir(int PIAddr, char name[]) {	//目录创建函数(父目录权限:读�
 	parino.inode_file_count += 1;
 	time(&parino.inode_change_time);
 	time(&parino.dir_change_time);
+	time(&parino.file_modified_time);
 	fseek(fw, PIAddr, SEEK_SET);
 	fwrite(&parino, sizeof(parino), 1, fw);
 
@@ -361,6 +365,7 @@ bool mkfile(int PIAddr, char name[],char buf[]) {	//文件创建函数
 	parino.inode_file_count += 1;
 	time(&parino.inode_change_time);
 	time(&parino.dir_change_time);
+	time(&parino.file_modified_time);
 	fseek(fw, PIAddr, SEEK_SET);
 	fwrite(&parino, sizeof(parino), 1, fw);
 
@@ -460,6 +465,7 @@ bool rm(int PIAddr, char name[], int type) {	//删除文件or文件夹
 	ino.inode_file_count -= 1;
 	time(&ino.inode_change_time);
 	time(&ino.dir_change_time);
+	time(&ino.file_modified_time);
 	fseek(fw, PIAddr, SEEK_SET);
 	fwrite(&ino, sizeof(ino), 1, fw);
 	return true;
@@ -1905,7 +1911,6 @@ bool chown(int PIAddr,char* filename, char name[], char group[]) {//修改文件
 		return false;
 	}
 	char gid[10];
-  
 	if (strcmp(is_group(group, gid), "-1") == 0) {
 		printf("组别不正确！请重新输入！\n");
 		return false;

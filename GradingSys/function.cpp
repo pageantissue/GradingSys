@@ -1,4 +1,3 @@
-
 #include"os.h"
 #include"function.h"
 #include<cstring>
@@ -14,7 +13,6 @@ void cmd(char cmd_str[]) {
 	char com3[100];
 	char com4[100];
 	sscanf(cmd_str, "%s", com1);
-	//通用格式命令
 	if (strcmp(com1, "help") == 0) {
 		help();
 	}
@@ -29,7 +27,7 @@ void cmd(char cmd_str[]) {
 	else if (strcmp(com1, "gotoRoot") == 0) {
 		gotoRoot();
 	}
-	else if (strcmp(com1, "mkdir") == 0) {	//cd至父目录--> mkdir
+	else if (strcmp(com1, "mkdir") == 0) {	
 		sscanf(cmd_str, "%s%s", com1, com2);
 		mkdir_func(Cur_Dir_Addr, com2);
 	}
@@ -42,7 +40,6 @@ void cmd(char cmd_str[]) {
 		touch_func(Cur_Dir_Addr, com2, "");
 	}
 	else if (strcmp(com1, "echo") == 0) {
-		//注意文字里面不要有空格
 		sscanf(cmd_str, "%s%s%s%s", com1, com2, com3, com4);
 		echo_func(Cur_Dir_Addr, com4, com3, com2);
 	}
@@ -66,7 +63,7 @@ void cmd(char cmd_str[]) {
 		char passwd[100];
 		sscanf(cmd_str, "%s%s%s%s%s", com1, com2, group, com3, user);
 		if ((strcmp(com2, "-g") != 0) || ((strcmp(com3, "-m") != 0))) {
-			printf("命令格式错误!\n");
+			printf("鍛戒护鏍煎紡閿欒!\n");
 			return;
 		}
 		inPasswd(passwd);
@@ -95,13 +92,13 @@ void cmd(char cmd_str[]) {
 	else if (strcmp(com1, "logout") == 0) {
 		logout();
 	}
-	//备份系统&恢复系统
+	//澶囦唤绯荤粺&鎭㈠绯荤粺
 	else if (strcmp(com1, "exit") == 0) {
-		cout << "退出成绩管理系统，拜拜！" << endl;
+		cout << "閫�鍑烘垚缁╃鐞嗙郴缁燂紝鎷滄嫓锛�" << endl;
 		exit(0);
 	}
 
-	//root组特有
+	//root缁勭壒鏈�
 	if (strcmp(Cur_Group_Name, "root") == 0) {
 		if (strcmp(com1, "batchadd") == 0) {
 			sscanf(cmd_str, "%s", com1);
@@ -109,7 +106,7 @@ void cmd(char cmd_str[]) {
 		}
 	}
 	
-	//teacher组特有
+	//teacher缁勭壒鏈�
 	if (strcmp(Cur_Group_Name, "teacher") == 0) {
 		if (strcmp(com1, "publish_task") == 0) {
 			sscanf(cmd_str, "%s%s%s", com1, com2, com3);
@@ -121,7 +118,7 @@ void cmd(char cmd_str[]) {
 		}
 	}
   
-  //student组特有
+  //student缁勭壒鏈�
 	if (strcmp(Cur_Group_Name, "student") == 0) {
 		if (strcmp(com1, "check_hw_content") == 0) //check desription
 		{
@@ -194,7 +191,6 @@ bool cd_func(int CurAddr, char* str) {
     memset(pro_cur_dir_name, '\0', 310);
     strcpy(pro_cur_dir_name, Cur_Dir_Name);
 	int flag = 1;
-
 	if (strcmp(str, "/") == 0) {
 		gotoRoot();
 		return true;
@@ -230,9 +226,11 @@ bool cd_func(int CurAddr, char* str) {
 	}
 	return true;
 }
-bool mkdir_func(int CurAddr, char* str) {
+
+bool mkdir_func(int CurAddr, char* str) {//在任意目录下创建目录
+	//绝对,相对,直接创建
 	char* p = strrchr(str, '/');
-	if (p == NULL) {
+	if (p == NULL) {	//直接创建
 		if (mkdir(CurAddr, str)) { return true; }
 		else { return false; }
 	}
@@ -249,7 +247,9 @@ bool mkdir_func(int CurAddr, char* str) {
 		return false;
 	}
 }
-bool rm_func(int CurAddr, char* str, char* s_type) {
+
+bool rm_func(int CurAddr, char* str, char* s_type) {//在任意目录下删除
+	//文件类型
 	int type = -1;
 	if (strcmp(s_type, "-rf") == 0) {
 		type = 1;
@@ -302,8 +302,9 @@ bool touch_func(int CurAddr, char* str, char* buf) {
 		return false;
 	}
 }
-bool echo_func(int CurAddr, char* str, char* s_type, char* buf) {//目录麓or写or追
-	//卸 0写 1追
+
+bool echo_func(int CurAddr, char* str, char* s_type, char* buf) {//在任意目录下创建or覆盖写入or追加
+	//判断类型 0：覆盖写入 1：追加
 	int type = -1;
 	if (strcmp(s_type, ">") == 0) {
 		type = 0;
@@ -312,10 +313,11 @@ bool echo_func(int CurAddr, char* str, char* s_type, char* buf) {//目录麓or�
 		type = 1;
 	}
 	else {
-		printf("echo式确式!\n");
+		printf("echo输入格式错误，请输入正确格式!\n");
 		return false;
 	}
 
+	//寻找直接地址
 	char* p = strrchr(str, '/');
 	char name[File_Max_Size];
 	memset(name, '\0', sizeof(name));
@@ -331,7 +333,7 @@ bool echo_func(int CurAddr, char* str, char* s_type, char* buf) {//目录麓or�
 		strcpy(name, str);
 	}
 
-	//执
+	//类型执行
 	if (echo(Cur_Dir_Addr, name, type, buf))	return true;
 	return false;
 }
@@ -351,7 +353,7 @@ bool chmod_func(int CurAddr, char* pmode, char* str) {
 		strcpy(name, str);
 	}
 
-	//执
+	//类型执行
 	if (chmod(CurAddr, name, pmode))	return true;
 	return false;
 }
@@ -371,6 +373,8 @@ bool chown_func(int CurAddr, char* u_g, char* str) {
 		strcpy(file, str);
 	}
 
+
+	//获取用户和用户组
 	p = strstr(u_g, ":");
 	char name[20], group[20];
 	memset(name, '\0', strlen(name));
