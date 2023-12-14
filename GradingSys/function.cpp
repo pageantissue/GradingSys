@@ -97,12 +97,21 @@ void cmd(char cmd_str[]) {
 		cout << "閫�鍑烘垚缁╃鐞嗙郴缁燂紝鎷滄嫓锛�" << endl;
 		exit(0);
 	}
-
+	
 	//root缁勭壒鏈�
 	if (strcmp(Cur_Group_Name, "root") == 0) {
 		if (strcmp(com1, "batchadd") == 0) {
 			sscanf(cmd_str, "%s", com1);
 			add_users(STUDENT_COURSE_LIST);
+		}
+		else if (strcmp(com1, "fullbackup") == 0) {
+			fullBackup();
+		}
+		else if (strcmp(com1, "recovery") == 0) {
+			recovery();
+		}
+		else if (strcmp(com1, "increbackup") == 0) {
+			incrementalBackup();
 		}
 	}
 	
@@ -138,6 +147,7 @@ void cmd(char cmd_str[]) {
 			sscanf(cmd_str, "%s%s%s", com1, com2, com3);
 			submit_assignment(Cur_User_Name, com2, com3);
 		}
+
 	}
 
 	return;
@@ -146,45 +156,43 @@ void cmd(char cmd_str[]) {
 void help() {
 	cout.setf(ios::left);
 	cout.width(30);
-	cout << "ls" << "Display the current directory listing" << endl;
+	cout << "ls [-l]" << "Display the current directory listing" << endl;
 	cout.width(30);
-	cout << "cd" << "Enter the specific directory " << endl;
+	cout << "cd [path]" << "Enter the specific directory " << endl;
 	cout.width(30);
-	cout << "gotoRoot" << "Return to the root directory " << endl;
+	cout << "gotoRoot " << "Return to the root directory " << endl;
 	cout.width(30);
-	cout << "mkdir" << "Create directory" << endl;	
+	cout << "mkdir [path]" << "Create directory" << endl;
 	cout.width(30);
-	cout << "rm" << "Delete directory or file" << endl;		
+	cout << "rm [-rf dir_path] | [-f file_path]" << "Delete directory or file" << endl;
 	cout.width(30);
 	cout << "touch" << "Create a blank file" << endl;
 	cout.width(30);
-	cout << "echo" << "Create a non-empty file" << endl;
+	cout << "echo \"content\" > [path] | \"content\" >> [path]" << "Write or add a file" << endl;
 	cout.width(30);
-	cout << "chmod" << "Modify the access right" << endl;
+	cout << "cat [file_path]" << "View the file content" << endl;
 	cout.width(30);
-	//catchown
+	cout << "chmod [ugoa]*[-+=]*[rwx] | [0-7]+" << "Modify the access right" << endl;
+	cout.width(30);
+	cout << "chown [user:group] [path]" << "Modify user and group in file" << endl;
+	cout.width(30);
 
-	cout << "useradd" << "Add user" << endl;
+	cout << "useradd [-g group] [-m] [user]" << "Add user" << endl;
 	cout.width(30);
-	cout << "userdel" << "Delete user" << endl;
+	cout << "userdel [user]" << "Delete user" << endl;
 	cout.width(30);
-	cout << "groupadd" << "Add group" << endl;		
+	cout << "groupadd [group]" << "Add group" << endl;
 	cout.width(30);
-	cout << "groupdel" << "Delete group" << endl;	
+	cout << "groupdel [group]" << "Delete group" << endl;
 	cout.width(30);
-	cout << "passwd" << "Modify the password" << endl;	
+	cout << "passwd [user]" << "Modify the password" << endl;
 	cout.width(30);
 	cout << "logout" << "Logout the account" << endl;
 	cout.width(30);
-	//usergrpadd,userfrpdel,
-
-
-
-	cout << "snapshot" << "Back up the system" << endl;	
+	cout << "exit" << "Exit the system" << endl;
 	cout.width(30);
-
-	cout << "exit" << "Exit the system" << endl;	
 }
+
 bool cd_func(int CurAddr, char* str) {
 	int pro_cur_dir_addr = Cur_Dir_Addr;
 	char pro_cur_dir_name[310];

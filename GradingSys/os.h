@@ -29,7 +29,7 @@
 #define FILE_DEF_PERMISSION 0664			//文件默认权限 owner,group:读写 other:读 
 #define DIR_DEF_PERMISSION	0755			//目录默认权限 owner：全部 group,other:读执行
 
-#define GRADE_SYS_NAME "grading_sys.sys"	//文件系统名
+#define GRADE_SYS_NAME "grading_sys.txt"	//文件系统名
 #define STUDENT_COURSE_LIST "Student_Course_Selection.txt" //学生选课名单（name:lesson:teacher)
 
 
