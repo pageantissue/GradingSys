@@ -5,12 +5,14 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="os.cpp" />
     <ClCompile Include="snapshot.cpp" />
+    <ClCompile Include="server.cpp" />
     <ClCompile Include="role.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="function.h" />
     <ClInclude Include="os.h" />
     <ClInclude Include="snapshot.h" />
+    <ClInclude Include="server.h" />
     <ClInclude Include="role.h" />
   </ItemGroup>
   <ItemGroup>
