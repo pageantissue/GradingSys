@@ -7,16 +7,15 @@
 #include"role.h"
 using namespace std;
 
-bool add_users(char * namelist) { //root：批量创建教师及学生用户
-	//验证身份
+bool add_users(char * namelist) { //root������������ʦ��ѧ���û�
+	//�
 	if (strcmp(Cur_Group_Name, "root") != 0) {
 		printf("Only root could add users!\n");
 		return false;
 	}
 
 	char new_buff[1024]; memset(new_buff, '\0', 1024);
-	sprintf(new_buff, "/home/g202130190273/projects/GradingSys/%s", namelist);
-	//备份信息
+	sprintf(new_buff, "/Users/sprungissue/CLionProjects/GradingSys/GradingSys/%s", namelist);
 	int pro_cur_dir_addr = Cur_Dir_Addr;
 	char pro_cur_dir_name[310];
 	memset(pro_cur_dir_name, '\0', sizeof(pro_cur_dir_name));
@@ -78,7 +77,7 @@ bool publish_task(char* lesson,char* filename) {
 	}
 	char dir_path[100];
 	sprintf(dir_path, "/home/%s/%s/%s_description", Cur_User_Name, lesson, filename);
-	echo_func(Cur_Dir_Addr, dir_path, ">", buf); //新建task文件并发布
+	echo_func(Cur_Dir_Addr, dir_path, ">", buf); //�½�task�ļ�������
 
 	return true;
 }
@@ -93,14 +92,14 @@ bool judge_hw(char* namelist, char* lesson, char* hwname) {
 	memset(pro_cur_dir_name, '\0', sizeof(pro_cur_dir_name));
 	strcpy(pro_cur_dir_name, Cur_Dir_Name);
 
-	//新建本次作业评价文档( sname : mark)
+	//�½�������ҵ�����ĵ�( sname : mark)
 	char score_path[310];
 	sprintf(score_path, "/home/%s/%s/%s_score", Cur_Group_Name, lesson, hwname);
 	touch_func(Cur_Dir_Addr, score_path, "");
 
 	ifstream fin(namelist);
 	if (!fin.is_open()) {
-		cout << "无法打开名单" << endl;
+		cout << "�޷�������" << endl;
 		Cur_Dir_Addr = pro_cur_dir_addr;
 		strcpy(Cur_Dir_Name, pro_cur_dir_name);
 		return false;
@@ -169,7 +168,7 @@ bool check_hw_content(char* teacher_name, char* lesson, char* hwname) {
 		strcpy(Cur_Dir_Name, pro_cur_dir_name);
 		return false;
 	}
-	// 还原用户现场
+	// ��ԭ�û��ֳ�
 	Cur_Dir_Addr = pro_cur_dir_addr;
 	strcpy(Cur_Dir_Name, pro_cur_dir_name);
 	return true;
@@ -181,7 +180,7 @@ bool check_hw_score(char* teacher_name, char* lesson, char* hwname) {
 	memset(pro_cur_dir_name, '\0', sizeof(pro_cur_dir_name));
 	strcpy(pro_cur_dir_name, Cur_Dir_Name);
 
-	//前往指定目录
+	//ǰ��ָ��Ŀ¼
 	gotoRoot();
 	cd(Cur_Dir_Addr, "home");
 	bool f = cd(Cur_Dir_Addr, teacher_name);
@@ -214,7 +213,7 @@ bool check_hw_score(char* teacher_name, char* lesson, char* hwname) {
 		strcpy(Cur_Dir_Name, pro_cur_dir_name);
 		return false;
 	}
-	// 还原用户现场
+	// ��ԭ�û��ֳ�
 	Cur_Dir_Addr = pro_cur_dir_addr;
 	strcpy(Cur_Dir_Name, pro_cur_dir_name);
 	return true;
@@ -232,7 +231,7 @@ bool submit_assignment(char* student_name, char* lesson, char* filename)
 	memset(pro_cur_dir_name, '\0', sizeof(pro_cur_dir_name));
 	strcpy(pro_cur_dir_name, Cur_Dir_Name);
 
-	//前往指定目录
+	//ǰ��ָ��Ŀ¼
 	gotoRoot();
 	cd(Cur_Dir_Addr, "home");
 
@@ -256,7 +255,7 @@ bool submit_assignment(char* student_name, char* lesson, char* filename)
 		return false;
 	}
 
-	// 读取作业内容
+	// ��ȡ��ҵ����
 	char buf[BLOCK_SIZE * 10];
 	string line;
 	memset(buf, '\0', sizeof(buf));
@@ -274,7 +273,7 @@ bool submit_assignment(char* student_name, char* lesson, char* filename)
 
 	char dir_path[100];
 	sprintf(dir_path, "/home/%s/%s/%s_description", Cur_User_Name, lesson, filename);
-	echo_func(Cur_Dir_Addr, dir_path, ">", buf); //新建文件并提交作业
+	echo_func(Cur_Dir_Addr, dir_path, ">", buf); //�½��ļ����ύ��ҵ
 
 	Cur_Dir_Addr = pro_cur_dir_addr;
 	strcpy(Cur_Dir_Name, pro_cur_dir_name);
