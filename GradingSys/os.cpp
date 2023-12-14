@@ -1,13 +1,10 @@
 #include"os.h"
 #include"server.h"
 #include<mutex>
-#include"snapshot.h"
 #include<ctime>
 #include<cstring>
 #include<cstdio>
-#include<iostream>
 #include<cstdlib>
-
 
 using namespace std;
 
@@ -973,9 +970,9 @@ void safeFseek(FILE* file, long offset, int origin) {
 	fseek(file, offset, origin);
 }
 
-size_t safeFread(const void* ptr, size_t size, size_t count, FILE* file) {
-	std::lock_guard<std::mutex> lock(fileMutex);
-	return fwrite(ptr, size, count, file);
+size_t safeFread(void* ptr, size_t size, size_t count, FILE* file) {
+    std::lock_guard<std::mutex> lock(fileMutex);
+    return fread(ptr, size, count, file);
 }
 
 // 自定义函数，对文件写入进行加锁
@@ -1504,7 +1501,6 @@ bool check(Client& client, char username[], char passwd[]) {//核验身份登录
 	char buf[BLOCK_SIZE * 10]; //1char:1B
 	char temp[BLOCK_SIZE];
 	char checkpw[100];
-    memset(checkpw, '\0', 100);
 	char group[10];
 	memset(buf, '\0', sizeof(buf));
 	memset(temp, '\0', sizeof(temp));
@@ -1521,6 +1517,7 @@ bool check(Client& client, char username[], char passwd[]) {//核验身份登录
 			strcpy(buf, temp);
 		}
 	}
+    printf("username is: %s, passwd is %s\n", username, passwd);
 	char* p = strstr(buf, username);
 	if (p == NULL) {
 		//printf("该用户不存在。请创建用户后重新登陆.\n");

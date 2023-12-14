@@ -1,20 +1,11 @@
 #include<cstdio>
 #include<cstdlib>
 #include<sys/wait.h>
-#include<sys/types.h>
 #include<sys/socket.h>
 #include<netinet/in.h>
-#include<arpa/inet.h>
-#include<limits>
 #include<unistd.h>
 #include"server.h"
 #include"os.h"
-#include"snapshot.h"
-#include"function.h"
-#include<limits>
-#include<unistd.h>
-#include<dirent.h>
-
 
 const int Superblock_Start_Addr=0;     //44B:1block
 const int InodeBitmap_Start_Addr = 1 * BLOCK_SIZE; //1024B:2block

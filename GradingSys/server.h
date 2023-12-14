@@ -1,6 +1,6 @@
 #pragma once
-#include<stdio.h>
-#include<string.h>
+#include<cstdio>
+#include<cstring>
 #include<string>
 #include<sys/socket.h>
 #include<netinet/in.h>
@@ -20,11 +20,11 @@ struct Client
     int client_sock;
     int ptr = -1;
     bool islogin;
-    int Cur_Dir_Addr;                           //µ±Ç°Ä¿Â¼
-    char Cur_Dir_Name[310];                     //µ±Ç°Ä¿Â¼Ãû
-    char Cur_User_Name[110];                    //µ±Ç°µÇÂ½ÓÃ»§Ãû
-    char Cur_Group_Name[110];                   //µ±Ç°µÇÂ½ÓÃ»§×éÃû
-    char Cur_User_Dir_Name[310];                //µ±Ç°µÇÂ½ÓÃ»§Ä¿Â¼Ãû		
+    int Cur_Dir_Addr;                           //ï¿½ï¿½Ç°Ä¿Â¼
+    char Cur_Dir_Name[310];                     //ï¿½ï¿½Ç°Ä¿Â¼ï¿½ï¿½
+    char Cur_User_Name[110];                    //ï¿½ï¿½Ç°ï¿½ï¿½Â½ï¿½Ã»ï¿½ï¿½ï¿½
+    char Cur_Group_Name[110];                   //ï¿½ï¿½Ç°ï¿½ï¿½Â½ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½
+    char Cur_User_Dir_Name[310];                //ï¿½ï¿½Ç°ï¿½ï¿½Â½ï¿½Ã»ï¿½Ä¿Â¼ï¿½ï¿½		
 
     char buffer[BUF_SIZE];
     struct sockaddr_in client_addr;
