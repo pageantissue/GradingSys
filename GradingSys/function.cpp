@@ -1,5 +1,6 @@
 #include"os.h"
 #include"function.h"
+#include"role.h"
 #include<iomanip>
 #include<time.h>
 #include<string.h>
@@ -8,6 +9,121 @@
 
 using namespace std;
 
+void cmd(char cmd_str[]) {
+	char com1[100];
+	char com2[100];
+	char com3[100];
+	sscanf(cmd_str, "%s", com1);
+	//通用格式命令
+	if (strcmp(com1, "help") == 0) {
+		help();
+	}
+	else if (strcmp(com1, "ls") == 0) {
+		sscanf(cmd_str, "%s%s", com1, com2);
+		ls(com2);
+	}
+	else if (strcmp(com1, "cd") == 0) {
+		sscanf(cmd_str, "%s%s", com1, com2);
+		cd_func(Cur_Dir_Addr, com2);
+	}
+	else if (strcmp(com1, "gotoRoot") == 0) {
+		gotoRoot();
+	}
+	else if (strcmp(com1, "mkdir") == 0) {	//cd至父目录--> mkdir
+		sscanf(cmd_str, "%s%s", com1, com2);
+		mkdir_func(Cur_Dir_Addr, com2);
+	}
+	else if (strcmp(com1, "rm") == 0) {
+		sscanf(cmd_str, "%s%s%s", com1, com2, com3);
+		rm_func(Cur_Dir_Addr, com3, com2);
+	}
+	else if (strcmp(com1, "touch") == 0) {
+		sscanf(cmd_str, "%s%s", com1, com2);
+		touch_func(Cur_Dir_Addr, com2, "");
+	}
+	else if (strcmp(com1, "echo") == 0) {
+		//注意文字里面不要有空格
+		char com4[100];
+		sscanf(cmd_str, "%s%s%s%s", com1, com2, com3, com4);
+		echo_func(Cur_Dir_Addr, com4, com3, com2);
+	}
+	else if (strcmp(com1, "cat") == 0) {
+		sscanf(cmd_str, "%s%s", com1, com2);
+		cat(Cur_Dir_Addr, com2);
+	}
+	else if (strcmp(com1, "chmod") == 0) {
+		sscanf(cmd_str, "%s%s%s", com1, com2, com3);
+		chmod_func(Cur_Dir_Addr, com2, com3);
+	}
+	else if (strcmp(com1, "chown") == 0) {
+		sscanf(cmd_str, "%s%s%s", com1, com2, com3);
+		chown_func(Cur_Dir_Addr, com2, com3);
+	}
+
+	else if (strcmp(com1, "useradd") == 0) {
+		//useradd -g group -m user
+		char group[100];
+		char user[100];
+		char passwd[100];
+		sscanf(cmd_str, "%s%s%s%s%s", com1, com2, group, com3, user);
+		if ((strcmp(com2, "-g") != 0) || ((strcmp(com3, "-m") != 0))) {
+			printf("命令格式错误!\n");
+			return;
+		}
+		inPasswd(passwd);
+		useradd(user,passwd, group);
+	}
+	else if (strcmp(com1, "userdel") == 0) {
+		sscanf(cmd_str, "%s%s", com1, com2);
+		userdel(com2);
+	}
+	else if (strcmp(com1, "groupadd") == 0) {
+		sscanf(cmd_str, "%s%s", com1, com2);
+		groupadd(com2);
+	}
+	else if (strcmp(com1, "groupdel") == 0) {
+		sscanf(cmd_str, "%s%s", com1, com2);
+		groupdel(com2);
+	}
+	else if (strcmp(com1, "passwd") == 0) {
+		if (sscanf(cmd_str, "%s%s", com1, com2) == 1) {
+			passwd_func("");
+		}
+		else {
+			passwd_func(com2);
+		}
+	}
+	else if (strcmp(com1, "logout") == 0) {
+		logout();
+	}
+	//备份系统&恢复系统
+	else if (strcmp(com1, "exit") == 0) {
+		cout << "退出成绩管理系统，拜拜！" << endl;
+		exit(0);
+	}
+
+	//root组特有
+	if (strcmp(Cur_Group_Name, "root") == 0) {
+		if (strcmp(com1, "batchadd") == 0) {
+			sscanf(cmd_str, "%s%s", com1, com2);
+			add_users(STUDENT_COURSE_LIST);
+		}
+	}
+	
+	//teacher组特有
+	if (strcmp(Cur_Group_Name, "teacher") == 0) {
+		if (strcmp(com1, "publish_task") == 0) {
+			sscanf(cmd_str, "%s%s%s", com1, com2, com3);
+			publish_task(com2, com3);
+		}
+		else if (strcmp(com1, "judge_hw") == 0) {
+			sscanf(cmd_str, "%s%s%s", com1, com2, com3);
+			judge_hw(STUDENT_COURSE_LIST, com2, com3);
+		}
+	}
+
+	return;
+}
 void help() {
 	cout.setf(ios::left); //设置对齐方式为left 
 	cout.width(30); //设置宽度，不足用空格填充 
@@ -50,7 +166,6 @@ void help() {
 
 	cout << "exit" << "Exit the system" << endl;		//退出系统
 }
-
 bool cd_func(int CurAddr, char* str) {
 	//cd至任一绝对路径or相对路径
 	//保存现场（失败恢复）
@@ -68,8 +183,8 @@ bool cd_func(int CurAddr, char* str) {
 		gotoRoot();
 		str += 1;
 	}
+	char name[strlen(str) + 1];
 	while (strlen(str) != 0) {
-		char name[sizeof(str)];
 		int i = 0;
 		memset(name, '\0', sizeof(name));
 		while (((*str) != '/') && (strlen(str) != 0)) {
@@ -277,101 +392,4 @@ bool passwd_func(char* username) {
 		}
 	}
 	return false;
-}
-
-void cmd(char cmd_str[]) {
-	char com1[100];
-	char com2[100];
-	char com3[100];
-	sscanf(cmd_str, "%s", com1);
-	//一级传来com1和com2
-	if (strcmp(com1, "help") == 0) {
-		help();
-	}
-	else if (strcmp(com1, "ls") == 0) {
-		sscanf(cmd_str, "%s%s", com1, com2);
-		ls(com2);
-	}
-	else if (strcmp(com1, "cd") == 0) {
-		sscanf(cmd_str, "%s%s", com1, com2);
-		cd_func(Cur_Dir_Addr, com2);
-	}
-	else if (strcmp(com1, "gotoRoot") == 0) {
-		gotoRoot();
-	}
-	else if (strcmp(com1, "mkdir") == 0) {	//cd至父目录--> mkdir
-		sscanf(cmd_str, "%s%s", com1, com2);
-		mkdir_func(Cur_Dir_Addr, com2);
-	}
-	else if (strcmp(com1, "rm") == 0) {
-		sscanf(cmd_str, "%s%s%s", com1, com2, com3);
-		rm_func(Cur_Dir_Addr, com3, com2);
-	}
-	else if (strcmp(com1, "touch") == 0) {
-		sscanf(cmd_str, "%s%s", com1, com2);
-		touch_func(Cur_Dir_Addr, com2, "");
-	}
-	else if (strcmp(com1, "echo") == 0) {
-		//注意文字里面不要有空格
-		char com4[100];
-		sscanf(cmd_str, "%s%s%s%s", com1, com2, com3, com4);
-		echo_func(Cur_Dir_Addr, com4, com3, com2);
-	}
-	else if (strcmp(com1, "cat") == 0) {
-		sscanf(cmd_str, "%s%s", com1, com2);
-		cat(Cur_Dir_Addr, com2);
-	}
-	else if (strcmp(com1, "chmod") == 0) {
-		sscanf(cmd_str, "%s%s%s", com1, com2, com3);
-		chmod_func(Cur_Dir_Addr, com2, com3);
-	}
-	else if (strcmp(com1, "chown") == 0) {
-		sscanf(cmd_str, "%s%s%s", com1, com2, com3);
-		chown_func(Cur_Dir_Addr, com2, com3);
-	}
-
-	else if (strcmp(com1, "useradd") == 0) {
-		//useradd -g group -m user
-		char group[100];
-		char user[100];
-		char passwd[100];
-		sscanf(cmd_str, "%s%s%s%s%s", com1, com2, group, com3, user);
-		if ((strcmp(com2, "-g") != 0) || ((strcmp(com3, "-m") != 0))) {
-			printf("命令格式错误!\n");
-			return;
-		}
-		inPasswd(passwd);
-		useradd(user, group, passwd);
-	}
-	else if (strcmp(com1, "userdel") == 0) {
-		sscanf(cmd_str, "%s%s", com1, com2);
-		userdel(com2);
-	}
-	else if (strcmp(com1, "groupadd") == 0) {
-		sscanf(cmd_str, "%s%s", com1, com2);
-		groupadd(com2);
-	}
-	else if (strcmp(com1, "groupdel") == 0) {
-		sscanf(cmd_str, "%s%s", com1, com2);
-		groupdel(com2);
-	}
-	else if (strcmp(com1, "passwd") == 0) {
-		if (sscanf(cmd_str, "%s%s", com1, com2) == 1) {
-			passwd_func("");
-		}
-		else {
-			passwd_func(com2);
-		}
-	}
-	else if (strcmp(com1, "logout") == 0) {
-		logout();
-	}
-
-	//备份系统&恢复系统
-	else if (strcmp(com1, "exit") == 0) {
-		cout << "退出成绩管理系统，拜拜！" << endl;
-		exit(0);
-	}
-
-	return;
 }

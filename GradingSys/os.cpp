@@ -149,7 +149,7 @@ bool mkdir(int PIAddr, char name[]) {	//目录创建函数(父目录权限:读�
 	if (strcmp(Cur_User_Name, parino.i_uname) == 0) {
 		role = 6;
 	}
-	if ((((parino.inode_mode >> role >> 1) & 1 == 0) )|| (strcmp(Cur_User_Name, "root") != 0)) { //可写
+	if ((((parino.inode_mode >> role >> 1) & 1 == 0) )&& (strcmp(Cur_User_Name, "root") != 0)) { //可写
 		printf("权限不足，无法新建目录\n");
 		return false;
 	}
@@ -294,7 +294,7 @@ bool mkfile(int PIAddr, char name[],char buf[]) {	//文件创建函数
 	if (strcmp(Cur_User_Name, parino.i_uname) == 0) {
 		role = 6;
 	}
-	if ((((parino.inode_mode >> role >> 1) & 1 == 0)) || (strcmp(Cur_User_Name, "root") != 0)) {
+	if ((((parino.inode_mode >> role >> 1) & 1 == 0)) && (strcmp(Cur_Group_Name, "root") != 0)) {
 		printf("权限不足，无法新建目录\n");
 		return false;
 	}
@@ -484,7 +484,8 @@ bool recursive_rmdir(int CHIAddr, char name[]) {//删除当前目录(父亲block
 	if (strcmp(Cur_User_Name, ino.i_uname) == 0) {//owner
 		mode = 6;
 	}
-	if ((((ino.inode_mode >> mode >> 1) & 1) == 0) || (strcmp(Cur_User_Name, "root") != 0)) {//是否可写：2
+	//没有该权限并且不为管理员
+	if ((((ino.inode_mode >> mode >> 1) & 1) == 0) && (strcmp(Cur_Group_Name, "root") != 0)) {//是否可写：2
 		printf("没有权限删除该文件夹\n");
 		return false;
 	}
@@ -544,7 +545,7 @@ bool recursive_rmfile(int CHIAddr, char name[]) {	//删除当前文件（父亲i
 	if (strcmp(Cur_User_Name, ino.i_uname) == 0) {//owner
 		mode = 6;
 	}
-	if ((((ino.inode_mode >> mode >> 1) & 1) == 0) || (strcmp(Cur_User_Name, "root") != 0)) {//是否可写：2
+	if ((((ino.inode_mode >> mode >> 1) & 1) == 0) && (strcmp(Cur_User_Name, "root") != 0)) {//是否可写：2
 		printf("没有权限删除该文件\n");
 		return false;
 	}
@@ -599,8 +600,8 @@ bool cat(int PIAddr, char name[]) {	//查看文件内容
 	
 }
 bool echo(int PIAddr, char name[], int type, char* buf) {	//文件新增or重写or补全
-	buf += 1;
-	buf[strlen(buf) - 1] = '\0';
+	if(buf[0]=='"') buf += 1;
+	if(buf[strlen(buf) - 1]=='"')  buf[strlen(buf) - 1] = '\0';
 	if (type == 0) {
 		if (mkfile(PIAddr, name, buf)) {
 			return true;
@@ -726,7 +727,7 @@ bool addfile(inode fileinode, int iaddr, char buf[]) { //文件续写ok
 	fflush(fw);
 	return true;
 }
-bool cd(int PIAddr, char name[]) {//切换目录
+bool cd(int PIAddr, char* name) {//切换目录
 
 	inode pinode;
 	fseek(fr, PIAddr, SEEK_SET);
@@ -766,7 +767,7 @@ bool cd(int PIAddr, char name[]) {//切换目录
 					fseek(fr, ditem[j].inodeAddr, SEEK_SET);
 					fread(&chiino, sizeof(inode), 1, fr);
 					fflush(fr);
-					if (((chiino.inode_mode >> role) & 1) == 1) {	//是否有执行权限
+					if ((((chiino.inode_mode >> role) & 1) == 1) ||(strcmp(Cur_Group_Name,"root")==0)){	//是否有执行权限
 						if (strcmp(Cur_Dir_Name, "/") != 0) {
 							strcat(Cur_Dir_Name, "/");
 						}
@@ -1346,10 +1347,13 @@ bool check(char username[], char passwd[]) {//核验身份登录&设置 ok
 	char temp[BLOCK_SIZE];
 	char checkpw[100];
 	char group[10];
+	memset(buf, '\0', sizeof(buf));
+	memset(temp, '\0', sizeof(temp));
+	memset(checkpw, '\0', sizeof(checkpw));
+	memset(group, '\0', sizeof(group));
 
 
 	//shadow
-	memset(buf, '\0', sizeof(temp));
 	for (int i = 0; i < 10; ++i) {
 		if (shadowino.i_dirBlock[i] != -1) {
 			memset(temp, '\0', sizeof(temp));
@@ -1896,7 +1900,7 @@ bool chown(int PIAddr,char* filename, char name[], char group[]) {//修改文件
 		return false;
 	}
 	char gid[10];
-	if (is_group(group,gid)==false) {
+	if (strcmp(is_group(group,gid),"-1")==0) {
 		printf("组别不正确！请重新输入！\n");
 		return false;
 	}
