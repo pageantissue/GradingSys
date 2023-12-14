@@ -7,8 +7,7 @@
 #include"role.h"
 using namespace std;
 
-bool add_users(char * namelist) { //root������������ʦ��ѧ���û�
-	//�
+bool add_users(char * namelist) {
 	if (strcmp(Cur_Group_Name, "root") != 0) {
 		printf("Only root could add users!\n");
 		return false;
@@ -77,7 +76,7 @@ bool publish_task(char* lesson,char* filename) {
 	}
 	char dir_path[100];
 	sprintf(dir_path, "/home/%s/%s/%s_description", Cur_User_Name, lesson, filename);
-	echo_func(Cur_Dir_Addr, dir_path, ">", buf); //�½�task�ļ�������
+	echo_func(Cur_Dir_Addr, dir_path, ">", buf); 
 
 	return true;
 }
@@ -92,14 +91,13 @@ bool judge_hw(char* namelist, char* lesson, char* hwname) {
 	memset(pro_cur_dir_name, '\0', sizeof(pro_cur_dir_name));
 	strcpy(pro_cur_dir_name, Cur_Dir_Name);
 
-	//�½�������ҵ�����ĵ�( sname : mark)
 	char score_path[310];
 	sprintf(score_path, "/home/%s/%s/%s_score", Cur_Group_Name, lesson, hwname);
 	touch_func(Cur_Dir_Addr, score_path, "");
 
 	ifstream fin(namelist);
 	if (!fin.is_open()) {
-		cout << "�޷�������" << endl;
+		cout << "File Open Failed!" << endl;
 		Cur_Dir_Addr = pro_cur_dir_addr;
 		strcpy(Cur_Dir_Name, pro_cur_dir_name);
 		return false;
@@ -168,7 +166,6 @@ bool check_hw_content(char* teacher_name, char* lesson, char* hwname) {
 		strcpy(Cur_Dir_Name, pro_cur_dir_name);
 		return false;
 	}
-	// ��ԭ�û��ֳ�
 	Cur_Dir_Addr = pro_cur_dir_addr;
 	strcpy(Cur_Dir_Name, pro_cur_dir_name);
 	return true;
@@ -180,7 +177,6 @@ bool check_hw_score(char* teacher_name, char* lesson, char* hwname) {
 	memset(pro_cur_dir_name, '\0', sizeof(pro_cur_dir_name));
 	strcpy(pro_cur_dir_name, Cur_Dir_Name);
 
-	//ǰ��ָ��Ŀ¼
 	gotoRoot();
 	cd(Cur_Dir_Addr, "home");
 	bool f = cd(Cur_Dir_Addr, teacher_name);
@@ -213,7 +209,6 @@ bool check_hw_score(char* teacher_name, char* lesson, char* hwname) {
 		strcpy(Cur_Dir_Name, pro_cur_dir_name);
 		return false;
 	}
-	// ��ԭ�û��ֳ�
 	Cur_Dir_Addr = pro_cur_dir_addr;
 	strcpy(Cur_Dir_Name, pro_cur_dir_name);
 	return true;
@@ -255,7 +250,6 @@ bool submit_assignment(char* student_name, char* lesson, char* filename)
 		return false;
 	}
 
-	// ��ȡ��ҵ����
 	char buf[BLOCK_SIZE * 10];
 	string line;
 	memset(buf, '\0', sizeof(buf));
@@ -273,7 +267,7 @@ bool submit_assignment(char* student_name, char* lesson, char* filename)
 
 	char dir_path[100];
 	sprintf(dir_path, "/home/%s/%s/%s_description", Cur_User_Name, lesson, filename);
-	echo_func(Cur_Dir_Addr, dir_path, ">", buf); //�½��ļ����ύ��ҵ
+	echo_func(Cur_Dir_Addr, dir_path, ">", buf);
 
 	Cur_Dir_Addr = pro_cur_dir_addr;
 	strcpy(Cur_Dir_Name, pro_cur_dir_name);

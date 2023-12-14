@@ -51,19 +51,16 @@ void help() {
 }
 
 bool cd_func(int CurAddr, char* str) {
-	//cdһ·or·
-	//ֳʧָܻ
 	int pro_cur_dir_addr = Cur_Dir_Addr;
 	char pro_cur_dir_name[310];
 	strcpy(pro_cur_dir_name, Cur_Dir_Name);
 	int flag = 1;
 
-	//鿴cdͣ·or·
-	if (strcmp(str, "/") == 0) {//ǰĿ¼
+	if (strcmp(str, "/") == 0) {
 		gotoRoot();
 		return true;
 	}
-	if (str[0] == '/') {	//·
+	if (str[0] == '/') {
 		gotoRoot();
 		str += 1;
 	}
@@ -96,7 +93,7 @@ bool cd_func(int CurAddr, char* str) {
 }
 bool mkdir_func(int CurAddr, char* str) {
 	char* p = strrchr(str, '/');
-	if (p == NULL) {	//ֱӴ
+	if (p == NULL) {
 		if (mkdir(CurAddr, str)) { return true; }
 		else { return false; }
 	}
@@ -113,8 +110,7 @@ bool mkdir_func(int CurAddr, char* str) {
 		return false;
 	}
 }
-bool rm_func(int CurAddr, char* str, char* s_type) {//Ŀ¼ɾ
-	//ļ
+bool rm_func(int CurAddr, char* str, char* s_type) {
 	int type = -1;
 	if (strcmp(s_type, "-rf") == 0) {
 		type = 1;
@@ -123,13 +119,12 @@ bool rm_func(int CurAddr, char* str, char* s_type) {//Ŀ¼ɾ
 		type = 0;
 	}
 	else {
-		printf("޷ȷļɾͣ룡\n");
+		printf("Invalid command! Please try again!\n");
 		return false;
 	}
 
-	//,,ֱӴ
 	char* p = strrchr(str, '/');
-	if (p == NULL) {	//ֱɾ
+	if (p == NULL) {
 		if (rm(CurAddr, str, type))	return true;
 		return false;
 	}
@@ -146,10 +141,9 @@ bool rm_func(int CurAddr, char* str, char* s_type) {//Ŀ¼ɾ
 		return false;
 	}
 }
-bool touch_func(int CurAddr, char* str, char* buf) {//Ŀ¼´ļ
-	//,,ֱӴ
+bool touch_func(int CurAddr, char* str, char* buf) {
 	char* p = strrchr(str, '/');
-	if (p == NULL) {	//ֱӴ
+	if (p == NULL) {
 		if (mkfile(CurAddr, str, buf))	return true;
 		return false;
 	}
@@ -180,7 +174,6 @@ bool echo_func(int CurAddr, char* str, char* s_type, char* buf) {//Ŀ¼´orдor�
 		return false;
 	}
 
-	//Ѱֱӵַ
 	char* p = strrchr(str, '/');
 	char name[File_Max_Size];
 	memset(name, '\0', sizeof(name));
@@ -201,7 +194,6 @@ bool echo_func(int CurAddr, char* str, char* s_type, char* buf) {//Ŀ¼´orдor�
 	return false;
 }
 bool chmod_func(int CurAddr, char* pmode, char* str) {
-	//Ѱֱӵַ
 	char* p = strrchr(str, '/');
 	char name[File_Max_Size];
 	memset(name, '\0', sizeof(name));
@@ -222,7 +214,6 @@ bool chmod_func(int CurAddr, char* pmode, char* str) {
 	return false;
 }
 bool chown_func(int CurAddr, char* u_g, char* str) {
-	//Ѱֱӵַ
 	char* p = strrchr(str, '/');
 	char file[File_Max_Size];
 	memset(file, '\0', sizeof(file));
@@ -238,7 +229,6 @@ bool chown_func(int CurAddr, char* u_g, char* str) {
 		strcpy(file, str);
 	}
 
-	//ȡûû
 	p = strstr(u_g, ":");
 	char name[20], group[20];
 	memset(name, '\0', strlen(name));
@@ -256,7 +246,7 @@ bool chown_func(int CurAddr, char* u_g, char* str) {
 }
 bool passwd_func(char* username) {
 	if ((strcmp(Cur_Group_Name, "root") != 0) && (strlen(username) != 0)) {
-		printf("ͨû޷޸û\n");
+		printf("Only root can change user's password!\n");
 		return false;
 	}
 
@@ -310,7 +300,6 @@ void cmd(char cmd_str[]) {
 		touch_func(Cur_Dir_Addr, com2, "");
 	}
 	else if (strcmp(com1, "echo") == 0) {
-		//ע治Ҫпո
 		char com4[100];
 		sscanf(cmd_str, "%s%s%s%s", com1, com2, com3, com4);
 		echo_func(Cur_Dir_Addr, com4, com3, com2);
@@ -335,7 +324,7 @@ void cmd(char cmd_str[]) {
 		char passwd[100];
 		sscanf(cmd_str, "%s%s%s%s%s", com1, com2, group, com3, user);
 		if ((strcmp(com2, "-g") != 0) || ((strcmp(com3, "-m") != 0))) {
-			printf("ʽ!\n");
+			printf("Invalid Command!\n");
 			return;
 		}
 		inPasswd(passwd);
@@ -367,7 +356,7 @@ void cmd(char cmd_str[]) {
 
 	//ϵͳ&ָϵͳ
 	else if (strcmp(com1, "exit") == 0) {
-		cout << "˳ɼϵͳݰݣ" << endl;
+		cout << "Exit Our Grading System! Bye~\n" << endl;
 		exit(0);
 	}
 	
