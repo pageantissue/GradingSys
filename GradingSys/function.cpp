@@ -364,7 +364,7 @@ void cmd(Client& client)
 		exit(0);
 	}
   //root组特有
-	if (strcmp(Cur_Group_Name, "root") == 0) {
+	if (strcmp(client.Cur_Group_Name, "root") == 0) {
 		if (strcmp(com1, "batchadd") == 0) {
 			sscanf(cmd_str, "%s", com1);
 			add_users(STUDENT_COURSE_LIST);
@@ -372,7 +372,7 @@ void cmd(Client& client)
 	}
 	
 	//teacher组特有
-	if (strcmp(Cur_Group_Name, "teacher") == 0) {
+	if (strcmp(client.Cur_Group_Name, "teacher") == 0) {
 		if (strcmp(com1, "publish_task") == 0) {
 			sscanf(cmd_str, "%s%s%s", com1, com2, com3);
 			publish_task(com2, com3);
@@ -384,7 +384,7 @@ void cmd(Client& client)
 	}
   
   //student组特有
-	if (strcmp(Cur_Group_Name, "student") == 0) {
+	if (strcmp(client.Cur_Group_Name, "student") == 0) {
 		if (strcmp(com1, "check_hw_content") == 0) //check desription
 		{
 			// check lesson hw
@@ -401,7 +401,7 @@ void cmd(Client& client)
 		{
 			// submit_hw_to lesson hwname
 			sscanf(cmd_str, "%s%s%s", com1, com2, com3);
-			submit_assignment(Cur_User_Name, com2, com3);
+			submit_assignment(client.Cur_User_Name, com2, com3);
 		}
 	}
 	return;
