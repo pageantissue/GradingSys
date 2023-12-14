@@ -93,7 +93,7 @@ bool Format() { //ok
 
 	//DirItem gitem[DirItem_Size];
 	//safeFseek(fr, 143872, SEEK_SET);
-	//fread(gitem, sizeof(ditem), 1, fr);
+	//safeFread(gitem, sizeof(ditem), 1, fr);
 	
 	gotoRoot(sys);
 	mkdir(sys, sys.Cur_Dir_Addr, "etc");
@@ -119,16 +119,16 @@ bool Format() { //ok
 
 bool Install() {	//安装文件系统 ok
 	fseek(fr, Superblock_Start_Addr, SEEK_SET);
-	fread(superblock, sizeof(superblock), 1, fr);
+	safeFread(superblock, sizeof(superblock), 1, fr);
 
 	fseek(fr, InodeBitmap_Start_Addr, SEEK_SET);
-	fread(inode_bitmap, sizeof(inode_bitmap), 1, fr);
+	safeFread(inode_bitmap, sizeof(inode_bitmap), 1, fr);
 
 	fseek(fr, BlockBitmap_Start_Addr, SEEK_SET);
-	fread(block_bitmap, sizeof(block_bitmap), 1, fr);
+	safeFread(block_bitmap, sizeof(block_bitmap), 1, fr);
 
 	fseek(fr, Modified_inodeBitmap_Start_Addr, SEEK_SET);
-	fread(modified_inode_bitmap, sizeof(modified_inode_bitmap), 1, fr);
+	safeFread(modified_inode_bitmap, sizeof(modified_inode_bitmap), 1, fr);
 
 	fflush(fr);
 	return true;
@@ -149,7 +149,7 @@ bool mkdir(Client& client, int PIAddr, char name[]) {	//目录创建函数(父�
 	int empty_b = -1;
 	inode parino;
 	safeFseek(fr, PIAddr, SEEK_SET);
-	fread(&parino, sizeof(parino), 1, fr);
+	safeFread(&parino, sizeof(parino), 1, fr);
 
 	//判断身份
 	int role = 0;	//other 0
@@ -170,7 +170,7 @@ bool mkdir(Client& client, int PIAddr, char name[]) {	//目录创建函数(父�
 		if (baddr != -1) {//block已被使用 
 			DirItem ditem[DirItem_Size];
 			safeFseek(fr, baddr, SEEK_SET);
-			fread(ditem, sizeof(ditem), 1, fr);
+			safeFread(ditem, sizeof(ditem), 1, fr);
 			for (int j = 0; j < DirItem_Size; ++j) {
 				if (ditem[j].inodeAddr == -1) {//未使用过的项
 					bpos = i;
@@ -179,7 +179,7 @@ bool mkdir(Client& client, int PIAddr, char name[]) {	//目录创建函数(父�
 				if (strcmp(ditem[j].itemName, name) == 0) {//判断：存在同名目录
 					//inode temp;
 					//safeFseek(fr, ditem[j].inodeAddr, SEEK_SET);
-					//fread(&temp, sizeof(inode), 1, fr);
+					//safeFread(&temp, sizeof(inode), 1, fr);
 					//if (((temp.inode_mode >> 9) & 1) == 1) {//是目录
 					//	printf("该目录下已包含同名目录\n");
 					//	return false;
@@ -241,7 +241,7 @@ bool mkdir(Client& client, int PIAddr, char name[]) {	//目录创建函数(父�
 
 	DirItem paritem[DirItem_Size];
 	safeFseek(fr, parino.i_dirBlock[bpos], SEEK_SET);
-	fread(paritem, sizeof(paritem), 1, fr);
+	safeFread(paritem, sizeof(paritem), 1, fr);
 	fflush(fr);
 	strcpy(paritem[dpos].itemName, name);
 	paritem[dpos].inodeAddr = chiiaddr;
@@ -298,7 +298,7 @@ bool mkfile(Client& client, int PIAddr, char name[],char buf[]) {	//文件创建
 	int empty_b = -1;
 	inode parino;
 	safeFseek(fr, PIAddr, SEEK_SET);
-	fread(&parino, sizeof(parino), 1, fr);
+	safeFread(&parino, sizeof(parino), 1, fr);
 
 	//判断身份
 	int role = 0;	//other 0
@@ -319,7 +319,7 @@ bool mkfile(Client& client, int PIAddr, char name[],char buf[]) {	//文件创建
 		if (baddr != -1) {//block已被使用 
 			DirItem ditem[DirItem_Size];
 			safeFseek(fr, baddr, SEEK_SET);
-			fread(ditem, sizeof(ditem), 1, fr);
+			safeFread(ditem, sizeof(ditem), 1, fr);
 			for (int j = 0; j < DirItem_Size; ++j) {
 				if (ditem[j].inodeAddr == -1) {//未使用过的项
 					bpos = i;
@@ -382,7 +382,7 @@ bool mkfile(Client& client, int PIAddr, char name[],char buf[]) {	//文件创建
 
 	DirItem paritem[DirItem_Size];
 	safeFseek(fr, parino.i_dirBlock[bpos], SEEK_SET);
-	fread(paritem, sizeof(paritem), 1, fr);
+	safeFread(paritem, sizeof(paritem), 1, fr);
 	fflush(fr);
 	strcpy(paritem[dpos].itemName, name);
 	paritem[dpos].inodeAddr = chiiaddr;
@@ -415,13 +415,13 @@ bool rm(Client& client, int PIAddr, char name[], int type) {	//删除文件or文
 	//文件和目录不允许重名
 	inode ino;
 	safeFseek(fr, PIAddr, SEEK_SET);
-	fread(&ino, sizeof(ino), 1, fr);
+	safeFread(&ino, sizeof(ino), 1, fr);
 
 	for (int i = 0; i < 10; ++i) {
 		if (ino.i_dirBlock[i] != -1) {
 			DirItem ditem[DirItem_Size];
 			safeFseek(fr, ino.i_dirBlock[i], SEEK_SET);
-			fread(ditem, sizeof(ditem), 1, fr);
+			safeFread(ditem, sizeof(ditem), 1, fr);
 			for (int j = 0; j < DirItem_Size; ++j) {
 				if (strcmp(ditem[j].itemName, name) == 0)
 				{ //找到同名
@@ -506,7 +506,7 @@ bool recursive_rmdir(Client& client, int CHIAddr, char name[]) {//删除当前�
 	//判断权限
 	inode ino;
 	safeFseek(fr, CHIAddr, SEEK_SET);
-	fread(&ino, sizeof(inode), 1, fr);
+	safeFread(&ino, sizeof(inode), 1, fr);
 
 	int mode = 0;//other
 	if (strcmp(client.Cur_Group_Name, ino.i_gname) == 0) {//group
@@ -527,7 +527,7 @@ bool recursive_rmdir(Client& client, int CHIAddr, char name[]) {//删除当前�
 		DirItem ditem[DirItem_Size];
 		if (ino.i_dirBlock[i] != -1) {//被使用过
 			safeFseek(fr, ino.i_dirBlock[i], SEEK_SET);
-			fread(ditem, sizeof(ditem), 1, fr);
+			safeFread(ditem, sizeof(ditem), 1, fr);
 			for (int j = 0; j < DirItem_Size; ++j) {
 				inode chiino;
 				if (strcmp(ditem[j].itemName, ".") == 0 || strcmp(ditem[j].itemName, "..") == 0) {
@@ -537,7 +537,7 @@ bool recursive_rmdir(Client& client, int CHIAddr, char name[]) {//删除当前�
 				}
 				if (strlen(ditem[j].itemName) != 0) {
 					safeFseek(fr, ditem[j].inodeAddr, SEEK_SET);
-					fread(&chiino, sizeof(inode), 1, fr);
+					safeFread(&chiino, sizeof(inode), 1, fr);
 					if ((chiino.inode_mode >> 9) & 1 == 1) {	//目录
 						recursive_rmdir(client, ditem[j].inodeAddr, ditem[j].itemName);
 					}
@@ -569,7 +569,7 @@ bool recursive_rmfile(Client& client, int CHIAddr, char name[]) {	//删除当前
 	//判断权限
 	inode ino;
 	safeFseek(fr, CHIAddr, SEEK_SET);
-	fread(&ino, sizeof(inode), 1, fr);
+	safeFread(&ino, sizeof(inode), 1, fr);
 
 	int mode = 0;//other
 	if (strcmp(client.Cur_Group_Name, ino.i_gname) == 0) {//group
@@ -600,25 +600,25 @@ bool recursive_rmfile(Client& client, int CHIAddr, char name[]) {	//删除当前
 bool cat(Client& client, int PIAddr, char name[]) {	//查看文件内容
 	inode parino;
 	safeFseek(fr, PIAddr, SEEK_SET);
-	fread(&parino, sizeof(parino), 1, fr);
+	safeFread(&parino, sizeof(parino), 1, fr);
 
 	for (int i = 0; i < 10; ++i) {
 		if (parino.i_dirBlock[i] != -1) {
 			DirItem ditem[DirItem_Size];
 			safeFseek(fr, parino.i_dirBlock[i], SEEK_SET);
-			fread(ditem, sizeof(ditem), 1, fr);
+			safeFread(ditem, sizeof(ditem), 1, fr);
 			for (int j = 0; j < DirItem_Size; ++j) {
 				if (strcmp(ditem[j].itemName, name) == 0) {	//同名
 					inode chiino;
 					safeFseek(fr, ditem[j].inodeAddr, SEEK_SET);
-					fread(&chiino, sizeof(chiino), 1, fr);
+					safeFread(&chiino, sizeof(chiino), 1, fr);
 					if(((chiino.inode_mode>>9)&1)==0){//文件
 						//读文件内容
 						for (int k = 0; k < 10;++k) {
 							if (chiino.i_dirBlock[k] != -1) {
 								char content[BLOCK_SIZE];
 								safeFseek(fr, chiino.i_dirBlock[k], SEEK_SET);
-								fread(content, sizeof(content), 1, fr);
+								safeFread(content, sizeof(content), 1, fr);
 								//printf("%s\n", content);
 								char sendbuff[strlen(content) + 1];
 								strcpy(sendbuff, content);
@@ -649,17 +649,17 @@ bool echo(Client& client, int PIAddr, char name[], int type, char* buf) {	//文�
 	}
 	inode parino;
 	safeFseek(fr, PIAddr, SEEK_SET);
-	fread(&parino, sizeof(parino), 1, fr);
+	safeFread(&parino, sizeof(parino), 1, fr);
 	for (int i = 0; i < 10; ++i) {
 		if (parino.i_dirBlock[i] != -1) {
 			DirItem ditem[DirItem_Size];
 			safeFseek(fr, parino.i_dirBlock[i], SEEK_SET);
-			fread(ditem, sizeof(ditem), 1, fr);
+			safeFread(ditem, sizeof(ditem), 1, fr);
 			for (int j = 0; j < DirItem_Size; ++j) {
 				if (strcmp(ditem[j].itemName, name) == 0) {	//同名
 					inode chiino;
 					safeFseek(fr, ditem[j].inodeAddr, SEEK_SET);
-					fread(&chiino, sizeof(chiino), 1, fr);
+					safeFread(&chiino, sizeof(chiino), 1, fr);
 					if (((chiino.inode_mode >> 9) & 1) == 0) {//文件
 						//0：覆盖写入
 						if (type == 0) {
@@ -736,7 +736,7 @@ bool addfile(Client& client, inode fileinode, int iaddr, char buf[]) { //文件�
 	for (int i = start; i < 10; ++i) {
 		if (fileinode.i_dirBlock[i] != -1) {	//正在使用块(补全）
 			safeFseek(fr, fileinode.i_dirBlock[i], SEEK_SET);
-			fread(temp, BLOCK_SIZE, 1, fr);
+			safeFread(temp, BLOCK_SIZE, 1, fr);
 			fflush(fr);
 			int offset = BLOCK_SIZE - strlen(temp);
 			strncat(temp, buf, offset);
@@ -774,7 +774,7 @@ bool addfile(Client& client, inode fileinode, int iaddr, char buf[]) { //文件�
 bool cd(Client& client, int PIAddr, char name[]) {//切换目录
 	inode pinode;
 	safeFseek(fr, PIAddr, SEEK_SET);
-	fread(&pinode, sizeof(inode), 1, fr);
+	safeFread(&pinode, sizeof(inode), 1, fr);
 
 	//判断身份
 	int role = 0;	//other 0
@@ -789,7 +789,7 @@ bool cd(Client& client, int PIAddr, char name[]) {//切换目录
 		if (pinode.i_dirBlock[i] != -1) {
 			DirItem ditem[DirItem_Size];
 			safeFseek(fr, pinode.i_dirBlock[i], SEEK_SET);
-			fread(ditem, sizeof(ditem), 1, fr);
+			safeFread(ditem, sizeof(ditem), 1, fr);
 			for (int j = 0; j < DirItem_Size; ++j) {
 				if (strcmp(ditem[j].itemName, name) == 0) { //找到同名
 					if (strcmp(name, ".") == 0) {
@@ -808,10 +808,10 @@ bool cd(Client& client, int PIAddr, char name[]) {//切换目录
 					}
 					inode chiino;
 					safeFseek(fr, ditem[j].inodeAddr, SEEK_SET);
-					fread(&chiino, sizeof(inode), 1, fr);
+					safeFread(&chiino, sizeof(inode), 1, fr);
 					fflush(fr);
 
-					if ((((chiino.inode_mode >> role) & 1) == 1) ||(strcmp(Cur_Group_Name,"root")==0)){	//是否有执行权限
+					if ((((chiino.inode_mode >> role) & 1) == 1) ||(strcmp(client.Cur_Group_Name,"root")==0)){	//是否有执行权限
 						if (strcmp(client.Cur_Dir_Name, "/") != 0) {
 							strcat(client.Cur_Dir_Name, "/");
 						}
@@ -836,7 +836,7 @@ void gotoRoot(Client& client) { //ok
 void ls(Client& client, char str[]) {//显示当前目录所有文件 ok
 	inode ino;
 	safeFseek(fr, client.Cur_Dir_Addr, SEEK_SET);
-	fread(&ino, sizeof(inode), 1, fr);
+	safeFread(&ino, sizeof(inode), 1, fr);
 	fflush(fr);
 	//printf("%s\n", ino);
 	
@@ -859,7 +859,7 @@ void ls(Client& client, char str[]) {//显示当前目录所有文件 ok
 		DirItem ditem[DirItem_Size];
 		if (ino.i_dirBlock[i] != -1) {//被使用过
 			safeFseek(fr, ino.i_dirBlock[i], SEEK_SET);
-			fread(ditem, sizeof(ditem), 1, fr);
+			safeFread(ditem, sizeof(ditem), 1, fr);
 			if (strcmp(str, "-l") == 0) 
 			{
 				//取出目录项的inode
@@ -870,7 +870,7 @@ void ls(Client& client, char str[]) {//显示当前目录所有文件 ok
 					int ptr = 0;
 					inode tmp;
 					safeFseek(fr, ditem[j].inodeAddr, SEEK_SET);
-					fread(&tmp, sizeof(inode), 1, fr);
+					safeFread(&tmp, sizeof(inode), 1, fr);
 					fflush(fr);
 
 					if (strcmp(ditem[j].itemName, "") == 0|| (strcmp(ditem[j].itemName, ".") == 0) || (strcmp(ditem[j].itemName, "..") == 0)) {
@@ -971,6 +971,11 @@ std::mutex fileMutex;
 void safeFseek(FILE* file, long offset, int origin) {
 	std::lock_guard<std::mutex> lock(fileMutex);
 	fseek(file, offset, origin);
+}
+
+size_t safeFread(const void* ptr, size_t size, size_t count, FILE* file) {
+	std::lock_guard<std::mutex> lock(fileMutex);
+	return fwrite(ptr, size, count, file);
 }
 
 // 自定义函数，对文件写入进行加锁
@@ -1092,7 +1097,7 @@ bool login(Client& client)	//登陆界面
 {	
 	//DirItem ditem[DirItem_Size];
 	//safeFseek(fr,143872, SEEK_SET);
-	//fread(ditem, sizeof(ditem), 1, fr);
+	//safeFread(ditem, sizeof(ditem), 1, fr);
 
 	char username[100] = { 0 };
 	char passwd[100] = { 0 };
@@ -1177,28 +1182,28 @@ bool useradd(Client& client, char username[], char passwd[], char group[]) {	//�
 	gotoRoot(client);
 	cd(client, client.Cur_Dir_Addr, "etc");
 	safeFseek(fr, client.Cur_Dir_Addr, SEEK_SET);
-	fread(&etcino, sizeof(inode), 1, fr);
+	safeFread(&etcino, sizeof(inode), 1, fr);
 	for (int i = 0; i < 10; ++i) {
 		DirItem ditem[DirItem_Size];
 		int baddr = etcino.i_dirBlock[i];
 		if (baddr != -1) {
 			safeFseek(fr, baddr, SEEK_SET);
-			fread(&ditem, BLOCK_SIZE, 1, fr);
+			safeFread(&ditem, BLOCK_SIZE, 1, fr);
 			for (int j = 0; j < DirItem_Size; ++j) {
 				if (strcmp(ditem[j].itemName, "passwd") == 0) {
 					passwdiddr = ditem[j].inodeAddr;
 					safeFseek(fr, passwdiddr, SEEK_SET);
-					fread(&passwdino, sizeof(inode), 1, fr);
+					safeFread(&passwdino, sizeof(inode), 1, fr);
 				}
 				if (strcmp(ditem[j].itemName, "shadow") == 0) {	//不判断是否为文件了
 					shadowiddr = ditem[j].inodeAddr;
 					safeFseek(fr, shadowiddr, SEEK_SET);
-					fread(&shadowino, sizeof(inode), 1, fr);
+					safeFread(&shadowino, sizeof(inode), 1, fr);
 				}
 				if (strcmp(ditem[j].itemName, "group") == 0) {
 					groupiddr = ditem[j].inodeAddr;
 					safeFseek(fr,groupiddr, SEEK_SET);
-					fread(&groupino, sizeof(inode), 1, fr);
+					safeFread(&groupino, sizeof(inode), 1, fr);
 				}
 			}
 		}
@@ -1223,7 +1228,7 @@ bool useradd(Client& client, char username[], char passwd[], char group[]) {	//�
 		if (passwdino.i_dirBlock[i] != -1) {
 			memset(temp, '\0', sizeof(temp));
 			safeFseek(fr, passwdino.i_dirBlock[i], SEEK_SET);
-			fread(&temp, BLOCK_SIZE, 1, fr);//不知道能否成功
+			safeFread(&temp, BLOCK_SIZE, 1, fr);//不知道能否成功
 			strcat(buf, temp);
 		}
 	}
@@ -1240,7 +1245,7 @@ bool useradd(Client& client, char username[], char passwd[], char group[]) {	//�
 
 	char t[BLOCK_SIZE];
 	safeFseek(fr, passwdino.i_dirBlock[0], SEEK_SET);
-	fread(t, BLOCK_SIZE, 1, fr);//不知道能否成功
+	safeFread(t, BLOCK_SIZE, 1, fr);//不知道能否成功
 	fflush(fr);
 
 	//shadow
@@ -1249,7 +1254,7 @@ bool useradd(Client& client, char username[], char passwd[], char group[]) {	//�
 		if (shadowino.i_dirBlock[i] != -1) {
 			memset(temp, '\0', sizeof(temp));
 			safeFseek(fr, shadowino.i_dirBlock[i], SEEK_SET);
-			fread(&temp, BLOCK_SIZE, 1, fr);//不知道能否成功
+			safeFread(&temp, BLOCK_SIZE, 1, fr);//不知道能否成功
 			strcat(buf, temp);
 		}
 	}
@@ -1258,7 +1263,7 @@ bool useradd(Client& client, char username[], char passwd[], char group[]) {	//�
 	writefile(shadowino, shadowiddr, buf);
 
 	safeFseek(fr, shadowino.i_dirBlock[0], SEEK_SET);
-	fread(t, BLOCK_SIZE, 1, fr);
+	safeFread(t, BLOCK_SIZE, 1, fr);
 	fflush(fr);
 
 	//group(root:0:XX,XX)
@@ -1267,7 +1272,7 @@ bool useradd(Client& client, char username[], char passwd[], char group[]) {	//�
 		if (groupino.i_dirBlock[i] != -1) {
 			memset(temp, '\0', sizeof(temp));
 			safeFseek(fr, groupino.i_dirBlock[i], SEEK_SET);
-			fread(&temp, BLOCK_SIZE, 1, fr);//不知道能否成功
+			safeFread(&temp, BLOCK_SIZE, 1, fr);//不知道能否成功
 			strcat(buf, temp);
 		}
 	}
@@ -1336,28 +1341,28 @@ bool userdel(Client& client, char username[]) {	//用户删除
 	gotoRoot(client);
 	cd(client, client.Cur_Dir_Addr, "etc");
 	safeFseek(fr, client.Cur_Dir_Addr, SEEK_SET);
-	fread(&etcino, sizeof(inode), 1, fr);
+	safeFread(&etcino, sizeof(inode), 1, fr);
 	for (int i = 0; i < 10; ++i) {
 		DirItem ditem[DirItem_Size];
 		int baddr = etcino.i_dirBlock[i];
 		if (baddr != -1) {
 			safeFseek(fr, baddr, SEEK_SET);
-			fread(&ditem, BLOCK_SIZE, 1, fr);
+			safeFread(&ditem, BLOCK_SIZE, 1, fr);
 			for (int j = 0; j < DirItem_Size; ++j) {
 				if (strcmp(ditem[j].itemName, "passwd") == 0) {
 					passwdiddr = ditem[j].inodeAddr;
 					safeFseek(fr, passwdiddr, SEEK_SET);
-					fread(&passwdino, sizeof(inode), 1, fr);
+					safeFread(&passwdino, sizeof(inode), 1, fr);
 				}
 				if (strcmp(ditem[j].itemName, "shadow") == 0) {	//不判断是否为文件了
 					shadowiddr = ditem[j].inodeAddr;
 					safeFseek(fr, shadowiddr, SEEK_SET);
-					fread(&shadowino, sizeof(inode), 1, fr);
+					safeFread(&shadowino, sizeof(inode), 1, fr);
 				}
 				if (strcmp(ditem[j].itemName, "group") == 0) {
 					groupiddr = ditem[j].inodeAddr;
 					safeFseek(fr, groupiddr, SEEK_SET);
-					fread(&groupino, sizeof(inode), 1, fr);
+					safeFread(&groupino, sizeof(inode), 1, fr);
 				}
 			}
 		}
@@ -1372,7 +1377,7 @@ bool userdel(Client& client, char username[]) {	//用户删除
 		if (passwdino.i_dirBlock[i] != -1) {
 			memset(temp, '\0', sizeof(temp));
 			safeFseek(fr, passwdino.i_dirBlock[i], SEEK_SET);
-			fread(&temp, BLOCK_SIZE, 1, fr);//不知道能否成功
+			safeFread(&temp, BLOCK_SIZE, 1, fr);//不知道能否成功
 			strcat(buf, temp);
 		}
 	}
@@ -1400,7 +1405,7 @@ bool userdel(Client& client, char username[]) {	//用户删除
 		if (shadowino.i_dirBlock[i] != -1) {
 			memset(temp, '\0', sizeof(temp));
 			safeFseek(fr, shadowino.i_dirBlock[i], SEEK_SET);
-			fread(&temp, BLOCK_SIZE, 1, fr);//不知道能否成功
+			safeFread(&temp, BLOCK_SIZE, 1, fr);//不知道能否成功
 			strcat(buf, temp);
 		}
 	}
@@ -1420,7 +1425,7 @@ bool userdel(Client& client, char username[]) {	//用户删除
 		if (groupino.i_dirBlock[i] != -1) {
 			memset(temp, '\0', sizeof(temp));
 			safeFseek(fr, groupino.i_dirBlock[i], SEEK_SET);
-			fread(&temp, BLOCK_SIZE, 1, fr);//不知道能否成功
+			safeFread(&temp, BLOCK_SIZE, 1, fr);//不知道能否成功
 			strcat(buf, temp);
 		}
 	}
@@ -1468,28 +1473,28 @@ bool check(Client& client, char username[], char passwd[]) {//核验身份登录
 	gotoRoot(sys);
 	cd(sys, sys.Cur_Dir_Addr, "etc");
 	safeFseek(fr, sys.Cur_Dir_Addr, SEEK_SET);
-	fread(&etcino, sizeof(inode), 1, fr);
+	safeFread(&etcino, sizeof(inode), 1, fr);
 	for (int i = 0; i < 10; ++i) {
 		DirItem ditem[DirItem_Size];
 		int baddr = etcino.i_dirBlock[i];
 		if (baddr != -1) {
 			safeFseek(fr, baddr, SEEK_SET);
-			fread(&ditem, BLOCK_SIZE, 1, fr);
+			safeFread(&ditem, BLOCK_SIZE, 1, fr);
 			for (int j = 0; j < DirItem_Size; ++j) {
 				if (strcmp(ditem[j].itemName, "passwd") == 0) {
 					passwdiddr = ditem[j].inodeAddr;
 					safeFseek(fr, passwdiddr, SEEK_SET);
-					fread(&passwdino, sizeof(inode), 1, fr);
+					safeFread(&passwdino, sizeof(inode), 1, fr);
 				}
 				if (strcmp(ditem[j].itemName, "shadow") == 0) {	//不判断是否为文件了
 					shadowiddr = ditem[j].inodeAddr;
 					safeFseek(fr, shadowiddr, SEEK_SET);
-					fread(&shadowino, sizeof(inode), 1, fr);
+					safeFread(&shadowino, sizeof(inode), 1, fr);
 				}
 				if (strcmp(ditem[j].itemName, "group") == 0) {
 					groupiddr = ditem[j].inodeAddr;
 					safeFseek(fr, groupiddr, SEEK_SET);
-					fread(&groupino, sizeof(inode), 1, fr);
+					safeFread(&groupino, sizeof(inode), 1, fr);
 				}
 			}
 		}
@@ -1512,7 +1517,7 @@ bool check(Client& client, char username[], char passwd[]) {//核验身份登录
 		if (shadowino.i_dirBlock[i] != -1) {
 			memset(temp, '\0', sizeof(temp));
 			safeFseek(fr, shadowino.i_dirBlock[i], SEEK_SET);
-			fread(&temp, BLOCK_SIZE, 1, fr);//不知道能否成功
+			safeFread(&temp, BLOCK_SIZE, 1, fr);//不知道能否成功
 			strcpy(buf, temp);
 		}
 	}
@@ -1546,7 +1551,7 @@ bool check(Client& client, char username[], char passwd[]) {//核验身份登录
 		if (passwdino.i_dirBlock[i] != -1) {
 			memset(temp, '\0', sizeof(temp));
 			safeFseek(fr, passwdino.i_dirBlock[i], SEEK_SET);
-			fread(&temp, BLOCK_SIZE, 1, fr);//不知道能否成功
+			safeFread(&temp, BLOCK_SIZE, 1, fr);//不知道能否成功
 			strcpy(buf, temp);
 		}
 	}
@@ -1598,17 +1603,17 @@ bool chmod(Client& client, int PIAddr, char name[], char* pmode) {//修改文件
 	}
 	inode ino;
 	safeFseek(fr, PIAddr, SEEK_SET);
-	fread(&ino, sizeof(inode), 1, fr);
+	safeFread(&ino, sizeof(inode), 1, fr);
 	fflush(fr);
 	for (int i = 0; i < 10; ++i) {
 		DirItem ditem[DirItem_Size];
 		safeFseek(fr, ino.i_dirBlock[i], SEEK_SET);
-		fread(ditem, sizeof(ditem), 1, fr);
+		safeFread(ditem, sizeof(ditem), 1, fr);
 		for (int j = 0; j < DirItem_Size; ++j) {
 			if (strcmp(ditem[j].itemName, name) == 0) {//找到同名文件
 				inode chiino;
 				safeFseek(fr, ditem[j].inodeAddr, SEEK_SET);
-				fread(&chiino, sizeof(inode), 1, fr);
+				safeFread(&chiino, sizeof(inode), 1, fr);
 				fflush(fr);
 				//1:目录 0：文件
 				//if (((chiino.inode_mode >> 9) & 1 )!= type) {	//未找到同一类型文件
@@ -1764,18 +1769,18 @@ bool chmod(Client& client, int PIAddr, char name[], char* pmode) {//修改文件
 //	gotoRoot();
 //	cd(client.Cur_Dir_Addr, "etc");
 //	safeFseek(fr, client.Cur_Dir_Addr, SEEK_SET);
-//	fread(&etcino, sizeof(inode), 1, fr);
+//	safeFread(&etcino, sizeof(inode), 1, fr);
 //	for (int i = 0; i < 10; ++i) {
 //		DirItem ditem[DirItem_Size];
 //		int baddr = etcino.i_dirBlock[i];
 //		if (baddr != -1) {
 //			safeFseek(fr, baddr, SEEK_SET);
-//			fread(&ditem, BLOCK_SIZE, 1, fr);
+//			safeFread(&ditem, BLOCK_SIZE, 1, fr);
 //			for (int j = 0; j < DirItem_Size; ++j) {
 //				if (strcmp(ditem[j].itemName, "passwd") == 0) {
 //					passwdiddr = ditem[j].inodeAddr;
 //					safeFseek(fr, passwdiddr, SEEK_SET);
-//					fread(&passwdino, sizeof(inode), 1, fr);
+//					safeFread(&passwdino, sizeof(inode), 1, fr);
 //				}
 //			}
 //		}
@@ -1786,7 +1791,7 @@ bool chmod(Client& client, int PIAddr, char name[], char* pmode) {//修改文件
 //		if (passwdino.i_dirBlock[i] != -1) {
 //			memset(temp, '\0', sizeof(temp));
 //			safeFseek(fr, passwdino.i_dirBlock[i], SEEK_SET);
-//			fread(&temp, BLOCK_SIZE, 1, fr);//不知道能否成功
+//			safeFread(&temp, BLOCK_SIZE, 1, fr);//不知道能否成功
 //			strcpy(buf, temp);
 //		}
 //	}
@@ -1844,18 +1849,18 @@ bool groupadd(Client& client, char* group)
 	gotoRoot(client);
 	cd(client, client.Cur_Dir_Addr, "etc");
 	safeFseek(fr, client.Cur_Dir_Addr, SEEK_SET);
-	fread(&etcino, sizeof(inode), 1, fr);
+	safeFread(&etcino, sizeof(inode), 1, fr);
 	for (int i = 0; i < 10; ++i) {
 		DirItem ditem[DirItem_Size];
 		int baddr = etcino.i_dirBlock[i];
 		if (baddr != -1) {
 			safeFseek(fr, baddr, SEEK_SET);
-			fread(&ditem, BLOCK_SIZE, 1, fr);
+			safeFread(&ditem, BLOCK_SIZE, 1, fr);
 			for (int j = 0; j < DirItem_Size; ++j) {
 				if (strcmp(ditem[j].itemName, "group") == 0) {
 					groupiddr = ditem[j].inodeAddr;
 					safeFseek(fr, groupiddr, SEEK_SET);
-					fread(&groupino, sizeof(inode), 1, fr);
+					safeFread(&groupino, sizeof(inode), 1, fr);
 				}
 			}
 		}
@@ -1870,7 +1875,7 @@ bool groupadd(Client& client, char* group)
 		if (groupino.i_dirBlock[i] != -1) {
 			memset(temp, '\0', sizeof(temp));
 			safeFseek(fr, groupino.i_dirBlock[i], SEEK_SET);
-			fread(&temp, BLOCK_SIZE, 1, fr);//不知道能否成功
+			safeFread(&temp, BLOCK_SIZE, 1, fr);//不知道能否成功
 			strcat(buf, temp);
 		}
 	}
@@ -1931,18 +1936,18 @@ bool groupdel(Client& client, char* group) {
 	gotoRoot(client);
 	cd(client, client.Cur_Dir_Addr, "etc");
 	safeFseek(fr, client.Cur_Dir_Addr, SEEK_SET);
-	fread(&etcino, sizeof(inode), 1, fr);
+	safeFread(&etcino, sizeof(inode), 1, fr);
 	for (int i = 0; i < 10; ++i) {
 		DirItem ditem[DirItem_Size];
 		int baddr = etcino.i_dirBlock[i];
 		if (baddr != -1) {
 			safeFseek(fr, baddr, SEEK_SET);
-			fread(&ditem, BLOCK_SIZE, 1, fr);
+			safeFread(&ditem, BLOCK_SIZE, 1, fr);
 			for (int j = 0; j < DirItem_Size; ++j) {
 				if (strcmp(ditem[j].itemName, "group") == 0) {
 					groupiddr = ditem[j].inodeAddr;
 					safeFseek(fr, groupiddr, SEEK_SET);
-					fread(&groupino, sizeof(inode), 1, fr);
+					safeFread(&groupino, sizeof(inode), 1, fr);
 				}
 			}
 		}
@@ -1955,7 +1960,7 @@ bool groupdel(Client& client, char* group) {
 		if (groupino.i_dirBlock[i] != -1) {
 			memset(temp, '\0', sizeof(temp));
 			safeFseek(fr, groupino.i_dirBlock[i], SEEK_SET);
-			fread(&temp, BLOCK_SIZE, 1, fr);//不知道能否成功
+			safeFread(&temp, BLOCK_SIZE, 1, fr);//不知道能否成功
 			strcat(buf, temp);
 		}
 	}
@@ -2024,18 +2029,18 @@ char* is_group(Client& client, char* group,char *gid) {
 	gotoRoot(client);
 	cd(client, client.Cur_Dir_Addr, "etc");
 	safeFseek(fr, client.Cur_Dir_Addr, SEEK_SET);
-	fread(&etcino, sizeof(inode), 1, fr);
+	safeFread(&etcino, sizeof(inode), 1, fr);
 	for (int i = 0; i < 10; ++i) {
 		DirItem ditem[DirItem_Size];
 		int baddr = etcino.i_dirBlock[i];
 		if (baddr != -1) {
 			safeFseek(fr, baddr, SEEK_SET);
-			fread(&ditem, BLOCK_SIZE, 1, fr);
+			safeFread(&ditem, BLOCK_SIZE, 1, fr);
 			for (int j = 0; j < DirItem_Size; ++j) {
 				if (strcmp(ditem[j].itemName, "group") == 0) {
 					groupiddr = ditem[j].inodeAddr;
 					safeFseek(fr, groupiddr, SEEK_SET);
-					fread(&groupino, sizeof(inode), 1, fr);
+					safeFread(&groupino, sizeof(inode), 1, fr);
 				}
 			}
 		}
@@ -2050,7 +2055,7 @@ char* is_group(Client& client, char* group,char *gid) {
 		if (groupino.i_dirBlock[i] != -1) {
 			memset(temp, '\0', sizeof(temp));
 			safeFseek(fr, groupino.i_dirBlock[i], SEEK_SET);
-			fread(&temp, BLOCK_SIZE, 1, fr);//不知道能否成功
+			safeFread(&temp, BLOCK_SIZE, 1, fr);//不知道能否成功
 			strcat(buf, temp);
 		}
 	}
@@ -2100,18 +2105,18 @@ bool chown(Client& client, int PIAddr,char* filename, char name[], char group[])
 
 	inode ino;
 	safeFseek(fr, PIAddr, SEEK_SET);
-	fread(&ino, sizeof(inode), 1, fr);
+	safeFread(&ino, sizeof(inode), 1, fr);
 	fflush(fr);
 	for (int i = 0; i < 10; ++i)
 	{
 		DirItem ditem[DirItem_Size];
 		safeFseek(fr, ino.i_dirBlock[i], SEEK_SET);
-		fread(ditem, sizeof(ditem), 1, fr);
+		safeFread(ditem, sizeof(ditem), 1, fr);
 		for (int j = 0; j < DirItem_Size; ++j) {
 			if (strcmp(ditem[j].itemName, filename) == 0) {//找到同名文件
 				inode chiino;
 				safeFseek(fr, ditem[j].inodeAddr, SEEK_SET);
-				fread(&chiino, sizeof(inode), 1, fr);
+				safeFread(&chiino, sizeof(inode), 1, fr);
 				fflush(fr);
 				//1:目录 0：文件
 				//if (((chiino.inode_mode >> 9) & 1 )!= type) {	//未找到同一类型文件
@@ -2165,18 +2170,18 @@ bool passwd(Client& client, char username[],char pwd[]) {
 	gotoRoot(client);
 	cd(client, client.Cur_Dir_Addr, "etc");
 	safeFseek(fr, client.Cur_Dir_Addr, SEEK_SET);
-	fread(&etcino, sizeof(inode), 1, fr);
+	safeFread(&etcino, sizeof(inode), 1, fr);
 	for (int i = 0; i < 10; ++i) {
 		DirItem ditem[DirItem_Size];
 		int baddr = etcino.i_dirBlock[i];
 		if (baddr != -1) {
 			safeFseek(fr, baddr, SEEK_SET);
-			fread(&ditem, BLOCK_SIZE, 1, fr);
+			safeFread(&ditem, BLOCK_SIZE, 1, fr);
 			for (int j = 0; j < DirItem_Size; ++j) {
 				if (strcmp(ditem[j].itemName, "shadow") == 0) {	//不判断是否为文件了
 					shadowiddr = ditem[j].inodeAddr;
 					safeFseek(fr, shadowiddr, SEEK_SET);
-					fread(&shadowino, sizeof(inode), 1, fr);
+					safeFread(&shadowino, sizeof(inode), 1, fr);
 				}
 			}
 		}
@@ -2190,7 +2195,7 @@ bool passwd(Client& client, char username[],char pwd[]) {
 		if (shadowino.i_dirBlock[i] != -1) {
 			memset(temp, '\0', sizeof(temp));
 			safeFseek(fr, shadowino.i_dirBlock[i], SEEK_SET);
-			fread(&temp, BLOCK_SIZE, 1, fr);//不知道能否成功
+			safeFread(&temp, BLOCK_SIZE, 1, fr);//不知道能否成功
 			strcat(buf, temp);
 		}
 	}

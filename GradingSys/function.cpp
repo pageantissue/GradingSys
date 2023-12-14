@@ -367,7 +367,7 @@ void cmd(Client& client)
 	if (strcmp(client.Cur_Group_Name, "root") == 0) {
 		if (strcmp(com1, "batchadd") == 0) {
 			sscanf(cmd_str, "%s", com1);
-			add_users(STUDENT_COURSE_LIST);
+			add_users(client, STUDENT_COURSE_LIST);
 		}
 	}
 	
@@ -375,11 +375,11 @@ void cmd(Client& client)
 	if (strcmp(client.Cur_Group_Name, "teacher") == 0) {
 		if (strcmp(com1, "publish_task") == 0) {
 			sscanf(cmd_str, "%s%s%s", com1, com2, com3);
-			publish_task(com2, com3);
+			publish_task(client, com2, com3);
 		}
 		else if (strcmp(com1, "judge_hw") == 0) {
 			sscanf(cmd_str, "%s%s%s", com1, com2, com3);
-			judge_hw(STUDENT_COURSE_LIST, com2, com3);
+			judge_hw(client, STUDENT_COURSE_LIST, com2, com3);
 		}
 	}
   
@@ -389,19 +389,19 @@ void cmd(Client& client)
 		{
 			// check lesson hw
 			sscanf(cmd_str, "%s%s%s", com1, com2, com3);
-			check_hw_content(com2, com3);
+			check_hw_content(client, com2, com3);
 		}
 		else if (strcmp(com1, "check_hw_score") == 0)
 		{
 			// check_hw_score lesson hw
 			sscanf(cmd_str, "%s%s%s", com1, com2, com3);
-			check_hw_score(com2, com3);
+			check_hw_score(client, com2, com3);
 		}
 		else if (strcmp(com1, "submit_hw_to") == 0)
 		{
 			// submit_hw_to lesson hwname
 			sscanf(cmd_str, "%s%s%s", com1, com2, com3);
-			submit_assignment(client.Cur_User_Name, com2, com3);
+			submit_assignment(client, client.Cur_User_Name, com2, com3);
 		}
 	}
 	return;
