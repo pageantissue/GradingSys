@@ -369,7 +369,7 @@ void cmd(char cmd_str[]) {
 	}
 
 	else if (strcmp(com1, "fullbackup") == 0) {
-		demo();
+		//demo();
 		fullBackup();
 	}
 	else if (strcmp(com1, "increbackup") == 0) {

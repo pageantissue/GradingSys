@@ -6,6 +6,7 @@
 #include"function.h"
 #include<limits>
 #include <unistd.h>
+#include<dirent.h>
 
 
 const int Superblock_Start_Addr=0;     //44B:1block
@@ -87,7 +88,7 @@ int main()
         printf("文件系统正在格式化\n");
 
         //系统格式化
-        if (!Format(count)) {
+        if (!Format()) {
             printf("格式化失败\n");
             return 0;
         }
@@ -130,7 +131,7 @@ int main()
         printf("是否需要格式化：[y/n]\n");
         char a = getchar();
         if (a == 'y') {
-            if (!Format(count)) {
+            if (!Format()) {
                 printf("格式化失败！\n");
                 return 0;
             }
@@ -144,7 +145,22 @@ int main()
         }
         printf("安装文件系统成功！\n");
     }
-    count = 0;  //记录操作次数
+    DIR* dir;
+    struct dirent* ent;
+    if ((dir = opendir("/home/wjy/projects/GradingSys/bin/x64/Debug")) != NULL) {
+        while ((ent = readdir(dir)) != NULL) {
+            if (strcmp(ent->d_name, "Full") == 0) {
+                string path = "/home/wjy/projects/GradingSys/bin/x64/Debug/" + (string)ent->d_name;
+                remove(path.c_str());
+                printf("Delete %s\n", ent->d_name);
+            }
+            else if (strcmp(ent->d_name, "Incre") == 0) {
+                string path = "/home/wjy/projects/GradingSys/bin/x64/Debug/" + (string)ent->d_name;
+                remove(path.c_str());
+                printf("Delete %s\n", ent->d_name);
+            }
+        }
+    }
     while (1) {
         if (isLogin) {
             char str[100];

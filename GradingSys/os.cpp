@@ -10,7 +10,7 @@ using namespace std;
 
 
 //****大类函数****
-bool Format(int count) { //ok
+bool Format() { //ok
 	//初始化:超级块,位图
 	char buffer[Disk_Size];
 	memset(buffer, '\0', sizeof(buffer));

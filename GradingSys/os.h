@@ -114,7 +114,7 @@ extern char buffer[10000000];				//10M，缓存整个虚拟磁盘文件
 
 
 //大类函数
-bool Format(int count);								//文件系统格式化
+bool Format();								//文件系统格式化
 bool Install();								//安装文件系统
 //bool mkdir(int PIAddr, char name[],int count);
 bool mkdir(int PIAddr, char name[]);
