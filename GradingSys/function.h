@@ -1,8 +1,5 @@
 #pragma once
 #include<iostream>
-#include<stdio.h>
-#include<time.h>
-#include<string.h>
 #include"os.h"
 #include"role.h"
 #include"snapshot.h"
