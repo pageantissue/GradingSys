@@ -1,10 +1,12 @@
 #include"os.h"
 #include"function.h"
-#include<cstring>
-#include<cstdio>
+#include<iomanip>
+#include<time.h>
+#include<string.h>
+#include<stdio.h>
 #include<iostream>
-#include"role.h"
-
+#include<mutex>
+std::mutex workPrt;
 using namespace std;
 
 void cmd(char cmd_str[]) {
@@ -156,59 +158,62 @@ void cmd(char cmd_str[]) {
 void help() {
 	cout.setf(ios::left);
 	cout.width(30);
-	cout << "ls [-l]" << "Display the current directory listing" << endl;
+	cout << "ls" << "Display the current directory listing" << endl;
 	cout.width(30);
-	cout << "cd [path]" << "Enter the specific directory " << endl;
+	cout << "cd" << "Enter the specific directory " << endl;
 	cout.width(30);
-	cout << "gotoRoot " << "Return to the root directory " << endl;
+	cout << "gotoRoot" << "Return to the root directory " << endl;
 	cout.width(30);
-	cout << "mkdir [path]" << "Create directory" << endl;
+	cout << "mkdir" << "Create directory" << endl;	
 	cout.width(30);
-	cout << "rm [-rf dir_path] | [-f file_path]" << "Delete directory or file" << endl;
+	cout << "rm" << "Delete directory or file" << endl;		
 	cout.width(30);
 	cout << "touch" << "Create a blank file" << endl;
 	cout.width(30);
-	cout << "echo \"content\" > [path] | \"content\" >> [path]" << "Write or add a file" << endl;
+	cout << "echo" << "Create a non-empty file" << endl;
 	cout.width(30);
-	cout << "cat [file_path]" << "View the file content" << endl;
+	cout << "chmod" << "Modify the access right" << endl;
 	cout.width(30);
-	cout << "chmod [ugoa]*[-+=]*[rwx] | [0-7]+" << "Modify the access right" << endl;
-	cout.width(30);
-	cout << "chown [user:group] [path]" << "Modify user and group in file" << endl;
-	cout.width(30);
+	//catchown
 
-	cout << "useradd [-g group] [-m] [user]" << "Add user" << endl;
+	cout << "useradd" << "Add user" << endl;
 	cout.width(30);
-	cout << "userdel [user]" << "Delete user" << endl;
+	cout << "userdel" << "Delete user" << endl;
 	cout.width(30);
-	cout << "groupadd [group]" << "Add group" << endl;
+	cout << "groupadd" << "Add group" << endl;		
 	cout.width(30);
-	cout << "groupdel [group]" << "Delete group" << endl;
+	cout << "groupdel" << "Delete group" << endl;	
 	cout.width(30);
-	cout << "passwd [user]" << "Modify the password" << endl;
+	cout << "passwd" << "Modify the password" << endl;	
 	cout.width(30);
 	cout << "logout" << "Logout the account" << endl;
 	cout.width(30);
-	cout << "exit" << "Exit the system" << endl;
-	cout.width(30);
-}
+	//usergrpadd,userfrpdel,
 
+
+
+	cout << "snapshot" << "Back up the system" << endl;	
+	cout.width(30);
+
+	cout << "exit" << "Exit the system" << endl;	
+}
 bool cd_func(int CurAddr, char* str) {
 	int pro_cur_dir_addr = Cur_Dir_Addr;
 	char pro_cur_dir_name[310];
-    memset(pro_cur_dir_name, '\0', 310);
-    strcpy(pro_cur_dir_name, Cur_Dir_Name);
+	strcpy(pro_cur_dir_name, client.Cur_Dir_Name);
 	int flag = 1;
-	if (strcmp(str, "/") == 0) {
-		gotoRoot();
+
+	//查看cd类型：绝对路径or相对路径
+	if (strcmp(str, "/") == 0) {//前往根目录
+		gotoRoot(client);
 		return true;
 	}
-	if (str[0] == '/') {
-		gotoRoot();
+	if (str[0] == '/') {	//绝对路径
+		gotoRoot(client);
 		str += 1;
 	}
-	char name[strlen(str) + 1];
 	while (strlen(str) != 0) {
+		char name[sizeof(str)];
 		int i = 0;
 		memset(name, '\0', sizeof(name));
 		while (((*str) != '/') && (strlen(str) != 0)) {
@@ -217,7 +222,7 @@ bool cd_func(int CurAddr, char* str) {
 		}
 		if ((*str) == '/') str += 1;
 		if (strlen(name) != 0) {
-			if (cd(Cur_Dir_Addr, name) == false) {
+			if (cd(client, client.Cur_Dir_Addr, name) == false) {
 				flag = 0;
 				break;
 			}
@@ -227,19 +232,20 @@ bool cd_func(int CurAddr, char* str) {
 		}
 	}
 
-	if (flag == 0) {
-		Cur_Dir_Addr = pro_cur_dir_addr;
-		strcpy(Cur_Dir_Name, pro_cur_dir_name);
+	//判断是否成功
+	if (flag == 0) {//失败，恢复现场
+		client.Cur_Dir_Addr = pro_cur_dir_addr;
+		strcpy(client.Cur_Dir_Name, pro_cur_dir_name);
 		return false;
 	}
 	return true;
 }
 
-bool mkdir_func(int CurAddr, char* str) {//在任意目录下创建目录
+bool mkdir_func(Client& client, int CurAddr, char* str) {//在任意目录下创建目录
 	//绝对,相对,直接创建
 	char* p = strrchr(str, '/');
 	if (p == NULL) {	//直接创建
-		if (mkdir(CurAddr, str)) { return true; }
+		if (mkdir(client, CurAddr, str)) { return true; }
 		else { return false; }
 	}
 	else {
@@ -248,15 +254,14 @@ bool mkdir_func(int CurAddr, char* str) {//在任意目录下创建目录
 		p++;
 		strcpy(name, p);
 		*p = '\0';
-		if (cd_func(CurAddr, str)) {
-			if (mkdir(Cur_Dir_Addr, name))
+		if (cd_func(client, CurAddr, str)) {
+			if (mkdir(client, client.Cur_Dir_Addr, name))
 				return true;
 		}
 		return false;
 	}
 }
-
-bool rm_func(int CurAddr, char* str, char* s_type) {//在任意目录下删除
+bool rm_func(Client& client, int CurAddr, char* str, char* s_type) {//在任意目录下删除
 	//文件类型
 	int type = -1;
 	if (strcmp(s_type, "-rf") == 0) {
@@ -266,13 +271,16 @@ bool rm_func(int CurAddr, char* str, char* s_type) {//在任意目录下删除
 		type = 0;
 	}
 	else {
-		printf("Invalid command! Please try again!\n");
+		//printf("无法确认文件删除类型，请重新输入！\n");
+		char ms[] = "Cannot determine the file type, please re-enter!\n";
+		send(client.client_sock, ms, strlen(ms), 0);
 		return false;
 	}
 
+	//绝对,相对,直接创建
 	char* p = strrchr(str, '/');
-	if (p == NULL) {
-		if (rm(CurAddr, str, type))	return true;
+	if (p == NULL) {	//直接删除
+		if (rm(client, CurAddr, str, type))	return true;
 		return false;
 	}
 	else {
@@ -281,37 +289,35 @@ bool rm_func(int CurAddr, char* str, char* s_type) {//在任意目录下删除
 		p++;
 		strcpy(name, p);
 		*p = '\0';
-		if (cd_func(CurAddr, str)) {
-			if (rm(Cur_Dir_Addr, name, type))
+		if (cd_func(client, CurAddr, str)) {
+			if (rm(client, client.Cur_Dir_Addr, name, type))
+				return true;
+		}
+		return false;
+	}
+}
+bool touch_func(Client& client, int CurAddr, char* str, char* buf) {//在任意目录下创建文件
+	//绝对,相对,直接创建
+	char* p = strrchr(str, '/');
+	if (p == NULL) {	//直接创建
+		if (mkfile(client, CurAddr, str, buf))	return true;
+		return false;
+	}
+	else {
+		char name[File_Max_Size];
+		memset(name, '\0', sizeof(name));
+		p++;
+		strcpy(name, p);
+		*p = '\0';
+		if (cd_func(client, CurAddr, str)) {
+			if (mkfile(client, client.Cur_Dir_Addr, name, buf))
 				return true;
 		}
 		return false;
 	}
 }
 
-bool touch_func(int CurAddr, char* str, char* buf) {
-	char* p = strrchr(str, '/');
-	if (p == NULL) {
-		if (mkfile(CurAddr, str, buf))	return true;
-		return false;
-	}
-	else {
-		char name[File_Max_Size];
-		memset(name, '\0', sizeof(name));
-		p++;
-		strcpy(name, p);
-		*p = '\0';
-		if (cd_func(CurAddr, str))
-        {
-			if (mkfile(Cur_Dir_Addr, name, buf)) {
-                return true;
-            }
-		}
-		return false;
-	}
-}
-
-bool echo_func(int CurAddr, char* str, char* s_type, char* buf) {//在任意目录下创建or覆盖写入or追加
+bool echo_func(Client& client, int CurAddr, char* str, char* s_type, char* buf) {//在任意目录下创建or覆盖写入or追加
 	//判断类型 0：覆盖写入 1：追加
 	int type = -1;
 	if (strcmp(s_type, ">") == 0) {
@@ -321,7 +327,9 @@ bool echo_func(int CurAddr, char* str, char* s_type, char* buf) {//在任意目�
 		type = 1;
 	}
 	else {
-		printf("echo输入格式错误，请输入正确格式!\n");
+		//printf("echo输入格式错误，请输入正确格式!\n");
+		char ms[] = "Error input format for 'echo' command, please try again!\n";
+		send(client.client_sock, ms, strlen(ms), 0);
 		return false;
 	}
 
@@ -333,7 +341,7 @@ bool echo_func(int CurAddr, char* str, char* s_type, char* buf) {//在任意目�
 		p++;
 		strcpy(name, p);
 		*p = '\0';
-		if (cd_func(CurAddr, str) == false) {
+		if (cd_func(client, CurAddr, str) == false) {
 			return false;
 		}
 	}
@@ -342,10 +350,12 @@ bool echo_func(int CurAddr, char* str, char* s_type, char* buf) {//在任意目�
 	}
 
 	//类型执行
-	if (echo(Cur_Dir_Addr, name, type, buf))	return true;
+	if (echo(client, client.Cur_Dir_Addr, name, type, buf))	return true;
 	return false;
 }
-bool chmod_func(int CurAddr, char* pmode, char* str) {
+
+bool chmod_func(Client& client, int CurAddr, char* pmode, char* str) {
+	//寻找直接地址
 	char* p = strrchr(str, '/');
 	char name[File_Max_Size];
 	memset(name, '\0', sizeof(name));
@@ -353,7 +363,7 @@ bool chmod_func(int CurAddr, char* pmode, char* str) {
 		p++;
 		strcpy(name, p);
 		*p = '\0';
-		if (cd_func(CurAddr, str) == false) {
+		if (cd_func(client, CurAddr, str) == false) {
 			return false;
 		}
 	}
@@ -362,10 +372,11 @@ bool chmod_func(int CurAddr, char* pmode, char* str) {
 	}
 
 	//类型执行
-	if (chmod(CurAddr, name, pmode))	return true;
+	if (chmod(client, CurAddr, name, pmode))	return true;
 	return false;
 }
-bool chown_func(int CurAddr, char* u_g, char* str) {
+bool chown_func(Client& client, int CurAddr, char* u_g, char* str) {
+	//寻找直接地址
 	char* p = strrchr(str, '/');
 	char file[File_Max_Size];
 	memset(file, '\0', sizeof(file));
@@ -373,15 +384,13 @@ bool chown_func(int CurAddr, char* u_g, char* str) {
 		p++;
 		strcpy(file, p);
 		*p = '\0';
-		if (cd_func(CurAddr, str) == false) {
+		if (cd_func(client, CurAddr, str) == false) {
 			return false;
 		}
 	}
 	else {
 		strcpy(file, str);
 	}
-
-
 	//获取用户和用户组
 	p = strstr(u_g, ":");
 	char name[20], group[20];
@@ -395,27 +404,184 @@ bool chown_func(int CurAddr, char* u_g, char* str) {
 		p += 1;
 		strcpy(group, p);
 	}
-	if (chown(CurAddr, file, name, group))	return true;
+	if (chown(client, CurAddr, file, name, group))	return true;
 	return false;
 }
-bool passwd_func(char* username) {
-	if ((strcmp(Cur_Group_Name, "root") != 0) && (strlen(username) != 0)) {
-		printf("Only root can change user's password!\n");
+bool passwd_func(Client& client, char* username) {
+	if ((strcmp(client.Cur_Group_Name, "root") != 0) && (strlen(username) != 0)) {
+		//printf("普通用户无法修改其他用户密码\n");
+		char ms[] = "Only root can change user's password!\n";
+		send(client.client_sock, ms, strlen(ms), 0);
 		return false;
 	}
 
 	char pwd[100];
-	printf("Changing password for user %s\n", Cur_User_Name);
-	printf("New password: ");
-	gets(pwd);
 	char re_pwd[100];
-	printf("Retype new password:");
-	gets(re_pwd);
+
+	char ms[100]; memset(ms, '\0', sizeof(ms));
+	sprintf(ms, "Changing password for user %s\n", client.Cur_User_Name);
+	send(client.client_sock, ms, strlen(ms), 0);
+
+	memset(ms, '\0', sizeof(ms));
+	sprintf(ms, "New password: ");
+	send(client.client_sock, ms, strlen(ms), 0);
+	recv(client.client_sock, client.buffer, sizeof(client.buffer), 0);
+	strcpy(pwd, client.buffer);
+
+	memset(ms, '\0', sizeof(ms));
+	sprintf(ms, "Retype new password:");
+	send(client.client_sock, ms, strlen(ms), 0);
+	recv(client.client_sock, client.buffer, sizeof(client.buffer), 0);
+	strcpy(re_pwd, client.buffer);
 
 	if (strcmp(pwd, re_pwd) == 0) {
-		if (passwd(username, pwd) == 0) {
+		if (passwd(client, username, pwd) == 0) {
 			return true;
 		}
 	}
 	return false;
+}
+
+void cmd(Client& client)
+{
+	char com1[100];
+	char com2[100];
+	char com3[100];
+	char cmd_str[BUF_SIZE] = "";
+	strcpy(cmd_str, client.buffer);
+	sscanf(cmd_str, "%s", com1);
+	//一级传来com1和com2
+	if (strcmp(com1, "help") == 0) {
+		help(client);
+	}
+	else if (strcmp(com1, "ls") == 0) {
+		sscanf(cmd_str, "%s%s", com1, com2);
+		ls(client, com2);
+	}
+	else if (strcmp(com1, "cd") == 0) {
+		sscanf(cmd_str, "%s%s", com1, com2);
+		cd_func(client, client.Cur_Dir_Addr, com2);
+	}
+	else if (strcmp(com1, "gotoRoot") == 0) {
+		gotoRoot(client);
+	}
+	else if (strcmp(com1, "mkdir") == 0) {	//cd至父目录--> mkdir
+		sscanf(cmd_str, "%s%s", com1, com2);
+		mkdir_func(client, client.Cur_Dir_Addr, com2);
+	}
+	else if (strcmp(com1, "rm") == 0) {
+		sscanf(cmd_str, "%s%s%s", com1, com2, com3);
+		rm_func(client, client.Cur_Dir_Addr, com3, com2);
+	}
+	else if (strcmp(com1, "touch") == 0) {
+		sscanf(cmd_str, "%s%s", com1, com2);
+		touch_func(client, client.Cur_Dir_Addr, com2, "");
+	}
+	else if (strcmp(com1, "echo") == 0) {
+		//注意文字里面不要有空格
+		char com4[100];
+		sscanf(cmd_str, "%s%s%s%s", com1, com2, com3, com4);
+		echo_func(client, client.Cur_Dir_Addr, com4, com3, com2);
+	}
+	else if (strcmp(com1, "cat") == 0) {
+		sscanf(cmd_str, "%s%s", com1, com2);
+		cat(client, client.Cur_Dir_Addr, com2);
+	}
+	else if (strcmp(com1, "chmod") == 0) {
+		sscanf(cmd_str, "%s%s%s", com1, com2, com3);
+		chmod_func(client, client.Cur_Dir_Addr, com2, com3);
+	}
+	else if (strcmp(com1, "chown") == 0) {
+		sscanf(cmd_str, "%s%s%s", com1, com2, com3);
+		chown_func(client, client.Cur_Dir_Addr, com2, com3);
+	}
+
+	else if (strcmp(com1, "useradd") == 0) {
+		//useradd -g group -m user
+		char group[100];
+		char user[100];
+		char passwd[100];
+		sscanf(cmd_str, "%s%s%s%s%s", com1, com2, group, com3, user);
+		if ((strcmp(com2, "-g") != 0) || ((strcmp(com3, "-m") != 0))) {
+			//printf("命令格式错误!\n");
+			char ms[] = "Command format error!\n";
+			send(client.client_sock, ms, strlen(ms), 0);
+			return;
+		}
+		inPasswd(client, passwd);
+		useradd(client, user, group, passwd);
+	}
+	else if (strcmp(com1, "userdel") == 0) {
+		sscanf(cmd_str, "%s%s", com1, com2);
+		userdel(client, com2);
+	}
+	else if (strcmp(com1, "groupadd") == 0) {
+		sscanf(cmd_str, "%s%s", com1, com2);
+		groupadd(client, com2);
+	}
+	else if (strcmp(com1, "groupdel") == 0) {
+		sscanf(cmd_str, "%s%s", com1, com2);
+		groupdel(client, com2);
+	}
+	else if (strcmp(com1, "passwd") == 0) {
+		if (sscanf(cmd_str, "%s%s", com1, com2) == 1) {
+			passwd_func(client, "");
+		}
+		else {
+			passwd_func(client, com2);
+		}
+	}
+	else if (strcmp(com1, "logout") == 0) {
+		logout(client);
+	}
+
+	//备份系统&恢复系统
+	else if (strcmp(com1, "exit") == 0) {
+		//cout << "退出成绩管理系统，拜拜！" << endl;
+		char ms[] = "Exitting our Grading System..... See you!\n";
+		send(client.client_sock, ms, strlen(ms), 0);
+		exit(0);
+	}
+  //root组特有
+	if (strcmp(client.Cur_Group_Name, "root") == 0) {
+		if (strcmp(com1, "batchadd") == 0) {
+			sscanf(cmd_str, "%s", com1);
+			add_users(client, STUDENT_COURSE_LIST);
+		}
+	}
+	
+	//teacher组特有
+	if (strcmp(client.Cur_Group_Name, "teacher") == 0) {
+		if (strcmp(com1, "publish_task") == 0) {
+			sscanf(cmd_str, "%s%s%s", com1, com2, com3);
+			publish_task(client, com2, com3);
+		}
+		else if (strcmp(com1, "judge_hw") == 0) {
+			sscanf(cmd_str, "%s%s%s", com1, com2, com3);
+			judge_hw(client, STUDENT_COURSE_LIST, com2, com3);
+		}
+	}
+  
+  //student组特有
+	if (strcmp(client.Cur_Group_Name, "student") == 0) {
+		if (strcmp(com1, "check_hw_content") == 0) //check desription
+		{
+			// check lesson hw
+			sscanf(cmd_str, "%s%s%s", com1, com2, com3);
+			check_hw_content(client, com2, com3);
+		}
+		else if (strcmp(com1, "check_hw_score") == 0)
+		{
+			// check_hw_score lesson hw
+			sscanf(cmd_str, "%s%s%s", com1, com2, com3);
+			check_hw_score(client, com2, com3);
+		}
+		else if (strcmp(com1, "submit_hw_to") == 0)
+		{
+			// submit_hw_to lesson hwname
+			sscanf(cmd_str, "%s%s%s", com1, com2, com3);
+			submit_assignment(client, client.Cur_User_Name, com2, com3);
+		}
+	}
+	return;
 }
