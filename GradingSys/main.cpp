@@ -153,7 +153,6 @@ int main()
             }
             //scanf("%s",str);
             gets(str);
-            initial();
             cmd(str);
             count++;
             printf("\n");

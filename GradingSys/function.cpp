@@ -2,10 +2,158 @@
 #include"function.h"
 #include<cstring>
 #include<cstdio>
+#include"role.h"
+#include<iomanip>
+#include<time.h>
+#include<string.h>
+#include<stdio.h>
 #include<iostream>
 #include"role.h"
 
 using namespace std;
+
+void cmd(char cmd_str[]) {
+	char com1[100];
+	char com2[100];
+	char com3[100];
+	sscanf(cmd_str, "%s", com1);
+	//通用格式命令
+	if (strcmp(com1, "help") == 0) {
+		help();
+	}
+	else if (strcmp(com1, "ls") == 0) {
+		sscanf(cmd_str, "%s%s", com1, com2);
+		ls(com2);
+	}
+	else if (strcmp(com1, "cd") == 0) {
+		sscanf(cmd_str, "%s%s", com1, com2);
+		cd_func(Cur_Dir_Addr, com2);
+	}
+	else if (strcmp(com1, "gotoRoot") == 0) {
+		gotoRoot();
+	}
+	else if (strcmp(com1, "mkdir") == 0) {	//cd至父目录--> mkdir
+		sscanf(cmd_str, "%s%s", com1, com2);
+		mkdir_func(Cur_Dir_Addr, com2);
+	}
+	else if (strcmp(com1, "rm") == 0) {
+		sscanf(cmd_str, "%s%s%s", com1, com2, com3);
+		rm_func(Cur_Dir_Addr, com3, com2);
+	}
+	else if (strcmp(com1, "touch") == 0) {
+		sscanf(cmd_str, "%s%s", com1, com2);
+		touch_func(Cur_Dir_Addr, com2, "");
+	}
+	else if (strcmp(com1, "echo") == 0) {
+		//注意文字里面不要有空格
+		char com4[100];
+		sscanf(cmd_str, "%s%s%s%s", com1, com2, com3, com4);
+		echo_func(Cur_Dir_Addr, com4, com3, com2);
+	}
+	else if (strcmp(com1, "cat") == 0) {
+		sscanf(cmd_str, "%s%s", com1, com2);
+		cat(Cur_Dir_Addr, com2);
+	}
+	else if (strcmp(com1, "chmod") == 0) {
+		sscanf(cmd_str, "%s%s%s", com1, com2, com3);
+		chmod_func(Cur_Dir_Addr, com2, com3);
+	}
+	else if (strcmp(com1, "chown") == 0) {
+		sscanf(cmd_str, "%s%s%s", com1, com2, com3);
+		chown_func(Cur_Dir_Addr, com2, com3);
+	}
+
+	else if (strcmp(com1, "useradd") == 0) {
+		//useradd -g group -m user
+		char group[100];
+		char user[100];
+		char passwd[100];
+		sscanf(cmd_str, "%s%s%s%s%s", com1, com2, group, com3, user);
+		if ((strcmp(com2, "-g") != 0) || ((strcmp(com3, "-m") != 0))) {
+			printf("命令格式错误!\n");
+			return;
+		}
+		inPasswd(passwd);
+		useradd(user,passwd, group);
+	}
+	else if (strcmp(com1, "userdel") == 0) {
+		sscanf(cmd_str, "%s%s", com1, com2);
+		userdel(com2);
+	}
+	else if (strcmp(com1, "groupadd") == 0) {
+		sscanf(cmd_str, "%s%s", com1, com2);
+		groupadd(com2);
+	}
+	else if (strcmp(com1, "groupdel") == 0) {
+		sscanf(cmd_str, "%s%s", com1, com2);
+		groupdel(com2);
+	}
+	else if (strcmp(com1, "passwd") == 0) {
+		if (sscanf(cmd_str, "%s%s", com1, com2) == 1) {
+			passwd_func("");
+		}
+		else {
+			passwd_func(com2);
+		}
+	}
+	else if (strcmp(com1, "logout") == 0) {
+		logout();
+	}
+	//备份系统&恢复系统
+	else if (strcmp(com1, "exit") == 0) {
+		cout << "退出成绩管理系统，拜拜！" << endl;
+		exit(0);
+	}
+
+	//root组特有
+	if (strcmp(Cur_Group_Name, "root") == 0) {
+		if (strcmp(com1, "batchadd") == 0) {
+			sscanf(cmd_str, "%s%s", com1, com2);
+			add_users(STUDENT_COURSE_LIST);
+		}
+	}
+	
+	//teacher组特有
+	if (strcmp(Cur_Group_Name, "teacher") == 0) {
+		if (strcmp(com1, "publish_task") == 0) {
+			sscanf(cmd_str, "%s%s%s", com1, com2, com3);
+			publish_task(com2, com3);
+		}
+		else if (strcmp(com1, "judge_hw") == 0) {
+			sscanf(cmd_str, "%s%s%s", com1, com2, com3);
+			judge_hw(STUDENT_COURSE_LIST, com2, com3);
+		}
+	}
+  
+  //student组特有
+  if(strcmp(Cur_Group_Name,"student")==0){
+          if (strcmp(com1, "checkhw") == 0)
+        {
+            // checkhw teacher lesson hw
+            sscanf(cmd_str, "%s%s%s%s", com1, com2, com3, com4);
+            printf("Here!! teacher name is %s, lesson is %s, hwname is %s\n", com2, com3, com4);
+            check_hw_content(com2, com3, com4);
+        }
+        else if (strcmp(com1, "checkhwscore") == 0)
+        {
+            // checkhwscore teacher lesson hw
+            sscanf(cmd_str, "%s%s%s%s", com1, com2, com3, com4);
+            printf("Here!! teacher name is %s, lesson is %s, hwname is %s\n", com2, com3, com4);
+            check_hw_score(com2, com3, com4);
+        }
+        else if (strcmp(com1, "submitmyhw") == 0)
+        {
+            // submit lesson hw
+            sscanf(cmd_str, "%s%s%s", com1, com2, com3);
+            printf("Here!! student name is %s, lesson is %s, hwname is %s\n", Cur_Dir_Name, com2, com3);
+//          submit_assignment(Cur_User_Name, com3, com4);
+            submit_assignment(Cur_Dir_Name, com2, com3);
+
+        }
+  }
+
+	return;
+}
 
 void help() {
 	cout.setf(ios::left);
@@ -49,7 +197,6 @@ void help() {
 
 	cout << "exit" << "Exit the system" << endl;	
 }
-
 bool cd_func(int CurAddr, char* str) {
 	int pro_cur_dir_addr = Cur_Dir_Addr;
 	char pro_cur_dir_name[310];
@@ -64,8 +211,8 @@ bool cd_func(int CurAddr, char* str) {
 		gotoRoot();
 		str += 1;
 	}
+	char name[strlen(str) + 1];
 	while (strlen(str) != 0) {
-		char name[sizeof(str)];
 		int i = 0;
 		memset(name, '\0', sizeof(name));
 		while (((*str) != '/') && (strlen(str) != 0)) {
@@ -160,8 +307,8 @@ bool touch_func(int CurAddr, char* str, char* buf) {
 		return false;
 	}
 }
-bool echo_func(int CurAddr, char* str, char* s_type, char* buf) {//Ŀ¼´orдor׷
-	//ж 0д 1׷
+bool echo_func(int CurAddr, char* str, char* s_type, char* buf) {//目录麓or写or追
+	//卸 0写 1追
 	int type = -1;
 	if (strcmp(s_type, ">") == 0) {
 		type = 0;
@@ -170,7 +317,7 @@ bool echo_func(int CurAddr, char* str, char* s_type, char* buf) {//Ŀ¼´orдor�
 		type = 1;
 	}
 	else {
-		printf("echoʽȷʽ!\n");
+		printf("echo式确式!\n");
 		return false;
 	}
 
@@ -189,7 +336,7 @@ bool echo_func(int CurAddr, char* str, char* s_type, char* buf) {//Ŀ¼´orдor�
 		strcpy(name, str);
 	}
 
-	//ִ
+	//执
 	if (echo(Cur_Dir_Addr, name, type, buf))	return true;
 	return false;
 }
@@ -209,7 +356,7 @@ bool chmod_func(int CurAddr, char* pmode, char* str) {
 		strcpy(name, str);
 	}
 
-	//ִ
+	//执
 	if (chmod(CurAddr, name, pmode))	return true;
 	return false;
 }
@@ -264,132 +411,4 @@ bool passwd_func(char* username) {
 		}
 	}
 	return false;
-}
-
-void cmd(char cmd_str[]) {
-	char com1[100];
-	char com2[100];
-	char com3[100];
-    char com4[100];
-	sscanf(cmd_str, "%s", com1);
-	//һcom1com2
-	if (strcmp(com1, "help") == 0) {
-		help();
-	}
-	else if (strcmp(com1, "ls") == 0) {
-		sscanf(cmd_str, "%s%s", com1, com2);
-		ls(com2);
-	}
-	else if (strcmp(com1, "cd") == 0) {
-		sscanf(cmd_str, "%s%s", com1, com2);
-		cd_func(Cur_Dir_Addr, com2);
-	}
-	else if (strcmp(com1, "gotoRoot") == 0) {
-		gotoRoot();
-	}
-	else if (strcmp(com1, "mkdir") == 0) {	//cdĿ¼--> mkdir
-		sscanf(cmd_str, "%s%s", com1, com2);
-		mkdir_func(Cur_Dir_Addr, com2);
-	}
-	else if (strcmp(com1, "rm") == 0) {
-		sscanf(cmd_str, "%s%s%s", com1, com2, com3);
-		rm_func(Cur_Dir_Addr, com3, com2);
-	}
-	else if (strcmp(com1, "touch") == 0) {
-		sscanf(cmd_str, "%s%s", com1, com2);
-		touch_func(Cur_Dir_Addr, com2, "");
-	}
-	else if (strcmp(com1, "echo") == 0) {
-		char com4[100];
-		sscanf(cmd_str, "%s%s%s%s", com1, com2, com3, com4);
-		echo_func(Cur_Dir_Addr, com4, com3, com2);
-	}
-	else if (strcmp(com1, "cat") == 0) {
-		sscanf(cmd_str, "%s%s", com1, com2);
-		cat(Cur_Dir_Addr, com2);
-	}
-	else if (strcmp(com1, "chmod") == 0) {
-		sscanf(cmd_str, "%s%s%s", com1, com2, com3);
-		chmod_func(Cur_Dir_Addr, com2, com3);
-	}
-	else if (strcmp(com1, "chown") == 0) {
-		sscanf(cmd_str, "%s%s%s", com1, com2, com3);
-		chown_func(Cur_Dir_Addr, com2, com3);
-	}
-
-	else if (strcmp(com1, "useradd") == 0) {
-		//useradd -g group -m user
-		char group[100];
-		char user[100];
-		char passwd[100];
-		sscanf(cmd_str, "%s%s%s%s%s", com1, com2, group, com3, user);
-		if ((strcmp(com2, "-g") != 0) || ((strcmp(com3, "-m") != 0))) {
-			printf("Invalid Command!\n");
-			return;
-		}
-		inPasswd(passwd);
-		useradd(user, passwd, group);
-	}
-	else if (strcmp(com1, "userdel") == 0) {
-		sscanf(cmd_str, "%s%s", com1, com2);
-		userdel(com2);
-	}
-	else if (strcmp(com1, "groupadd") == 0) {
-		sscanf(cmd_str, "%s%s", com1, com2);
-		groupadd(com2);
-	}
-	else if (strcmp(com1, "groupdel") == 0) {
-		sscanf(cmd_str, "%s%s", com1, com2);
-		groupdel(com2);
-	}
-	else if (strcmp(com1, "passwd") == 0) {
-		if (sscanf(cmd_str, "%s%s", com1, com2) == 1) {
-			passwd_func("");
-		}
-		else {
-			passwd_func(com2);
-		}
-	}
-	else if (strcmp(com1, "logout") == 0) {
-		logout();
-	}
-
-	//ϵͳ&ָϵͳ
-	else if (strcmp(com1, "exit") == 0) {
-		cout << "Exit Our Grading System! Bye~\n" << endl;
-		exit(0);
-	}
-	
-	if (strcmp(Cur_Group_Name, "root") == 0)
-	{
-		if (strcmp(com1, "batchadd") == 0)
-		{
-			sscanf(cmd_str, "%s%s", com1, com2);
-			add_users(com2);
-		}
-        if (strcmp(com1, "checkhw") == 0)
-        {
-            // checkhw teacher lesson hw
-            sscanf(cmd_str, "%s%s%s%s", com1, com2, com3, com4);
-            printf("Here!! teacher name is %s, lesson is %s, hwname is %s\n", com2, com3, com4);
-            check_hw_content(com2, com3, com4);
-        }
-        if (strcmp(com1, "checkhwscore") == 0)
-        {
-            // checkhwscore teacher lesson hw
-            sscanf(cmd_str, "%s%s%s%s", com1, com2, com3, com4);
-            printf("Here!! teacher name is %s, lesson is %s, hwname is %s\n", com2, com3, com4);
-            check_hw_score(com2, com3, com4);
-        }
-        if (strcmp(com1, "submitmyhw") == 0)
-        {
-            // submit lesson hw
-            sscanf(cmd_str, "%s%s%s", com1, com2, com3);
-            printf("Here!! student name is %s, lesson is %s, hwname is %s\n", Cur_Dir_Name, com2, com3);
-//          submit_assignment(Cur_User_Name, com3, com4);
-            submit_assignment(Cur_Dir_Name, com2, com3);
-
-        }
-	}
-	return;
 }
