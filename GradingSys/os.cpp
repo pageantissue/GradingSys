@@ -229,6 +229,7 @@ bool mkdir(int PIAddr, char name[]) {	//目录创建函数(父目录权限:读�
 	parino.inode_file_count += 1;
 	time(&parino.inode_change_time);
 	time(&parino.dir_change_time);
+	time(&parino.file_modified_time);
 	fseek(fw, PIAddr, SEEK_SET);
 	fwrite(&parino, sizeof(parino), 1, fw);
 
@@ -365,6 +366,7 @@ bool mkfile(int PIAddr, char name[],char buf[]) {	//文件创建函数
 	parino.inode_file_count += 1;
 	time(&parino.inode_change_time);
 	time(&parino.dir_change_time);
+	time(&parino.file_modified_time);
 	fseek(fw, PIAddr, SEEK_SET);
 	fwrite(&parino, sizeof(parino), 1, fw);
 
@@ -464,6 +466,7 @@ bool rm(int PIAddr, char name[], int type) {	//删除文件or文件夹
 	ino.inode_file_count -= 1;
 	time(&ino.inode_change_time);
 	time(&ino.dir_change_time);
+	time(&ino.file_modified_time);
 	fseek(fw, PIAddr, SEEK_SET);
 	fwrite(&ino, sizeof(ino), 1, fw);
 	return true;
