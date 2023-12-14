@@ -1,0 +1,7 @@
+HW1:Data Crawling
+Data crawling is a needless phase of data analysis. Please crawl the reviews of the Top100 highly rated movies in Douban website and save them in csv format for submission.
+Requirement:
+1. the number of movie reviews should not be less than 3000 per movie
+2. use PYTHON language to crawl.
+3. please do not plagiarize
+4. please upload to the assignment submission system before December 15th.
