@@ -7,8 +7,6 @@
 #include<cstdio>
 #include<iostream>
 #include<cstdlib>
-
-
 using namespace std;
 
 
@@ -22,16 +20,21 @@ bool Format() { //ok
 
 	superblock->s_INODE_NUM = INODE_NUM;
 	superblock->s_BLOCK_NUM = BLOCK_NUM;
+	superblock->s_FCACHE_NUM = FCACHE_NUM;
 	superblock->s_free_INODE_NUM = INODE_NUM;
 	superblock->s_free_BLOCK_NUM = BLOCK_NUM;
+	superblock->s_free_FCACHE_NUM = FCACHE_NUM;
 	superblock->s_BLOCK_SIZE = BLOCK_SIZE;
 	superblock->s_INODE_SIZE = INODE_SIZE;
+	superblock->s_FCACHE_SIZE = BLOCK_SIZE;
 	superblock->s_SUPERBLOCK_SIZE = sizeof(SuperBlock);
 	superblock->s_Superblock_Start_Addr = Superblock_Start_Addr;
 	superblock->s_InodeBitmap_Start_Addr = InodeBitmap_Start_Addr;
 	superblock->s_BlockBitmap_Start_Addr = BlockBitmap_Start_Addr;
+	superblock->s_FCacheBitmap_Start_Addr = FCacheBitmap_Start_Addr;
 	superblock->s_Inode_Start_Addr = Inode_Start_Addr;
 	superblock->s_Block_Start_Addr = Block_Start_Addr;
+	superblock->s_FCache_Start_Addr = FCache_Start_Addr;
 	safeFseek(fw, Superblock_Start_Addr, SEEK_SET);
 	safeFwrite(superblock, sizeof(SuperBlock), 1, fw);
 
@@ -48,6 +51,10 @@ bool Format() { //ok
 	safeFwrite(modified_inode_bitmap, sizeof(modified_inode_bitmap), 1, fw);
 	//inode和block板块暂时不需要内容
 	fflush(fw);//将上面内容放入fw中
+
+	memset(fcache_bitmap, 0, sizeof(fcache_bitmap));
+	safeFseek(fw, FCacheBitmap_Start_Addr, SEEK_SET);
+	safeFwrite(fcache_bitmap, sizeof(fcache_bitmap), 1, fw);
 
 	//创建根目录
 	int iaddr = ialloc();
@@ -686,9 +693,9 @@ bool echo(Client& client, int PIAddr, char name[], int type, char* buf) {	//文�
 	}
 }
 bool writefile(inode fileinode, int iaddr, char buf[]) { //文件写入
-
 	int new_block = strlen(buf) / BLOCK_SIZE + 1;
-	for (int i = 0; i < new_block; ++i) {
+
+	for (int i = 0; i < new_block%11; ++i) {
 		int baddr = fileinode.i_dirBlock[i];
 		if (baddr == -1) {
 			baddr = balloc();
@@ -696,7 +703,14 @@ bool writefile(inode fileinode, int iaddr, char buf[]) { //文件写入
 		char temp_file[BLOCK_SIZE];
 		memset(temp_file, '\0', BLOCK_SIZE);
 		if (i == new_block - 1) {
-			strcpy(temp_file, buf + BLOCK_SIZE * i);//buf+blocksize*i-->buf+blocksize*i+1
+			if (strlen(buf + BLOCK_SIZE * i) < BLOCK_SIZE) {
+				//buf+blocksize*i-->buf+blocksize*i+1
+				strcpy(temp_file, buf + BLOCK_SIZE * i);
+			}
+			else {
+				strncpy(temp_file, buf + BLOCK_SIZE * i, BLOCK_SIZE);
+			}
+			
 		}
 		else {
 			strncpy(temp_file, buf + BLOCK_SIZE * i, BLOCK_SIZE);
@@ -704,9 +718,33 @@ bool writefile(inode fileinode, int iaddr, char buf[]) { //文件写入
 
 		safeFseek(fw, baddr, SEEK_SET);
 		safeFwrite(temp_file, BLOCK_SIZE, 1, fw);
-
 		fileinode.i_dirBlock[i] = baddr;
 	}
+
+	//开一级缓存
+	if (strlen(buf) > 10 * BLOCK_SIZE) {
+		new_block -= 10;
+		FCache fcache;
+		fseek(fr, fileinode.i_indirect_1, SEEK_SET);
+		fread(&fcache, sizeof(fcache), 1, fr);
+		int count = 0;
+		for (int i = 0; i < FIRST_CACHE_BLOCK_SIZE; ++i) {
+			if ((fcache.baddr[i] == -1)&&(new_block>=0)) {
+				fcache.baddr[i] = fcache_alloc();
+
+				char temp_file[BLOCK_SIZE];
+				memset(temp_file, '\0', BLOCK_SIZE);
+				strncpy(temp_file, buf + BLOCK_SIZE * (10+count), BLOCK_SIZE);
+				
+				safeFseek(fr, fcache.baddr[i], SEEK_SET);
+				safeFwrite(temp_file, sizeof(temp_file), 1, fw);
+
+				count++;
+				new_block--;
+			}
+		}
+	}
+
 	fileinode.inode_file_size = strlen(buf);
 	time(&fileinode.inode_change_time);
 	time(&fileinode.file_modified_time);
@@ -1064,7 +1102,46 @@ void bfree(int baddr) {
 	safeFseek(fw, Superblock_Start_Addr, SEEK_SET);
 	safeFwrite(superblock, sizeof(superblock), 1, fw);
 }
-
+int fcache_alloc() {
+	//1 cache + 1 ditem
+	int baddr = -1;
+	int index = -1;
+	for (int i = 0; i < FCACHE_NUM; i++) {
+		if (fcache_bitmap[i] == 0) {
+			index = i;
+			fcache_bitmap[i] = 1;
+			break;
+		}
+	}
+	if (index == -1) {
+		printf("没有cache空间\n");
+		return -1;
+	}
+	baddr = FCache_Start_Addr + index * FCACHE_SIZE;
+	superblock->s_free_FCACHE_NUM -= 1;
+	safeFseek(fw, Superblock_Start_Addr, SEEK_SET);
+	safeFwrite(superblock, sizeof(superblock), 1, fw);
+	safeFseek(fw, FCacheBitmap_Start_Addr, SEEK_SET);
+	safeFwrite(fcache_bitmap, sizeof(fcache_bitmap), 1, fw);
+	return baddr;
+}
+void fcfree(int fcaddr) {
+	if ((fcaddr % FCACHE_SIZE) != 0) {
+		printf("当前cache位置错误\n");
+		return;
+	}
+	int index = (fcaddr - FCache_Start_Addr) / FCACHE_SIZE;
+	if (fcache_bitmap[index] == 0) {
+		printf("未使用当前cache，无需释放\n");
+		return;
+	}
+	fcache_bitmap[index] = 0;
+	safeFseek(fw, FCacheBitmap_Start_Addr, SEEK_SET);
+	safeFwrite(fcache_bitmap, sizeof(fcache_bitmap), 1, fw);
+	superblock->s_free_FCACHE_NUM -= 1;
+	safeFseek(fw, Superblock_Start_Addr, SEEK_SET);
+	safeFwrite(superblock, sizeof(superblock), 1, fw);
+}
 //****用户&用户组函数****
 void inUsername(Client& client, char* username)	//输入用户名
 {

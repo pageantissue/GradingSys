@@ -22,11 +22,13 @@ const int BlockBitmap_Start_Addr = InodeBitmap_Start_Addr + 2 * BLOCK_SIZE;//102
 const int Inode_Start_Addr = BlockBitmap_Start_Addr + 20 * BLOCK_SIZE;//120<128: 换算成x个block
 const int Block_Start_Addr = Inode_Start_Addr + INODE_NUM / (BLOCK_SIZE / INODE_SIZE) * BLOCK_SIZE;//32*16=512  //num 1024 * size 128 / block_size 512 = x block
 const int Modified_inodeBitmap_Start_Addr = Block_Start_Addr + BLOCK_NUM * BLOCK_SIZE;      //用于增量转储的inode位图
+const int FCacheBitmap_Start_Addr = Modified_inodeBitmap_Start_Addr + 2 * BLOCK_SIZE;//用于存储一级缓存块的block bitmap
+const int FCache_Start_Addr = FCacheBitmap_Start_Addr + 2 * BLOCK_SIZE;//1024B:20B 一级缓存block数量为1024个
 
 const int Backup_Start_Addr = 0;
 const int Backup_Block_Start_Addr = Backup_Start_Addr + INODE_NUM;
 
-const int Disk_Size= Block_Start_Addr + (BLOCK_NUM+2) * BLOCK_SIZE;//增加板块
+const int Disk_Size= Block_Start_Addr + (BLOCK_NUM+2) * BLOCK_SIZE+(2+ FCACHE_NUM)*BLOCK_SIZE;//增加板块
 const int File_Max_Size = 10 * BLOCK_SIZE;
 
 const int Start_Addr = 0;
