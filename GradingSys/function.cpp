@@ -108,7 +108,7 @@ void cmd(char cmd_str[]) {
 	//root组特有
 	if (strcmp(Cur_Group_Name, "root") == 0) {
 		if (strcmp(com1, "batchadd") == 0) {
-			sscanf(cmd_str, "%s%s", com1, com2);
+			sscanf(cmd_str, "%s", com1);
 			add_users(STUDENT_COURSE_LIST);
 		}
 	}
@@ -126,31 +126,31 @@ void cmd(char cmd_str[]) {
 	}
   
   //student组特有
-  if(strcmp(Cur_Group_Name,"student")==0){
-          if (strcmp(com1, "checkhw") == 0)
-        {
-            // checkhw teacher lesson hw
-            sscanf(cmd_str, "%s%s%s%s", com1, com2, com3, com4);
-            printf("Here!! teacher name is %s, lesson is %s, hwname is %s\n", com2, com3, com4);
-            check_hw_content(com2, com3, com4);
-        }
-        else if (strcmp(com1, "checkhwscore") == 0)
-        {
-            // checkhwscore teacher lesson hw
-            sscanf(cmd_str, "%s%s%s%s", com1, com2, com3, com4);
-            printf("Here!! teacher name is %s, lesson is %s, hwname is %s\n", com2, com3, com4);
-            check_hw_score(com2, com3, com4);
-        }
-        else if (strcmp(com1, "submitmyhw") == 0)
-        {
-            // submit lesson hw
-            sscanf(cmd_str, "%s%s%s", com1, com2, com3);
-            printf("Here!! student name is %s, lesson is %s, hwname is %s\n", Cur_Dir_Name, com2, com3);
-//          submit_assignment(Cur_User_Name, com3, com4);
-            submit_assignment(Cur_Dir_Name, com2, com3);
+	if (strcmp(Cur_Group_Name, "student") == 0) {
+		char com4[100];
+		if (strcmp(com1, "checkhw") == 0) //check desription
+		{
+			sscanf(cmd_str, "%s%s%s%s", com1, com2, com3, com4);
+			printf("Here!! teacher name is %s, lesson is %s, hwname is %s\n", com2, com3, com4);
+			check_hw_content(com2, com3, com4);
+		}
+		else if (strcmp(com1, "checkhwscore") == 0)
+		{
+			// checkhwscore teacher lesson hw
+			sscanf(cmd_str, "%s%s%s%s", com1, com2, com3, com4);
+			printf("Here!! teacher name is %s, lesson is %s, hwname is %s\n", com2, com3, com4);
+			check_hw_score(com2, com3, com4);
+		}
+		else if (strcmp(com1, "submitmyhw") == 0)
+		{
+			// submit lesson hw
+			sscanf(cmd_str, "%s%s%s", com1, com2, com3);
+			printf("Here!! student name is %s, lesson is %s, hwname is %s\n", Cur_Dir_Name, com2, com3);
+			//          submit_assignment(Cur_User_Name, com3, com4);
+			submit_assignment(Cur_Dir_Name, com2, com3);
 
-        }
-  }
+		}
+	}
 
 	return;
 }

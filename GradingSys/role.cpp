@@ -14,7 +14,7 @@ bool add_users(char * namelist) {
 	}
 
 	char new_buff[1024]; memset(new_buff, '\0', 1024);
-	sprintf(new_buff, "/Users/sprungissue/CLionProjects/GradingSys/GradingSys/%s", namelist);
+	sprintf(new_buff, "../../../%s", namelist);
 	int pro_cur_dir_addr = Cur_Dir_Addr;
 	char pro_cur_dir_name[310];
 	memset(pro_cur_dir_name, '\0', sizeof(pro_cur_dir_name));
@@ -85,7 +85,7 @@ bool publish_task(char* lesson,char* filename) {
 
 	//将file复制到虚拟OS中
 	char* p = strstr(filename, ".");
-	p = '\0';
+	*p = '\0';
 	char dir_path[100];
 	sprintf(dir_path, "/home/%s/%s/%s_description", Cur_User_Name, lesson, filename);
 	echo_func(Cur_Dir_Addr, dir_path, ">", buf); 
@@ -105,7 +105,7 @@ bool judge_hw(char* namelist, char* lesson, char* hwname) {
 
 	//新建本次作业评价文档( sname : mark)
 	char* p = strstr(hwname, ".");
-	p = '\0';
+	*p = '\0';
 	char score_path[310];
 	sprintf(score_path, "/home/%s/%s/%s_score", Cur_Group_Name, lesson, hwname);
 	touch_func(Cur_Dir_Addr, score_path, "");

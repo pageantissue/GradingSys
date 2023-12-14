@@ -15,5 +15,6 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="Student_Course_Selection.txt" />
+    <Text Include="HW1.txt" />
   </ItemGroup>
 </Project>
