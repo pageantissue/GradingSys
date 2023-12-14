@@ -1,30 +1,26 @@
 #include<iostream>
-#include<stdio.h>
-#include<time.h>
-#include<string.h>
+#include<cstdio>
+#include<cstring>
 #include<fstream>
-#include<unistd.h>
 #include"function.h"
 #include"os.h"
 #include"role.h"
 using namespace std;
 
-bool add_users(char * namelist) { //root£ºÅúÁ¿´´½¨½ÌÊ¦¼°Ñ§ÉúÓÃ»§
-	//ÑéÖ¤Éí·İ
+bool add_users(char * namelist) {
 	if (strcmp(Cur_Group_Name, "root") != 0) {
-		printf("½ö¹ÜÀíÔ±¿ÉÅúÁ¿ÔöÉ¾ÓÃ»§\n");
+		printf("Only root could add users!\n");
 		return false;
 	}
 
 	char new_buff[1024]; memset(new_buff, '\0', 1024);
-	sprintf(new_buff, "/home/g202130190273/projects/GradingSys/%s", namelist);
+	sprintf(new_buff, "/home/jeff/projects/GradingSys/%s", namelist);
 	//±¸·İĞÅÏ¢
 	int pro_cur_dir_addr = Cur_Dir_Addr;
 	char pro_cur_dir_name[310];
 	memset(pro_cur_dir_name, '\0', sizeof(pro_cur_dir_name));
 	strcpy(pro_cur_dir_name, Cur_Dir_Name);
 
-	//±£´æÃûµ¥
 	ifstream fin(new_buff);
 	if (!fin.is_open()) {
 		char ms[] = "Cannot open name list!\n";
@@ -42,44 +38,36 @@ bool add_users(char * namelist) { //root£ºÅúÁ¿´´½¨½ÌÊ¦¼°Ñ§ÉúÓÃ»§
 		sscanf(line.c_str(), "%s:%s:%s", rela.student, rela.lesson, rela.teacher);
 		relations[i++] = rela;
 	}
-
-	//¸ù¾İÃûµ¥´´½¨
-	//ÉèÖÃÃÜÂëÄ¬ÈÏÓëĞÕÃûÍ¬Ãû
 	for (int j = 0; j < i; j++) {
-		//´´½¨ÓÃ»§¼°ÆäÎÄ¼ş¼Ğ
 		strcpy(pwd, relations[j].student);
-		useradd(relations[j].student, "student", pwd);
+		(relations[j].student, "student", pwd);
 		strcpy(pwd, relations[j].teacher);
 		useradd(relations[j].teacher, "teacher", pwd);
-		//ÔÚÆäÎÄ¼ş¼ĞÏÂ´´½¨¶ÔÓ¦¿Î³ÌÎÄ¼ş¼Ğ
 		char dir_path[100];
 		sprintf(dir_path, "/home/%s/%s", relations[j].teacher, relations[j].lesson);
 		mkdir_func(Cur_Dir_Addr, dir_path);
 		sprintf(dir_path, "/home/%s/%s", relations[j].student, relations[j].lesson);
 		mkdir_func(Cur_Dir_Addr, dir_path);
 	}
+    return true;
 }
 
-bool publish_task(char* lesson,char* filename) {//½ÌÊ¦£º·¢²¼±¾´Î×÷ÒµÈÎÎñ
-	//ÑéÖ¤Éí·İ
+bool publish_task(char* lesson,char* filename) {
 	if (strcmp(Cur_Group_Name, "teacher") != 0) {
-		printf("Ö»ÓĞÀÏÊ¦¿ÉÒÔ·¢²¼×÷Òµ!\n");
+		printf("Only teacher could publish tasks!\n");
 		return false;
 	}
-
-	//±¸·İĞÅÏ¢
 	int pro_cur_dir_addr = Cur_Dir_Addr;
 	char pro_cur_dir_name[310];
 	memset(pro_cur_dir_name, '\0', sizeof(pro_cur_dir_name));
 	strcpy(pro_cur_dir_name, Cur_Dir_Name);
 
-	//¶ÁÈ¡fileĞÅÏ¢
 	char buf[BLOCK_SIZE * 10];
 	string line;
 	memset(buf, '\0', sizeof(buf));
 	ifstream fin(filename);
 	if (!fin.is_open()) {
-		cout << "ÎŞ·¨´ò¿ªÎÄ¼ş" << endl;
+		cout << "File Open Failure!" << endl;
 		Cur_Dir_Addr = pro_cur_dir_addr;
 		strcpy(Cur_Dir_Name, pro_cur_dir_name);
 		return false;
@@ -87,37 +75,30 @@ bool publish_task(char* lesson,char* filename) {//½ÌÊ¦£º·¢²¼±¾´Î×÷ÒµÈÎÎñ
 	while (getline(fin, line)) {
 		strcat(buf, line.c_str());
 	}
-
-	//½«file¸´ÖÆµ½ĞéÄâOSÖĞ
 	char dir_path[100];
 	sprintf(dir_path, "/home/%s/%s/%s_description", Cur_User_Name, lesson, filename);
-	echo_func(Cur_Dir_Addr, dir_path, ">", buf); //ĞÂ½¨taskÎÄ¼ş²¢·¢²¼
+	echo_func(Cur_Dir_Addr, dir_path, ">", buf);
 
 	return true;
 }
 
-bool judge_hw(char* namelist, char* lesson, char* hwname) {//½ÌÊ¦£ºÆÀ¼Û±¾´Î×÷Òµ
-	//ÑéÖ¤Éí·İ
+bool judge_hw(char* namelist, char* lesson, char* hwname) {
 	if (strcmp(Cur_Group_Name, "teacher") != 0) {
-		printf("Ö»ÓĞÀÏÊ¦¿ÉÒÔµãÆÀ×÷Òµ!\n");
+		printf("Only teacher could judge assignments!\n");
 		return false;
 	}
-
-	//±¸·İĞÅÏ¢
 	int pro_cur_dir_addr = Cur_Dir_Addr;
 	char pro_cur_dir_name[310];
 	memset(pro_cur_dir_name, '\0', sizeof(pro_cur_dir_name));
 	strcpy(pro_cur_dir_name, Cur_Dir_Name);
 
-	//ĞÂ½¨±¾´Î×÷ÒµÆÀ¼ÛÎÄµµ( sname : mark)
 	char score_path[310];
 	sprintf(score_path, "/home/%s/%s/%s_score", Cur_Group_Name, lesson, hwname);
 	touch_func(Cur_Dir_Addr, score_path, "");
 
-	//±£´æÃûµ¥
 	ifstream fin(namelist);
 	if (!fin.is_open()) {
-		cout << "ÎŞ·¨´ò¿ªÃûµ¥" << endl;
+		cout <<"File Open Failed!" << endl;
 		Cur_Dir_Addr = pro_cur_dir_addr;
 		strcpy(Cur_Dir_Name, pro_cur_dir_name);
 		return false;
@@ -132,19 +113,14 @@ bool judge_hw(char* namelist, char* lesson, char* hwname) {//½ÌÊ¦£ºÆÀ¼Û±¾´Î×÷Òµ
 		relations[i++] = rela;
 	}
 
-	//²é¿´×÷Òµ²¢´ò·Ö
 	char buf[BLOCK_SIZE * 10];
 	memset(buf, '\0', sizeof(buf));
 	for (int j = 0; j < i; ++j) {
-		//Ö»¿´ÄÇÃÅ¿ÎºÍÄÇ¸öÀÏÊ¦ bug
-		// 
-		//½øÈëÑ§ÉúÎÄ¼ş¼Ğ£¬²é¿´Ñ§ÉúÎÄ¼ş
 		char hw_path[310];
 		sprintf(hw_path, "/home/%s/%s", relations[j].student, relations[j].lesson);
 		cd_func(Cur_Dir_Addr, hw_path);
-		cat(Cur_Dir_Addr, hwname);//Êä³öÑ§ÉúµÄ×÷ÒµÎÄ¼şÄÚÈİ
-
-		//½ÌÊ¦¸ù¾İÑ§Éú×÷Òµ´ò·Ö( uname:score)
+		cat(Cur_Dir_Addr, hwname);
+		//( uname:score)
 		double score = 0;
 		char s_buf[30];
 		printf("Please mark this assignment: ");
@@ -153,19 +129,15 @@ bool judge_hw(char* namelist, char* lesson, char* hwname) {//½ÌÊ¦£ºÆÀ¼Û±¾´Î×÷Òµ
 		strcat(buf, s_buf);
 	}
 
-	//½«³É¼¨´æÈëÎÄµµ
 	echo_func(Cur_Dir_Addr, score_path, ">", buf);
 	return true;
 }
 
-bool check_hw_content(char* teacher_name, char* lesson, char* hwname) {//½ÌÊ¦ºÍÑ§Éú²é¿´×÷ÒµÄÚÈİ
-	//±¸·İĞÅÏ¢
+bool check_hw_content(char* teacher_name, char* lesson, char* hwname) {
 	int pro_cur_dir_addr = Cur_Dir_Addr;
 	char pro_cur_dir_name[310];
 	memset(pro_cur_dir_name, '\0', sizeof(pro_cur_dir_name));
 	strcpy(pro_cur_dir_name, Cur_Dir_Name);
-
-	//Ç°Íù½ÌÊ¦ÊÚ¿ÎÄ¿Â¼
 	gotoRoot();
 	cd(Cur_Dir_Addr, "home");
 	bool f = cd(Cur_Dir_Addr, teacher_name);
@@ -195,20 +167,17 @@ bool check_hw_content(char* teacher_name, char* lesson, char* hwname) {//½ÌÊ¦ºÍÑ
 		strcpy(Cur_Dir_Name, pro_cur_dir_name);
 		return false;
 	}
-	// »¹Ô­ÓÃ»§ÏÖ³¡
 	Cur_Dir_Addr = pro_cur_dir_addr;
 	strcpy(Cur_Dir_Name, pro_cur_dir_name);
 	return true;
 }
 
-bool check_hw_score(char* teacher_name, char* lesson, char* hwname) {//½ÌÊ¦Ñ§Éú²é¿´×÷Òµ·ÖÊı
-	//±¸·İĞÅÏ¢
+bool check_hw_score(char* teacher_name, char* lesson, char* hwname) {
 	int pro_cur_dir_addr = Cur_Dir_Addr;
 	char pro_cur_dir_name[310];
 	memset(pro_cur_dir_name, '\0', sizeof(pro_cur_dir_name));
 	strcpy(pro_cur_dir_name, Cur_Dir_Name);
 
-	//Ç°ÍùÖ¸¶¨Ä¿Â¼
 	gotoRoot();
 	cd(Cur_Dir_Addr, "home");
 	bool f = cd(Cur_Dir_Addr, teacher_name);
@@ -241,7 +210,6 @@ bool check_hw_score(char* teacher_name, char* lesson, char* hwname) {//½ÌÊ¦Ñ§Éú²
 		strcpy(Cur_Dir_Name, pro_cur_dir_name);
 		return false;
 	}
-	// »¹Ô­ÓÃ»§ÏÖ³¡
 	Cur_Dir_Addr = pro_cur_dir_addr;
 	strcpy(Cur_Dir_Name, pro_cur_dir_name);
 	return true;
@@ -249,24 +217,20 @@ bool check_hw_score(char* teacher_name, char* lesson, char* hwname) {//½ÌÊ¦Ñ§Éú²
 
 bool submit_assignment(char* student_name, char* lesson, char* filename)
 {
-	//ÑéÖ¤Éí·İ
 	if (strcmp(Cur_Group_Name, "student") != 0) {
 		char ms[] = "Only student could submit and upload his homework!\n";
 		printf(ms);
 		return false;
 	}
-
-	//±¸·İĞÅÏ¢
 	int pro_cur_dir_addr = Cur_Dir_Addr;
 	char pro_cur_dir_name[310];
 	memset(pro_cur_dir_name, '\0', sizeof(pro_cur_dir_name));
 	strcpy(pro_cur_dir_name, Cur_Dir_Name);
 
-	//Ç°ÍùÖ¸¶¨Ä¿Â¼
+	//Ç°ï¿½ï¿½Ö¸ï¿½ï¿½Ä¿Â¼
 	gotoRoot();
 	cd(Cur_Dir_Addr, "home");
 
-	//ÏÈÅĞ¶¨ÊÇ·ñ´æÔÚ¸ÃÑ§Éú
 	bool f = cd(Cur_Dir_Addr, student_name);
 	if (!f)
 	{
@@ -286,8 +250,6 @@ bool submit_assignment(char* student_name, char* lesson, char* filename)
 		strcpy(Cur_Dir_Name, pro_cur_dir_name);
 		return false;
 	}
-
-	// ¶ÁÈ¡×÷ÒµÄÚÈİ
 	char buf[BLOCK_SIZE * 10];
 	string line;
 	memset(buf, '\0', sizeof(buf));
@@ -303,12 +265,10 @@ bool submit_assignment(char* student_name, char* lesson, char* filename)
 		strcat(buf, line.c_str());
 	}
 
-	//½«×÷ÒµÄÚÈİ¸´ÖÆµ½ĞéÄâOSÖĞ
 	char dir_path[100];
 	sprintf(dir_path, "/home/%s/%s/%s_description", Cur_User_Name, lesson, filename);
-	echo_func(Cur_Dir_Addr, dir_path, ">", buf); //ĞÂ½¨ÎÄ¼ş²¢Ìá½»×÷Òµ
+	echo_func(Cur_Dir_Addr, dir_path, ">", buf); 
 
-	// »¹Ô­ÓÃ»§ÏÖ³¡
 	Cur_Dir_Addr = pro_cur_dir_addr;
 	strcpy(Cur_Dir_Name, pro_cur_dir_name);
 	return true;
