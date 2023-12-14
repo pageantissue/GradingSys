@@ -14,7 +14,8 @@ bool add_users(char * namelist) {
 	}
 
 	char new_buff[1024]; memset(new_buff, '\0', 1024);
-	sprintf(new_buff, "../../../%s", namelist);
+//	sprintf(new_buff, "../../../%s", namelist);
+    sprintf(new_buff, "/Users/sprungissue/CLionProjects/GradingSys/GradingSys/%s", namelist);
 	int pro_cur_dir_addr = Cur_Dir_Addr;
 	char pro_cur_dir_name[310];
 	memset(pro_cur_dir_name, '\0', sizeof(pro_cur_dir_name));
@@ -59,7 +60,7 @@ bool add_users(char * namelist) {
 	return true;
 }
 
-bool publish_task(char* lesson,char* filename) {
+bool publish_task(char* lesson, char* filename) {//ok
 	if (strcmp(Cur_Group_Name, "teacher") != 0) {
 		printf("Only teacher could publish tasks!\n");
 		return false;
@@ -72,7 +73,10 @@ bool publish_task(char* lesson,char* filename) {
 	char buf[BLOCK_SIZE * 10];
 	string line;
 	memset(buf, '\0', sizeof(buf));
-	ifstream fin(filename);
+    char new_buff[1024];
+    memset(new_buff, '\0', 1024);
+    sprintf(new_buff, "/Users/sprungissue/CLionProjects/GradingSys/GradingSys/%s.txt", filename);
+	ifstream fin(new_buff);
 	if (!fin.is_open()) {
 		cout << "File Open Failure!" << endl;
 		Cur_Dir_Addr = pro_cur_dir_addr;
@@ -84,11 +88,16 @@ bool publish_task(char* lesson,char* filename) {
 	}
 
 	//将file复制到虚拟OS中
-	char* p = strstr(filename, ".");
-	*p = '\0';
+//	char* p = strstr(filename, ".");
+//	*p = '\0';
 	char dir_path[100];
 	sprintf(dir_path, "/home/%s/%s/%s_description", Cur_User_Name, lesson, filename);
-	echo_func(Cur_Dir_Addr, dir_path, ">", buf); 
+	echo_func(Cur_Dir_Addr, dir_path, ">", buf);
+
+    //恢复现场
+    Cur_Dir_Addr = pro_cur_dir_addr;
+    strcpy(Cur_Dir_Name, pro_cur_dir_name);
+    char ms[] = "Successfully published task!\n";
 
 	return true;
 }
@@ -104,13 +113,12 @@ bool judge_hw(char* namelist, char* lesson, char* hwname) {
 	strcpy(pro_cur_dir_name, Cur_Dir_Name);
 
 	//新建本次作业评价文档( sname : mark)
-	char* p = strstr(hwname, ".");
-	*p = '\0';
-	char score_path[310];
-	sprintf(score_path, "/home/%s/%s/%s_score", Cur_Group_Name, lesson, hwname);
-	touch_func(Cur_Dir_Addr, score_path, "");
-
-	ifstream fin(namelist);
+//	char* p = strstr(hwname, ".");
+//	*p = '\0';
+    char new_buff[100];
+    memset(new_buff, '\0', 100);
+    sprintf(new_buff, "/Users/sprungissue/CLionProjects/GradingSys/GradingSys/%s", namelist);
+	ifstream fin(new_buff);
 	if (!fin.is_open()) {
 		cout << "File Open Failed!" << endl;
 		Cur_Dir_Addr = pro_cur_dir_addr;
@@ -123,37 +131,42 @@ bool judge_hw(char* namelist, char* lesson, char* hwname) {
 	char pwd[30];
 	while (getline(fin, line)) {
 		Relation rela;
-		sscanf(line.c_str(), "%s:%s:%s", rela.student, rela.lesson, rela.teacher);
+		sscanf(line.c_str(), "%s %s %s", rela.student, rela.lesson, rela.teacher);
 		relations[i++] = rela;
 	}
 
-	char buf[BLOCK_SIZE * 10];
-	memset(buf, '\0', sizeof(buf));
 	for (int j = 0; j < i; ++j) {
-		//是这个老师，而且是这门课
-		if ((strcmp(relations[j].teacher, Cur_User_Name) == 0) && (strcmp(relations[j].lesson, lesson) == 0)) {
-			//进入学生文件夹，查看学生文件
-			char hw_path[310], s_buf[310];
-			double score = 0;
-			memset(hw_path, '\0', sizeof(hw_path));
-			memset(s_buf, '\0', sizeof(s_buf));
+        //是这个老师，而且是这门课
+        if ((strcmp(relations[j].teacher, Cur_User_Name) == 0) && (strcmp(relations[j].lesson, lesson) == 0))
+        {
+            char buf[BLOCK_SIZE * 10];
+            memset(buf, '\0', sizeof(buf));
+            //进入学生文件夹，查看学生文件
+            char hw_path[310];
+            double score = 0;
+            memset(hw_path, '\0', sizeof(hw_path));
 
-			sprintf(hw_path, "/home/%s/%s", relations[j].student, relations[j].lesson);
-			if (cd_func(Cur_Dir_Addr, hw_path)) {
-				cat(Cur_Dir_Addr, hwname);//输出学生的作业文件内容
-				printf("Please mark this assignment: ");//教师根据学生作业打分( uname:score)
-				scanf("%.2d", score);
-			}
-			else {
-				printf("%s doesn't hand out the homework!\n", relations[j].student);
-			}
-
-			sprintf(s_buf, "%s:%.2d", relations[j].student, score);
-			strcat(buf, s_buf);
-		}
-	}
-
-	echo_func(Cur_Dir_Addr, score_path, ">", buf);
+            sprintf(hw_path, "/home/%s/%s", relations[j].student, relations[j].lesson);
+            if (cd_func(Cur_Dir_Addr, hw_path))
+            {
+                char myname[100];
+                memset(myname, '\0', 100);
+                sprintf(myname, "%s_%s", hwname, relations[j].student);
+                if (cat(Cur_Dir_Addr, myname)) {//输出学生的作业文件内容
+                    //如果找到了作业，打分
+                    printf("Please mark this assignment: ");//教师根据学生作业打分( uname:score)
+                    scanf("%lf", &score);
+                } else {
+                    printf("%s doesn't hand out the homework!\n", relations[j].student);
+                }
+                sprintf(buf, "%s: %.2f\n", relations[j].student, score);
+                char save_path[100];
+                memset(save_path, '\0', 100);
+                sprintf(save_path, "/home/%s/%s/%s_score", Cur_User_Name, lesson, myname);
+                echo_func(Cur_Dir_Addr, save_path, ">",  buf);
+            }
+        }
+    }
 
 	//恢复现场
 	Cur_Dir_Addr = pro_cur_dir_addr;
@@ -161,86 +174,124 @@ bool judge_hw(char* namelist, char* lesson, char* hwname) {
 	return true;
 }
 
-bool check_hw_content(char* teacher_name, char* lesson, char* hwname) {
-	int pro_cur_dir_addr = Cur_Dir_Addr;
+bool check_hw_content(char* lesson, char* hwname)
+{//ok
+    int pro_cur_dir_addr = Cur_Dir_Addr;
 	char pro_cur_dir_name[310];
 	memset(pro_cur_dir_name, '\0', sizeof(pro_cur_dir_name));
 	strcpy(pro_cur_dir_name, Cur_Dir_Name);
-	gotoRoot();
+
+    gotoRoot();
 	cd(Cur_Dir_Addr, "home");
-	bool f = cd(Cur_Dir_Addr, teacher_name);
-	if (!f)
-	{
-		char ms[] = "Teacher does not exist!\n";
-		printf("%s\n", ms);
-		Cur_Dir_Addr = pro_cur_dir_addr;
-		strcpy(Cur_Dir_Name, pro_cur_dir_name);
-		return false;
-	}
-	f = cd(Cur_Dir_Addr, lesson);
-	if (!f)
-	{
-		char ms[] = "Lesson does not exist!\n";
-		printf("%s\n", ms);
-		Cur_Dir_Addr = pro_cur_dir_addr;
-		strcpy(Cur_Dir_Name, pro_cur_dir_name);
-		return false;
-	}
-	f = cat(Cur_Dir_Addr, hwname);
-	if (!f)
-	{
-		char ms[] = "Specific homework does not exist!\n";
-		printf("%s\n", ms);
-		Cur_Dir_Addr = pro_cur_dir_addr;
-		strcpy(Cur_Dir_Name, pro_cur_dir_name);
-		return false;
-	}
-	Cur_Dir_Addr = pro_cur_dir_addr;
-	strcpy(Cur_Dir_Name, pro_cur_dir_name);
-	return true;
+    char new_buff[1024];
+    memset(new_buff, '\0', 1024);
+    sprintf(new_buff, "/Users/sprungissue/CLionProjects/GradingSys/GradingSys/%s", STUDENT_COURSE_LIST);
+    ifstream fin(new_buff);
+    if (!fin.is_open()) {
+        cout << "File Open Failed!" << endl;
+        Cur_Dir_Addr = pro_cur_dir_addr;
+        strcpy(Cur_Dir_Name, pro_cur_dir_name);
+        return false;
+    }
+    string line;
+    Relation relations[1000];
+    int i = 0;
+    char pwd[30];
+    while (getline(fin, line)) {
+        Relation rela;
+        sscanf(line.c_str(), "%s %s %s", rela.student, rela.lesson, rela.teacher);
+        relations[i++] = rela;
+    }
+    for (int j = 0; j < i; ++j)
+    {
+        //是这个student，而且是这门课
+        if ((strcmp(relations[j].student, Cur_User_Name) == 0) && (strcmp(relations[j].lesson, lesson) == 0))
+        {
+            //进入老师文件夹，查看作业描述文件
+            char hw_path[310], s_buf[310];
+            memset(hw_path, '\0', sizeof(hw_path));
+            memset(s_buf, '\0', sizeof(s_buf));
+
+            sprintf(hw_path, "/home/%s/%s", relations[j].teacher, relations[j].lesson);
+            if (cd_func(Cur_Dir_Addr, hw_path))
+            {
+                char myname[100];
+                memset(myname, '\0', 100);
+                sprintf(myname, "%s_description", hwname);
+                if (cat(Cur_Dir_Addr, myname)) {
+                    //如果找到了作业,cat
+                    Cur_Dir_Addr = pro_cur_dir_addr;
+                    strcpy(Cur_Dir_Name, pro_cur_dir_name);
+                    return true;
+                } else {
+                    printf("Teacher has not published any homework yet!\n");
+                    Cur_Dir_Addr = pro_cur_dir_addr;
+                    strcpy(Cur_Dir_Name, pro_cur_dir_name);
+                    return false;
+                }
+            }
+        }
+    }
 }
 
-bool check_hw_score(char* teacher_name, char* lesson, char* hwname) {
+bool check_hw_score(char* lesson, char* hwname)
+{
 	int pro_cur_dir_addr = Cur_Dir_Addr;
 	char pro_cur_dir_name[310];
 	memset(pro_cur_dir_name, '\0', sizeof(pro_cur_dir_name));
 	strcpy(pro_cur_dir_name, Cur_Dir_Name);
 
 	gotoRoot();
-	cd(Cur_Dir_Addr, "home");
-	bool f = cd(Cur_Dir_Addr, teacher_name);
-	if (!f)
-	{
-		char ms[] = "Teacher does not exist!\n";
-		printf("%s\n", ms);
-		Cur_Dir_Addr = pro_cur_dir_addr;
-		strcpy(Cur_Dir_Name, pro_cur_dir_name);
-		return false;
-	}
-	f = cd(Cur_Dir_Addr, lesson);
-	if (!f)
-	{
-		char ms[] = "Lesson does not exist!\n";
-		printf("%s\n", ms);
-		Cur_Dir_Addr = pro_cur_dir_addr;
-		strcpy(Cur_Dir_Name, pro_cur_dir_name);
-		return false;
-	}
-	char hw_score[FILE_NAME_MAX_SIZE]; 
-	memset(hw_score, '\0', FILE_NAME_MAX_SIZE);
-	sprintf(hw_score, "%s_score", hwname);
-	f = cd(Cur_Dir_Addr, hw_score);
-	if (!f)
-	{
-		char ms[] = "Specific homework does not exist!\n";
-		printf("%s\n", ms);
-		Cur_Dir_Addr = pro_cur_dir_addr;
-		strcpy(Cur_Dir_Name, pro_cur_dir_name);
-		return false;
-	}
-	Cur_Dir_Addr = pro_cur_dir_addr;
-	strcpy(Cur_Dir_Name, pro_cur_dir_name);
-	return true;
+    cd(Cur_Dir_Addr, "home");
+    char new_buff[1024];
+    memset(new_buff, '\0', 1024);
+    sprintf(new_buff, "/Users/sprungissue/CLionProjects/GradingSys/GradingSys/%s", STUDENT_COURSE_LIST);
+    ifstream fin(new_buff);
+    if (!fin.is_open()) {
+        cout << "File Open Failed!" << endl;
+        Cur_Dir_Addr = pro_cur_dir_addr;
+        strcpy(Cur_Dir_Name, pro_cur_dir_name);
+        return false;
+    }
+    string line;
+    Relation relations[1000];
+    int i = 0;
+    char pwd[30];
+    while (getline(fin, line)) {
+        Relation rela;
+        sscanf(line.c_str(), "%s %s %s", rela.student, rela.lesson, rela.teacher);
+        relations[i++] = rela;
+    }
+    for (int j = 0; j < i; ++j)
+    {
+        //是这个student，而且是这门课
+        if ((strcmp(relations[j].student, Cur_User_Name) == 0) && (strcmp(relations[j].lesson, lesson) == 0))
+        {
+            //进入老师文件夹，查看作业成绩文件
+            char hw_path[310];
+            memset(hw_path, '\0', sizeof(hw_path));
+
+            sprintf(hw_path, "/home/%s/%s", relations[j].teacher, relations[j].lesson);
+            if (cd_func(Cur_Dir_Addr, hw_path))
+            {
+                //HW1_JeffD : _score
+                char myname[100];
+                memset(myname, '\0', 100);
+                sprintf(myname, "%s_%s_score", hwname, Cur_User_Name);
+                if (cat(Cur_Dir_Addr, myname)) {
+                    //如果找到了作业,cat
+                    Cur_Dir_Addr = pro_cur_dir_addr;
+                    strcpy(Cur_Dir_Name, pro_cur_dir_name);
+                    return true;
+                } else {
+                    printf("Teacher has not graded your assignment yet!\n");
+                    Cur_Dir_Addr = pro_cur_dir_addr;
+                    strcpy(Cur_Dir_Name, pro_cur_dir_name);
+                    return false;
+                }
+            }
+        }
+    }
 }
 
 bool submit_assignment(char* student_name, char* lesson, char* filename)
@@ -281,7 +332,10 @@ bool submit_assignment(char* student_name, char* lesson, char* filename)
 	char buf[BLOCK_SIZE * 10];
 	string line;
 	memset(buf, '\0', sizeof(buf));
-	ifstream fin(filename);
+    char new_buff[100];
+    memset(new_buff, '\0', 100);
+    sprintf(new_buff, "/Users/sprungissue/CLionProjects/GradingSys/GradingSys/%s.txt", filename);
+	ifstream fin(new_buff);
 	if (!fin.is_open()) {
 		char ms[] = "Cannot open file!\n";
 		printf(ms);
@@ -294,10 +348,11 @@ bool submit_assignment(char* student_name, char* lesson, char* filename)
 	}
 
 	char dir_path[100];
-	sprintf(dir_path, "/home/%s/%s/%s_description", Cur_User_Name, lesson, filename);
+	sprintf(dir_path, "/home/%s/%s/%s_%s", Cur_User_Name, lesson, filename, Cur_User_Name);
 	echo_func(Cur_Dir_Addr, dir_path, ">", buf);
 
 	Cur_Dir_Addr = pro_cur_dir_addr;
 	strcpy(Cur_Dir_Name, pro_cur_dir_name);
+    char ms[] = "Successfully submit your HW!\n";
 	return true;
 }

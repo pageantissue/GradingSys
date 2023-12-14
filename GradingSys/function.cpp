@@ -2,11 +2,6 @@
 #include"function.h"
 #include<cstring>
 #include<cstdio>
-#include"role.h"
-#include<iomanip>
-#include<time.h>
-#include<string.h>
-#include<stdio.h>
 #include<iostream>
 #include"role.h"
 
@@ -127,25 +122,22 @@ void cmd(char cmd_str[]) {
   
   //student组特有
 	if (strcmp(Cur_Group_Name, "student") == 0) {
-		if (strcmp(com1, "checkhw") == 0) //check desription
+		if (strcmp(com1, "check_hw_content") == 0) //check desription
 		{
-			// check teacher lesson hw
-			sscanf(cmd_str, "%s%s%s%s", com1, com2, com3, com4);
-			printf("Here!! teacher name is %s, lesson is %s, hwname is %s\n", com2, com3, com4);
-			check_hw_content(com2, com3, com4);
-		}
-		else if (strcmp(com1, "checkHWScore") == 0)
-		{
-			// checkHWScore teacher lesson hw
-			sscanf(cmd_str, "%s%s%s%s", com1, com2, com3, com4);
-			printf("Here!! teacher name is %s, lesson is %s, hwname is %s\n", com2, com3, com4);
-			check_hw_score(com2, com3, com4);
-		}
-		else if (strcmp(com1, "SubmitHWTo") == 0)
-		{
-			// SubmitHWTo lesson hwname
+			// check lesson hw
 			sscanf(cmd_str, "%s%s%s", com1, com2, com3);
-			printf("Here!! student name is %s, lesson is %s, hwname is %s\n", Cur_User_Name, com2, com3);
+			check_hw_content(com2, com3);
+		}
+		else if (strcmp(com1, "check_hw_score") == 0)
+		{
+			// check_hw_score lesson hw
+			sscanf(cmd_str, "%s%s%s", com1, com2, com3);
+			check_hw_score(com2, com3);
+		}
+		else if (strcmp(com1, "submit_hw_to") == 0)
+		{
+			// submit_hw_to lesson hwname
+			sscanf(cmd_str, "%s%s%s", com1, com2, com3);
 			submit_assignment(Cur_User_Name, com2, com3);
 		}
 	}
@@ -198,7 +190,8 @@ void help() {
 bool cd_func(int CurAddr, char* str) {
 	int pro_cur_dir_addr = Cur_Dir_Addr;
 	char pro_cur_dir_name[310];
-	strcpy(pro_cur_dir_name, Cur_Dir_Name);
+    memset(pro_cur_dir_name, '\0', 310);
+    strcpy(pro_cur_dir_name, Cur_Dir_Name);
 	int flag = 1;
 
 	if (strcmp(str, "/") == 0) {
@@ -286,6 +279,7 @@ bool rm_func(int CurAddr, char* str, char* s_type) {
 		return false;
 	}
 }
+
 bool touch_func(int CurAddr, char* str, char* buf) {
 	char* p = strrchr(str, '/');
 	if (p == NULL) {
@@ -298,9 +292,11 @@ bool touch_func(int CurAddr, char* str, char* buf) {
 		p++;
 		strcpy(name, p);
 		*p = '\0';
-		if (cd_func(CurAddr, str)) {
-			if (mkfile(Cur_Dir_Addr, name, buf))
-				return true;
+		if (cd_func(CurAddr, str))
+        {
+			if (mkfile(Cur_Dir_Addr, name, buf)) {
+                return true;
+            }
 		}
 		return false;
 	}

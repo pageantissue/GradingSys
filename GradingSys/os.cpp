@@ -1,10 +1,9 @@
 #include"os.h"
-#include<iomanip>
-#include<time.h>
-#include<string.h>
-#include<stdio.h>
+#include<ctime>
+#include<cstring>
+#include<cstdio>
 #include<iostream>
-#include<stdlib.h>
+#include<cstdlib>
 
 using namespace std;
 
