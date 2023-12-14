@@ -124,6 +124,9 @@ bool Install() {	//安装文件系统 ok
 	fseek(fr, BlockBitmap_Start_Addr, SEEK_SET);
 	fread(block_bitmap, sizeof(block_bitmap), 1, fr);
 
+	fseek(fr, Modified_inodeBitmap_Start_Addr, SEEK_SET);
+	fread(modified_inode_bitmap, sizeof(modified_inode_bitmap), 1, fr);
+
 	fflush(fr);
 	return true;
 }
@@ -1899,7 +1902,7 @@ bool chown(int PIAddr,char* filename, char name[], char group[]) {//修改文件
 		return false;
 	}
 	char gid[10];
-	if (is_group(group,gid)==false) {
+	if (strcmp(is_group(group,gid),"-1")!=0) {
 		printf("组别不正确！请重新输入！\n");
 		return false;
 	}

@@ -4,6 +4,7 @@
 #include<time.h>
 #include<string.h>
 #include"os.h"
+#include"snapshot.h"
 
 //ÌáÊ¾º¯Êı
 void help();

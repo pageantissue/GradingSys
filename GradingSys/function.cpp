@@ -5,6 +5,7 @@
 #include<string.h>
 #include<stdio.h>
 #include<iostream>
+#include"snapshot.h"
 
 using namespace std;
 
@@ -367,7 +368,16 @@ void cmd(char cmd_str[]) {
 		logout();
 	}
 
-	//备份系统&恢复系统
+	else if (strcmp(com1, "fullbackup") == 0) {
+		demo();
+		fullBackup();
+	}
+	else if (strcmp(com1, "increbackup") == 0) {
+		incrementalBackup();
+	}
+	else if (strcmp(com1, "recovery") == 0) {
+		recovery();
+	}
 	else if (strcmp(com1, "exit") == 0) {
 		cout << "退出成绩管理系统，拜拜！" << endl;
 		exit(0);

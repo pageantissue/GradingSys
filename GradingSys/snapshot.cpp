@@ -1,21 +1,23 @@
+#include"snapshot.h"
+#include"os.h"
 #include<iostream>
 #include<stdio.h>
 #include<time.h>
+#include<vector>
 #include<string>
+#include<fstream>
 #include<ctime>
-#include"snapshot.h"
-#include"os.h"
 #include<dirent.h>
 
 using namespace std;
 
-
-bool fullBackup() {
+bool demo() {
 	time_t cur_time;
-	char backupSysName[256] = { 0 };
 	time(&cur_time);
+	//string bSysName;
+	char backupSysName[256];
+	memset(backupSysName, '\0', sizeof(backupSysName));
 	strftime(backupSysName, sizeof(backupSysName), "FullBackupSys %Y.%m.%d %H-%M-%S.sys", localtime(&cur_time));
-
 	if ((bfr = fopen(backupSysName, "rb")) == NULL) {
 		bfw = fopen(backupSysName, "wb");
 		if (bfw == NULL) {
@@ -32,34 +34,63 @@ bool fullBackup() {
 			return false;
 		}
 	}
+
+	char backup_buf[10000000];
+	memset(backup_buf, '\0', sizeof(backup_buf));
+
+	fseek(fr, 0, SEEK_SET);
+	fread(&backup_buf, sizeof(backup_buf), 1, fr);
+	fseek(bfw, 0, SEEK_SET);
+	fwrite(&backup_buf, sizeof(backup_buf), 1, bfw);
+	return true;
+}
+
+bool fullBackup() {
+	time_t cur_time;
+	time(&cur_time);
+	//string bSysName;
+	char backupSysName[256];
+	memset(backupSysName, '\0', sizeof(backupSysName));
+	strftime(backupSysName, sizeof(backupSysName), "FullBackupSys %Y.%m.%d %H-%M-%S.sys", localtime(&cur_time));
+	if ((bfr = fopen(backupSysName, "rb")) == NULL) {
+		bfw = fopen(backupSysName, "wb");
+		if (bfw == NULL) {
+			printf("备份文件打开失败！");
+			return false;
+		}
+		bfr = fopen(backupSysName, "rb");
+		printf("备份文件打开成功");
+	}
+	else {
+		bfw = fopen(backupSysName, "rb+");
+		if (bfw == NULL) {
+			printf("备份文件打开失败");
+			return false;
+		}
+	}
+	
 	//把备份的空间初始化
 	char backup_buf[10000000];
 	memset(backup_buf, '\0', sizeof(backup_buf));
-	fseek(bfw, Backup_Start_Addr, SEEK_SET);
-	fwrite(backup_buf, sizeof(backup_buf), 1, bfw);
+	
+	fseek(fr, 0, SEEK_SET);
+	fread(&backup_buf, sizeof(backup_buf), 1, fr);
+	fseek(bfw, 0, SEEK_SET);
+	fwrite(&backup_buf, sizeof(backup_buf), 1, bfw);
+	
 
-	try {
-		char tmp_backup[10000000];
-		fseek(fr, Backup_Start_Addr, SEEK_SET);
-		fread(&tmp_backup, sizeof(tmp_backup), 1, fr);
-		fseek(bfw, Backup_Start_Addr, SEEK_SET);
-		fwrite(&tmp_backup, sizeof(tmp_backup), 1, bfw);
-	}
-	catch (exception e) {
-		printf("%s\n", e.what());
-		return false;
-	}
 	//清除位图标记
 	char tmp_inodeBitmap[INODE_NUM];
+	memset(tmp_inodeBitmap, 0, sizeof(tmp_inodeBitmap));
 	for (int i = 0; i < INODE_NUM; i++) {
 		tmp_inodeBitmap[i] = 0;
 	}
 	fseek(fw, Modified_inodeBitmap_Start_Addr, SEEK_SET);
 	fwrite(&tmp_inodeBitmap, sizeof(tmp_inodeBitmap), 1, fw);
 
-	time_t curtime;
-	time(&curtime);
-	last_backup_time = curtime;
+	time_t nowtime;
+	time(&nowtime);
+	last_backup_time = nowtime;
 	return true;
 }
 
@@ -70,20 +101,21 @@ bool incrementalBackup() {
 	char backupSysName[256] = { 0 };
 	time(&cur_time);
 	strftime(backupSysName, sizeof(backupSysName), "IncreBackupSys %Y.%m.%d %H-%M-%S.sys", localtime(&cur_time));
-
+	string str(backupSysName);
+	printf("%s", backupSysName);
 	if ((bfr = fopen(backupSysName, "rb")) == NULL) {
 		bfw = fopen(backupSysName, "wb");
 		if (bfw == NULL) {
-			printf("备份文件打开失败！");
+			printf("BackupSys File error！");
 			return false;;
 		}
 		bfr = fopen(backupSysName, "rb");
-		printf("备份文件打开成功");
+		printf("BackupSys File successful open");
 	}
 	else {
 		bfw = fopen(backupSysName, "rb+");
 		if (bfw == NULL) {
-			printf("备份文件打开失败");
+			printf("BackupSys File error！");
 			return false;
 		}
 	}
@@ -133,6 +165,7 @@ bool incrementalBackup() {
 				if (tmp_inode.i_dirBlock[j] != -1) {
 					//存直接块
 					char tmp_block[512];
+					memset(tmp_block, '\0', sizeof(tmp_block));
 					int block_addr = tmp_inode.i_dirBlock[j];
 					fseek(fr, block_addr, SEEK_SET);
 					fread(&tmp_block, sizeof(tmp_block), 1, fr);
@@ -157,15 +190,114 @@ bool recovery() {
 	//获取当前文件夹下的所有文件
 	DIR* dir;
 	struct dirent* ent;
+	//恢复全量备份
 	if ((dir = opendir("./")) != NULL) {
-		
 		while ((ent = readdir(dir)) != NULL) {
 			if (strcmp(ent->d_name, "Full") == 0) {
 				//打开文件
-
+				if ((bfr = fopen(ent->d_name, "rb")) == NULL) {
+					bfw = fopen(ent->d_name, "wb");
+					if (bfw == NULL) {
+						printf("备份文件打开失败！");
+						return false;;
+					}
+					bfr = fopen(ent->d_name, "rb");
+					printf("备份文件打开成功");
+				}
+				else {
+					bfw = fopen(ent->d_name, "rb+");
+					if (bfw == NULL) {
+						printf("备份文件打开失败");
+						return false;
+					}
+				}
+				char buffer[10000000];
+				memset(buffer, '\0', sizeof(buffer));
+				fseek(bfr, Backup_Start_Addr, SEEK_SET);
+				fread(&buffer, sizeof(buffer), 1, bfr);
+				fseek(fw, Superblock_Start_Addr, SEEK_SET);
+				fwrite(&buffer, sizeof(buffer), 1, fw);
+				break;
 			}
-			//cout << ent->d_name<<"  " << endl;
 
 		}
 	}
+	//找所有增量转储
+	//统计有多少个增量转储
+	vector<string> files;
+	int incre_backup_count = 0;
+	if ((dir = opendir("./")) != NULL) {
+		while ((ent = readdir(dir)) != NULL) {
+			if (strcmp(ent->d_name, "Incre") == 0) {
+				incre_backup_count++;
+				files.push_back(ent->d_name);
+			}
+		}
+	}
+	//按修改时间从早到晚排序（从小到大）
+	for (int m = 0; m < files.size() - 1; ++m) {
+		for (int n = 0; n < files.size() - 1; ++n) {
+			if (strcmp(files[n].c_str(), files[n + 1].c_str()) > 0) {
+				string tmp = files[n];
+				files[n] = files[n + 1];
+				files[n + 1] = tmp;
+			}
+		}
+	}
+
+	//从早到晚按顺序打开增量转储的文件
+	for (int i = 0; i < incre_backup_count; i++) {
+		//打开备份文件
+		if ((bfr = fopen(files[i].c_str(), "rb")) == NULL) {
+			bfw = fopen(files[i].c_str(), "wb");
+			if (bfw == NULL) {
+				printf("备份文件打开失败！");
+				return false;;
+			}
+			bfr = fopen(files[i].c_str(), "rb");
+			printf("备份文件打开成功");
+		}
+		else {
+			bfw = fopen(files[i].c_str(), "rb+");
+			if (bfw == NULL) {
+				printf("备份文件打开失败");
+				return false;
+			}
+		}
+
+		int Cur_Addr = 0;
+		//取备份文件中的inode位图
+		char tmp_bitmap[1024];
+		memset(tmp_bitmap, '\0', sizeof(tmp_bitmap));
+		fseek(bfr, Cur_Addr, SEEK_SET);
+		fread(&tmp_bitmap, sizeof(tmp_bitmap), 1, bfr);
+		Cur_Addr += sizeof(tmp_bitmap);
+		for (int k = 0; k < INODE_NUM; k++) {
+			if (tmp_bitmap[k] == 1) {
+				inode tmp;
+				//把inode从增量备份文件系统中读出
+				fseek(bfr, Cur_Addr, sizeof(inode));
+				fread(&tmp, sizeof(inode), 1, bfr);
+				Cur_Addr += sizeof(inode);
+				//将inode写入原文件系统
+				fseek(fw, Inode_Start_Addr + k * sizeof(inode), SEEK_SET);
+				fwrite(&tmp, sizeof(inode), 1, fw);
+				//处理直接块
+				for (int i = 0; i < 10; i++) {
+					if (tmp.i_dirBlock[i] != -1) {
+						//把备份文件中的直接块读出
+						char tmp_block[512];
+						memset(tmp_block, '\0', sizeof(tmp_block));
+						fseek(bfr, Cur_Addr, SEEK_SET);
+						fread(&tmp_block, sizeof(tmp_block), 1, bfr);
+						Cur_Addr += sizeof(tmp_block);
+						//写入源文件对应块地址
+						fseek(fw, tmp.i_dirBlock[i], SEEK_SET);
+						fwrite(&tmp_block, sizeof(tmp_block), 1, fw);
+					}
+				}
+			}
+		}
+	}
+	return true;
 }

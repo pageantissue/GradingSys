@@ -49,7 +49,7 @@ FILE* bfr;
 time_t last_backup_time;
 
 char buffer[10000000] = { 0 };				//10M，缓存整个虚拟磁盘文件
-//extern const int count;
+
 using namespace std;
 
 
@@ -161,7 +161,6 @@ int main()
             //scanf("%s",str);
             gets(str);
             cmd(str);
-            count++;
             printf("\n");
         }
         else {
