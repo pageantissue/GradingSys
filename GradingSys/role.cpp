@@ -10,7 +10,9 @@ using namespace std;
 
 bool add_users(Client& client, char * namelist) {
 	if (strcmp(client.Cur_Group_Name, "root") != 0) {
-		printf("Only root could add users!\n");
+		//printf("Only root could add users!\n");
+		char ms[] = "Only root could add users!\n";
+		send(client.client_sock, ms, strlen(ms), 0);
 		return false;
 	}
 
@@ -63,7 +65,9 @@ bool add_users(Client& client, char * namelist) {
 
 bool publish_task(Client& client, char* lesson, char* filename) {//ok
 	if (strcmp(client.Cur_Group_Name, "teacher") != 0) {
-		printf("Only teacher could publish tasks!\n");
+		//printf("Only teacher could publish tasks!\n");
+		char ms[] = "Only teacher could publish tasks!\n";
+		send(client.client_sock, ms, strlen(ms), 0);
 		return false;
 	}
 	int pro_cur_dir_addr = client.Cur_Dir_Addr;
@@ -106,7 +110,9 @@ bool publish_task(Client& client, char* lesson, char* filename) {//ok
 
 bool judge_hw(Client& client, char* namelist, char* lesson, char* hwname) {
 	if (strcmp(client.Cur_Group_Name, "teacher") != 0) {
-		printf("Only teacher could judge assignments!\n");
+		//printf("Only teacher could judge assignments!\n");
+		char ms[] = "Only teacher could judge assignments!\n";
+		send(client.client_sock, ms, strlen(ms), 0);
 		return false;
 	}
 	int pro_cur_dir_addr = client.Cur_Dir_Addr;
@@ -158,10 +164,15 @@ bool judge_hw(Client& client, char* namelist, char* lesson, char* hwname) {
                 sprintf(myname, "%s_%s", hwname, relations[j].student);
                 if (cat(client, client.Cur_Dir_Addr, myname)) {//输出学生的作业文件内容
                     //如果找到了作业，打分
-                    printf("Please mark this assignment: ");//教师根据学生作业打分( uname:score)
+                    //printf("Please mark this assignment: ");//教师根据学生作业打分( uname:score)
+					char ms[] = "Please mark this assignment: ";
+					send(client.client_sock, ms, strlen(ms), 0);
                     scanf("%lf", &score);
                 } else {
-                    printf("%s doesn't hand out the homework!\n", relations[j].student);
+                    //printf("%s doesn't hand out the homework!\n", relations[j].student);
+					char ms[100]; memset(ms, '\0', 100);
+					sprintf(ms, "%s doesn't hand out the homework!\n", relations[j].student);
+					send(client.client_sock, ms, strlen(ms), 0);
                 }
                 sprintf(buf, "%s: %.2f\n", relations[j].student, score);
                 char save_path[100];
@@ -228,7 +239,9 @@ bool check_hw_content(Client& client, char* lesson, char* hwname)
                     strcpy(client.Cur_Dir_Name, pro_cur_dir_name);
                     return true;
                 } else {
-                    printf("Teacher has not published any homework yet!\n");
+                    //printf("Teacher has not published any homework yet!\n");
+					char ms[] = "Teacher has not published any homework yet!\n";
+					send(client.client_sock, ms, strlen(ms), 0);
                     client.Cur_Dir_Addr = pro_cur_dir_addr;
                     strcpy(client.Cur_Dir_Name, pro_cur_dir_name);
                     return false;
@@ -288,7 +301,9 @@ bool check_hw_score(Client& client, char* lesson, char* hwname)
                     strcpy(client.Cur_Dir_Name, pro_cur_dir_name);
                     return true;
                 } else {
-                    printf("Teacher has not graded your assignment yet!\n");
+                    //printf("Teacher has not graded your assignment yet!\n");
+					char ms[] = "Teacher has not graded your assignment yet!\n";
+					send(client.client_sock, ms, strlen(ms), 0);
                     client.Cur_Dir_Addr = pro_cur_dir_addr;
                     strcpy(client.Cur_Dir_Name, pro_cur_dir_name);
                     return false;
@@ -317,7 +332,7 @@ bool submit_assignment(Client& client, char* student_name, char* lesson, char* f
 	if (!f)
 	{
 		char ms[] = "This student does not exist!\n";
-		printf("%s\n", ms);
+		send(client.client_sock, ms, strlen(ms), 0);
 		client.Cur_Dir_Addr = pro_cur_dir_addr;
 		strcpy(client.Cur_Dir_Name, pro_cur_dir_name);
 		return false;
@@ -327,7 +342,7 @@ bool submit_assignment(Client& client, char* student_name, char* lesson, char* f
 	if (!f)
 	{
 		char ms[] = "Lesson does not exist!\n";
-		printf("%s\n", ms);
+		send(client.client_sock, ms, strlen(ms), 0);
 		client.Cur_Dir_Addr = pro_cur_dir_addr;
 		strcpy(client.Cur_Dir_Name, pro_cur_dir_name);
 		return false;
