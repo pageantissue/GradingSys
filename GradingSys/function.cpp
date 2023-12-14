@@ -9,196 +9,8 @@
 std::mutex workPrt;
 using namespace std;
 
-void cmd(char cmd_str[]) {
-	char com1[100];
-	char com2[100];
-	char com3[100];
-	char com4[100];
-	sscanf(cmd_str, "%s", com1);
-	if (strcmp(com1, "help") == 0) {
-		help();
-	}
-	else if (strcmp(com1, "ls") == 0) {
-		sscanf(cmd_str, "%s%s", com1, com2);
-		ls(com2);
-	}
-	else if (strcmp(com1, "cd") == 0) {
-		sscanf(cmd_str, "%s%s", com1, com2);
-		cd_func(Cur_Dir_Addr, com2);
-	}
-	else if (strcmp(com1, "gotoRoot") == 0) {
-		gotoRoot();
-	}
-	else if (strcmp(com1, "mkdir") == 0) {	
-		sscanf(cmd_str, "%s%s", com1, com2);
-		mkdir_func(Cur_Dir_Addr, com2);
-	}
-	else if (strcmp(com1, "rm") == 0) {
-		sscanf(cmd_str, "%s%s%s", com1, com2, com3);
-		rm_func(Cur_Dir_Addr, com3, com2);
-	}
-	else if (strcmp(com1, "touch") == 0) {
-		sscanf(cmd_str, "%s%s", com1, com2);
-		touch_func(Cur_Dir_Addr, com2, "");
-	}
-	else if (strcmp(com1, "echo") == 0) {
-		sscanf(cmd_str, "%s%s%s%s", com1, com2, com3, com4);
-		echo_func(Cur_Dir_Addr, com4, com3, com2);
-	}
-	else if (strcmp(com1, "cat") == 0) {
-		sscanf(cmd_str, "%s%s", com1, com2);
-		cat(Cur_Dir_Addr, com2);
-	}
-	else if (strcmp(com1, "chmod") == 0) {
-		sscanf(cmd_str, "%s%s%s", com1, com2, com3);
-		chmod_func(Cur_Dir_Addr, com2, com3);
-	}
-	else if (strcmp(com1, "chown") == 0) {
-		sscanf(cmd_str, "%s%s%s", com1, com2, com3);
-		chown_func(Cur_Dir_Addr, com2, com3);
-	}
-
-	else if (strcmp(com1, "useradd") == 0) {
-		//useradd -g group -m user
-		char group[100];
-		char user[100];
-		char passwd[100];
-		sscanf(cmd_str, "%s%s%s%s%s", com1, com2, group, com3, user);
-		if ((strcmp(com2, "-g") != 0) || ((strcmp(com3, "-m") != 0))) {
-			printf("鍛戒护鏍煎紡閿欒!\n");
-			return;
-		}
-		inPasswd(passwd);
-		useradd(user,passwd, group);
-	}
-	else if (strcmp(com1, "userdel") == 0) {
-		sscanf(cmd_str, "%s%s", com1, com2);
-		userdel(com2);
-	}
-	else if (strcmp(com1, "groupadd") == 0) {
-		sscanf(cmd_str, "%s%s", com1, com2);
-		groupadd(com2);
-	}
-	else if (strcmp(com1, "groupdel") == 0) {
-		sscanf(cmd_str, "%s%s", com1, com2);
-		groupdel(com2);
-	}
-	else if (strcmp(com1, "passwd") == 0) {
-		if (sscanf(cmd_str, "%s%s", com1, com2) == 1) {
-			passwd_func("");
-		}
-		else {
-			passwd_func(com2);
-		}
-	}
-	else if (strcmp(com1, "logout") == 0) {
-		logout();
-	}
-	//澶囦唤绯荤粺&鎭㈠绯荤粺
-	else if (strcmp(com1, "exit") == 0) {
-		cout << "閫�鍑烘垚缁╃鐞嗙郴缁燂紝鎷滄嫓锛�" << endl;
-		exit(0);
-	}
-	
-	//root缁勭壒鏈�
-	if (strcmp(Cur_Group_Name, "root") == 0) {
-		if (strcmp(com1, "batchadd") == 0) {
-			sscanf(cmd_str, "%s", com1);
-			add_users(STUDENT_COURSE_LIST);
-		}
-		else if (strcmp(com1, "fullbackup") == 0) {
-			fullBackup();
-		}
-		else if (strcmp(com1, "recovery") == 0) {
-			recovery();
-		}
-		else if (strcmp(com1, "increbackup") == 0) {
-			incrementalBackup();
-		}
-	}
-	
-	//teacher缁勭壒鏈�
-	if (strcmp(Cur_Group_Name, "teacher") == 0) {
-		if (strcmp(com1, "publish_task") == 0) {
-			sscanf(cmd_str, "%s%s%s", com1, com2, com3);
-			publish_task(com2, com3);
-		}
-		else if (strcmp(com1, "judge_hw") == 0) {
-			sscanf(cmd_str, "%s%s%s", com1, com2, com3);
-			judge_hw(STUDENT_COURSE_LIST, com2, com3);
-		}
-	}
-  
-  //student缁勭壒鏈�
-	if (strcmp(Cur_Group_Name, "student") == 0) {
-		if (strcmp(com1, "check_hw_content") == 0) //check desription
-		{
-			// check lesson hw
-			sscanf(cmd_str, "%s%s%s", com1, com2, com3);
-			check_hw_content(com2, com3);
-		}
-		else if (strcmp(com1, "check_hw_score") == 0)
-		{
-			// check_hw_score lesson hw
-			sscanf(cmd_str, "%s%s%s", com1, com2, com3);
-			check_hw_score(com2, com3);
-		}
-		else if (strcmp(com1, "submit_hw_to") == 0)
-		{
-			// submit_hw_to lesson hwname
-			sscanf(cmd_str, "%s%s%s", com1, com2, com3);
-			submit_assignment(Cur_User_Name, com2, com3);
-		}
-
-	}
-
-	return;
-}
-
-void help() {
-	cout.setf(ios::left);
-	cout.width(30);
-	cout << "ls" << "Display the current directory listing" << endl;
-	cout.width(30);
-	cout << "cd" << "Enter the specific directory " << endl;
-	cout.width(30);
-	cout << "gotoRoot" << "Return to the root directory " << endl;
-	cout.width(30);
-	cout << "mkdir" << "Create directory" << endl;	
-	cout.width(30);
-	cout << "rm" << "Delete directory or file" << endl;		
-	cout.width(30);
-	cout << "touch" << "Create a blank file" << endl;
-	cout.width(30);
-	cout << "echo" << "Create a non-empty file" << endl;
-	cout.width(30);
-	cout << "chmod" << "Modify the access right" << endl;
-	cout.width(30);
-	//catchown
-
-	cout << "useradd" << "Add user" << endl;
-	cout.width(30);
-	cout << "userdel" << "Delete user" << endl;
-	cout.width(30);
-	cout << "groupadd" << "Add group" << endl;		
-	cout.width(30);
-	cout << "groupdel" << "Delete group" << endl;	
-	cout.width(30);
-	cout << "passwd" << "Modify the password" << endl;	
-	cout.width(30);
-	cout << "logout" << "Logout the account" << endl;
-	cout.width(30);
-	//usergrpadd,userfrpdel,
-
-
-
-	cout << "snapshot" << "Back up the system" << endl;	
-	cout.width(30);
-
-	cout << "exit" << "Exit the system" << endl;	
-}
-bool cd_func(int CurAddr, char* str) {
-	int pro_cur_dir_addr = Cur_Dir_Addr;
+bool cd_func(Client& client, int CurAddr, char* str) {
+	int pro_cur_dir_addr = client.Cur_Dir_Addr;
 	char pro_cur_dir_name[310];
 	strcpy(pro_cur_dir_name, client.Cur_Dir_Name);
 	int flag = 1;
@@ -535,7 +347,7 @@ void cmd(Client& client)
 		logout(client);
 	}
 
-	//备份系统&恢复系统
+	
 	else if (strcmp(com1, "exit") == 0) {
 		//cout << "退出成绩管理系统，拜拜！" << endl;
 		char ms[] = "Exitting our Grading System..... See you!\n";
@@ -547,6 +359,16 @@ void cmd(Client& client)
 		if (strcmp(com1, "batchadd") == 0) {
 			sscanf(cmd_str, "%s", com1);
 			add_users(client, STUDENT_COURSE_LIST);
+		}
+		//备份系统&恢复系统
+		else if (strcmp(com1, "fullbackup") == 0) {
+			fullBackup();
+		}
+		else if (strcmp(com1, "recovery") == 0) {
+			recovery();
+		}
+		else if (strcmp(com1, "increbackup") == 0) {
+			incrementalBackup();
 		}
 	}
 	
