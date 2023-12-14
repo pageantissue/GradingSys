@@ -1,10 +1,13 @@
 #include"os.h"
 #include"server.h"
+#include<mutex>
+#include"snapshot.h"
 #include<ctime>
 #include<cstring>
 #include<cstdio>
-#include<mutex>
-#include"snapshot.h"
+#include<iostream>
+#include<cstdlib>
+
 
 using namespace std;
 
@@ -124,6 +127,9 @@ bool Install() {	//安装文件系统 ok
 	fseek(fr, BlockBitmap_Start_Addr, SEEK_SET);
 	fread(block_bitmap, sizeof(block_bitmap), 1, fr);
 
+	fseek(fr, Modified_inodeBitmap_Start_Addr, SEEK_SET);
+	fread(modified_inode_bitmap, sizeof(modified_inode_bitmap), 1, fr);
+
 	fflush(fr);
 	return true;
 }
@@ -231,6 +237,7 @@ bool mkdir(Client& client, int PIAddr, char name[]) {	//目录创建函数(父�
 	time(&parino.dir_change_time);
 	safeFseek(fw, PIAddr, SEEK_SET);
 	safeFwrite(&parino, sizeof(parino), 1, fw);
+
 
 	DirItem paritem[DirItem_Size];
 	safeFseek(fr, parino.i_dirBlock[bpos], SEEK_SET);
@@ -371,6 +378,7 @@ bool mkfile(Client& client, int PIAddr, char name[],char buf[]) {	//文件创建
 	time(&parino.dir_change_time);
 	safeFseek(fw, PIAddr, SEEK_SET);
 	safeFwrite(&parino, sizeof(parino), 1, fw);
+	time(&parino.file_modified_time);
 
 	DirItem paritem[DirItem_Size];
 	safeFseek(fr, parino.i_dirBlock[bpos], SEEK_SET);
@@ -477,6 +485,7 @@ bool rm(Client& client, int PIAddr, char name[], int type) {	//删除文件or文
 	ino.inode_file_count -= 1;
 	time(&ino.inode_change_time);
 	time(&ino.dir_change_time);
+	time(&ino.file_modified_time);
 	safeFseek(fw, PIAddr, SEEK_SET);
 	safeFwrite(&ino, sizeof(ino), 1, fw);
 	return true;
@@ -510,7 +519,6 @@ bool recursive_rmdir(Client& client, int CHIAddr, char name[]) {//删除当前�
 		//printf("没有权限删除该文件夹\n");
 		char ms[] = "No permission to delete this folder!\n";
 		send(client.client_sock, ms, strlen(ms), 0);
-		return false;
 		return false;
 	}
 
@@ -632,8 +640,8 @@ bool cat(Client& client, int PIAddr, char name[]) {	//查看文件内容
 	
 }
 bool echo(Client& client, int PIAddr, char name[], int type, char* buf) {	//文件新增or重写or补全
-	buf += 1;
-	buf[strlen(buf) - 1] = '\0';
+	if(buf[0]=='"') buf += 1;
+	if(buf[strlen(buf) - 1]=='"')  buf[strlen(buf) - 1] = '\0';
 	if (type == 0) {
 		if (mkfile(client, PIAddr, name, buf)) {
 			return true;
@@ -762,8 +770,8 @@ bool addfile(Client& client, inode fileinode, int iaddr, char buf[]) { //文件�
 	fflush(fw);
 	return true;
 }
-bool cd(Client& client, int PIAddr, char name[]) {//切换目录
 
+bool cd(Client& client, int PIAddr, char name[]) {//切换目录
 	inode pinode;
 	safeFseek(fr, PIAddr, SEEK_SET);
 	fread(&pinode, sizeof(inode), 1, fr);
@@ -802,7 +810,8 @@ bool cd(Client& client, int PIAddr, char name[]) {//切换目录
 					safeFseek(fr, ditem[j].inodeAddr, SEEK_SET);
 					fread(&chiino, sizeof(inode), 1, fr);
 					fflush(fr);
-					if (((chiino.inode_mode >> role) & 1) == 1) {	//是否有执行权限
+
+					if ((((chiino.inode_mode >> role) & 1) == 1) ||(strcmp(Cur_Group_Name,"root")==0)){	//是否有执行权限
 						if (strcmp(client.Cur_Dir_Name, "/") != 0) {
 							strcat(client.Cur_Dir_Name, "/");
 						}
@@ -1490,11 +1499,15 @@ bool check(Client& client, char username[], char passwd[]) {//核验身份登录
 	char buf[BLOCK_SIZE * 10]; //1char:1B
 	char temp[BLOCK_SIZE];
 	char checkpw[100];
+    memset(checkpw, '\0', 100);
 	char group[10];
+	memset(buf, '\0', sizeof(buf));
+	memset(temp, '\0', sizeof(temp));
+	memset(checkpw, '\0', sizeof(checkpw));
+	memset(group, '\0', sizeof(group));
 
 
 	//shadow
-	memset(buf, '\0', sizeof(temp));
 	for (int i = 0; i < 10; ++i) {
 		if (shadowino.i_dirBlock[i] != -1) {
 			memset(temp, '\0', sizeof(temp));
@@ -1521,6 +1534,7 @@ bool check(Client& client, char username[], char passwd[]) {//核验身份登录
 	}
 	if (strcmp(checkpw, passwd) != 0) {
 		//printf("密码不正确，请重新尝试！\n");
+        //printf("Here!!! checkpw is %s, passwd is %s\n", checkpw, passwd);
 		char ms[] = "Incorrect password! Please try again!\n";
 		send(client.client_sock, ms, strlen(ms), 0);
 		return false;
@@ -2088,7 +2102,8 @@ bool chown(Client& client, int PIAddr,char* filename, char name[], char group[])
 	safeFseek(fr, PIAddr, SEEK_SET);
 	fread(&ino, sizeof(inode), 1, fr);
 	fflush(fr);
-	for (int i = 0; i < 10; ++i) {
+	for (int i = 0; i < 10; ++i)
+	{
 		DirItem ditem[DirItem_Size];
 		safeFseek(fr, ino.i_dirBlock[i], SEEK_SET);
 		fread(ditem, sizeof(ditem), 1, fr);

@@ -137,6 +137,7 @@ bool touch_func(Client& client, int CurAddr, char* str, char* buf) {//在任意�
 		return false;
 	}
 }
+
 bool echo_func(Client& client, int CurAddr, char* str, char* s_type, char* buf) {//在任意目录下创建or覆盖写入or追加
 	//判断类型 0：覆盖写入 1：追加
 	int type = -1;
@@ -173,6 +174,7 @@ bool echo_func(Client& client, int CurAddr, char* str, char* s_type, char* buf) 
 	if (echo(client, client.Cur_Dir_Addr, name, type, buf))	return true;
 	return false;
 }
+
 bool chmod_func(Client& client, int CurAddr, char* pmode, char* str) {
 	//寻找直接地址
 	char* p = strrchr(str, '/');
@@ -210,7 +212,6 @@ bool chown_func(Client& client, int CurAddr, char* u_g, char* str) {
 	else {
 		strcpy(file, str);
 	}
-
 	//获取用户和用户组
 	p = strstr(u_g, ":");
 	char name[20], group[20];
@@ -230,7 +231,7 @@ bool chown_func(Client& client, int CurAddr, char* u_g, char* str) {
 bool passwd_func(Client& client, char* username) {
 	if ((strcmp(client.Cur_Group_Name, "root") != 0) && (strlen(username) != 0)) {
 		//printf("普通用户无法修改其他用户密码\n");
-		char ms[] = "Normal user cannot change other users' password!\n";
+		char ms[] = "Only root can change user's password!\n";
 		send(client.client_sock, ms, strlen(ms), 0);
 		return false;
 	}
@@ -362,6 +363,46 @@ void cmd(Client& client)
 		send(client.client_sock, ms, strlen(ms), 0);
 		exit(0);
 	}
-
+  //root组特有
+	if (strcmp(Cur_Group_Name, "root") == 0) {
+		if (strcmp(com1, "batchadd") == 0) {
+			sscanf(cmd_str, "%s", com1);
+			add_users(STUDENT_COURSE_LIST);
+		}
+	}
+	
+	//teacher组特有
+	if (strcmp(Cur_Group_Name, "teacher") == 0) {
+		if (strcmp(com1, "publish_task") == 0) {
+			sscanf(cmd_str, "%s%s%s", com1, com2, com3);
+			publish_task(com2, com3);
+		}
+		else if (strcmp(com1, "judge_hw") == 0) {
+			sscanf(cmd_str, "%s%s%s", com1, com2, com3);
+			judge_hw(STUDENT_COURSE_LIST, com2, com3);
+		}
+	}
+  
+  //student组特有
+	if (strcmp(Cur_Group_Name, "student") == 0) {
+		if (strcmp(com1, "check_hw_content") == 0) //check desription
+		{
+			// check lesson hw
+			sscanf(cmd_str, "%s%s%s", com1, com2, com3);
+			check_hw_content(com2, com3);
+		}
+		else if (strcmp(com1, "check_hw_score") == 0)
+		{
+			// check_hw_score lesson hw
+			sscanf(cmd_str, "%s%s%s", com1, com2, com3);
+			check_hw_score(com2, com3);
+		}
+		else if (strcmp(com1, "submit_hw_to") == 0)
+		{
+			// submit_hw_to lesson hwname
+			sscanf(cmd_str, "%s%s%s", com1, com2, com3);
+			submit_assignment(Cur_User_Name, com2, com3);
+		}
+	}
 	return;
 }

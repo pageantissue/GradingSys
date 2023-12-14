@@ -1,16 +1,16 @@
 #pragma once
 #include<iostream>
-#include<stdio.h>
-#include<time.h>
-#include<string.h>
 #include"os.h"
+#include"role.h"
+#include"snapshot.h"
 #include"server.h"
 
-//ÌáÊ¾º¯Êı
+//æç¤ºå‡½æ•°
 void help(Client&);
-void cmd(Client&);							//ÃüÁîĞĞº¯Êı(¶ş¼¶ÃüÁî´¦ÀíÖĞĞÄ£©
+void cmd(Client&);                      //å‘½ä»¤è¡Œå‡½æ•°(äºŒçº§å‘½ä»¤å¤„ç†ä¸­å¿ƒï¼‰
 
-//Ó¦ÓÃº¯Êı
+
+//åº”ç”¨å‡½æ•°
 bool cd_func(Client&, int CurAddr, char* str);
 bool mkdir_func(Client&, int CurAddr, char* str);
 bool rm_func(Client&, int CurAddr, char* str, char* s_type);

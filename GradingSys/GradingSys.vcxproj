@@ -79,13 +79,19 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="os.cpp" />
     <ClCompile Include="server.cpp" />
+    <ClCompile Include="role.cpp" />
     <ClCompile Include="snapshot.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="function.h" />
     <ClInclude Include="os.h" />
     <ClInclude Include="server.h" />
+    <ClInclude Include="role.h" />
     <ClInclude Include="snapshot.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="HW1.txt" />
+    <Text Include="Student_Course_Selection.txt" />
   </ItemGroup>
   <ItemDefinitionGroup />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
