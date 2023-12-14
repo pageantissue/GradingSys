@@ -255,7 +255,6 @@ bool submit_assignment(char* student_name, char* lesson, char* filename)
 	memset(pro_cur_dir_name, '\0', sizeof(pro_cur_dir_name));
 	strcpy(pro_cur_dir_name, Cur_Dir_Name);
 
-	//前锟斤拷指锟斤拷目录
 	gotoRoot();
 	cd(Cur_Dir_Addr, "home");
 

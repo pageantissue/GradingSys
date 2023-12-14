@@ -16,6 +16,7 @@ void cmd(char cmd_str[]) {
 	char com1[100];
 	char com2[100];
 	char com3[100];
+	char com4[100];
 	sscanf(cmd_str, "%s", com1);
 	//通用格式命令
 	if (strcmp(com1, "help") == 0) {
@@ -46,7 +47,6 @@ void cmd(char cmd_str[]) {
 	}
 	else if (strcmp(com1, "echo") == 0) {
 		//注意文字里面不要有空格
-		char com4[100];
 		sscanf(cmd_str, "%s%s%s%s", com1, com2, com3, com4);
 		echo_func(Cur_Dir_Addr, com4, com3, com2);
 	}
@@ -127,28 +127,26 @@ void cmd(char cmd_str[]) {
   
   //student组特有
 	if (strcmp(Cur_Group_Name, "student") == 0) {
-		char com4[100];
 		if (strcmp(com1, "checkhw") == 0) //check desription
 		{
+			// check teacher lesson hw
 			sscanf(cmd_str, "%s%s%s%s", com1, com2, com3, com4);
 			printf("Here!! teacher name is %s, lesson is %s, hwname is %s\n", com2, com3, com4);
 			check_hw_content(com2, com3, com4);
 		}
-		else if (strcmp(com1, "checkhwscore") == 0)
+		else if (strcmp(com1, "checkHWScore") == 0)
 		{
-			// checkhwscore teacher lesson hw
+			// checkHWScore teacher lesson hw
 			sscanf(cmd_str, "%s%s%s%s", com1, com2, com3, com4);
 			printf("Here!! teacher name is %s, lesson is %s, hwname is %s\n", com2, com3, com4);
 			check_hw_score(com2, com3, com4);
 		}
-		else if (strcmp(com1, "submitmyhw") == 0)
+		else if (strcmp(com1, "SubmitHWTo") == 0)
 		{
-			// submit lesson hw
+			// SubmitHWTo lesson hwname
 			sscanf(cmd_str, "%s%s%s", com1, com2, com3);
-			printf("Here!! student name is %s, lesson is %s, hwname is %s\n", Cur_Dir_Name, com2, com3);
-			//          submit_assignment(Cur_User_Name, com3, com4);
-			submit_assignment(Cur_Dir_Name, com2, com3);
-
+			printf("Here!! student name is %s, lesson is %s, hwname is %s\n", Cur_User_Name, com2, com3);
+			submit_assignment(Cur_User_Name, com2, com3);
 		}
 	}
 
