@@ -1,8 +1,8 @@
 #pragma once
 #include<iostream>
-#include<stdio.h>
-#include<time.h>
-#include<string.h>
+#include<cstdio>
+#include<ctime>
+#include<cstring>
 #include"function.h"
 #include"os.h"
 

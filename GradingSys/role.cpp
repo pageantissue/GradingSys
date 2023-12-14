@@ -17,8 +17,8 @@ bool add_users(Client& client, char * namelist) {
 	}
 
 	char new_buff[1024]; memset(new_buff, '\0', 1024);
-	sprintf(new_buff, "../../../%s", namelist);
-    //sprintf(new_buff, "/Users/sprungissue/CLionProjects/GradingSys/GradingSys/%s", namelist);
+//	sprintf(new_buff, "../../../%s", namelist);
+    sprintf(new_buff, "/Users/sprungissue/CLionProjects/GradingSys/GradingSys/%s", namelist);
 	int pro_cur_dir_addr = client.Cur_Dir_Addr;
 	char pro_cur_dir_name[310];
 	memset(pro_cur_dir_name, '\0', sizeof(pro_cur_dir_name));
@@ -59,7 +59,9 @@ bool add_users(Client& client, char * namelist) {
 	//恢复现场
 	client.Cur_Dir_Addr = pro_cur_dir_addr;
 	strcpy(client.Cur_Dir_Name, pro_cur_dir_name);
-	printf("已批量添加账户\n");
+//	printf("已批量添加账户\n")；
+    char ms[] = "Batch add users done!\n";
+    send(client.client_sock, ms, strlen(ms), 0);
 	return true;
 }
 
@@ -131,8 +133,8 @@ bool judge_hw(Client& client, char* namelist, char* lesson, char* hwname) {
 //	*p = '\0';
     char new_buff[100];
     memset(new_buff, '\0', 100);
-	sprintf(new_buff, "../../../%s", namelist);
-    //sprintf(new_buff, "/Users/sprungissue/CLionProjects/GradingSys/GradingSys/%s", namelist);
+//	sprintf(new_buff, "../../../%s", namelist);
+    sprintf(new_buff, "/Users/sprungissue/CLionProjects/GradingSys/GradingSys/%s", namelist);
 
 	ifstream fin(new_buff);
 	if (!fin.is_open()) {
@@ -206,8 +208,8 @@ bool check_hw_content(Client& client, char* lesson, char* hwname)
 	cd(client, client.Cur_Dir_Addr, "home");
     char new_buff[1024];
     memset(new_buff, '\0', 1024);
-	sprintf(new_buff, "../../../%s", STUDENT_COURSE_LIST);
-    //sprintf(new_buff, "/Users/sprungissue/CLionProjects/GradingSys/GradingSys/%s", STUDENT_COURSE_LIST);
+//	sprintf(new_buff, "../../../%s", STUDENT_COURSE_LIST);
+    sprintf(new_buff, "/Users/sprungissue/CLionProjects/GradingSys/GradingSys/%s", STUDENT_COURSE_LIST);
     ifstream fin(new_buff);
     if (!fin.is_open()) {
         cout << "File Open Failed!" << endl;
@@ -269,8 +271,8 @@ bool check_hw_score(Client& client, char* lesson, char* hwname)
     cd(client, client.Cur_Dir_Addr, "home");
     char new_buff[1024];
     memset(new_buff, '\0', 1024);
-    //sprintf(new_buff, "/Users/sprungissue/CLionProjects/GradingSys/GradingSys/%s", STUDENT_COURSE_LIST);
-	sprintf(new_buff, "../../../%s", STUDENT_COURSE_LIST);
+    sprintf(new_buff, "/Users/sprungissue/CLionProjects/GradingSys/GradingSys/%s", STUDENT_COURSE_LIST);
+//	sprintf(new_buff, "../../../%s", STUDENT_COURSE_LIST);
     ifstream fin(new_buff);
     if (!fin.is_open()) {
         cout << "File Open Failed!" << endl;

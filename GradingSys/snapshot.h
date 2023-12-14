@@ -1,26 +1,26 @@
 #pragma once
 #include"os.h"
 #include<iostream>
-#include<stdio.h>
-#include<time.h>
-#include<string.h>
+#include<cstdio>
+#include<ctime>
+#include<cstring>
 
-#define BLOCK_SIZE 512	//Ò»¸ö¿é´óÐ¡ 512 Byte
-#define INODE_SIZE 128  //Ò»¸öinode entryµÄ´óÐ¡ÊÇ128Byte
-#define DirItem_Size 16 //Ò»¸ö¿é×î¶àÄÜ×°16¸öDirItem
-#define FILE_NAME_MAX_SIZE	28	//ÎÄ¼þÃû×î³¤28Byte
-#define Operation_Num 20		//¼ÙÉè´æ20´Î²Ù×÷
-#define Backup_Block_Num 43		//¼ÙÉèÒ»¸öbackup½á¹¹ÌåÕ¼ÓÃ43¸öblock
+#define BLOCK_SIZE 512	//Ò»ï¿½ï¿½ï¿½ï¿½ï¿½Ð¡ 512 Byte
+#define INODE_SIZE 128  //Ò»ï¿½ï¿½inode entryï¿½Ä´ï¿½Ð¡ï¿½ï¿½128Byte
+#define DirItem_Size 16 //Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×°16ï¿½ï¿½DirItem
+#define FILE_NAME_MAX_SIZE	28	//ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½î³¤28Byte
+#define Operation_Num 20		//ï¿½ï¿½ï¿½ï¿½ï¿½20ï¿½Î²ï¿½ï¿½ï¿½
+#define Backup_Block_Num 43		//ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½backupï¿½á¹¹ï¿½ï¿½Õ¼ï¿½ï¿½43ï¿½ï¿½block
 
 
 extern time_t last_backup_time;
 
-extern FILE* bfw;							//±¸·ÝÎÄ¼þ Ð´ÎÄ¼þÖ¸Õë
-extern FILE* bfr;							//±¸·ÝÎÄ¼þ ¶ÁÎÄ¼þÖ¸Õë
+extern FILE* bfw;							//ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ Ð´ï¿½Ä¼ï¿½Ö¸ï¿½ï¿½
+extern FILE* bfr;							//ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ ï¿½ï¿½ï¿½Ä¼ï¿½Ö¸ï¿½ï¿½
 
 
 extern const int Backup_Start_Addr;
-extern int Backup_Cur_Addr;			//±¸·ÝÎÄ¼þÏµÍ³µ±Ç°µØÖ·
+extern int Backup_Cur_Addr;			//ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ÏµÍ³ï¿½ï¿½Ç°ï¿½ï¿½Ö·
 extern const int Backup_Block_Start_Addr;
 
 

@@ -1,13 +1,9 @@
 #include"snapshot.h"
 #include"os.h"
-#include<iostream>
-#include<stdio.h>
-#include<time.h>
-#include<vector>
 #include<cstdio>
-#include<string>
-#include<fstream>
 #include<ctime>
+#include<vector>
+#include<string>
 #include<dirent.h>
 #include<unistd.h>
 
@@ -15,7 +11,7 @@ using namespace std;
 
 
 bool fullBackup() {
-	//ÕÒµ½Ö®Ç°µÄfullbackupÎÄ¼þÉ¾µô
+	//ï¿½Òµï¿½Ö®Ç°ï¿½ï¿½fullbackupï¿½Ä¼ï¿½É¾ï¿½ï¿½
 	DIR* dir;
 	struct dirent* ent;
 	if ((dir = opendir("./")) != NULL) {
@@ -35,7 +31,7 @@ bool fullBackup() {
 		}
 	}
 
-	//´´½¨ÐÂµÄfullbackupÎÄ¼þ
+	//ï¿½ï¿½ï¿½ï¿½ï¿½Âµï¿½fullbackupï¿½Ä¼ï¿½
 	time_t cur_time;
 	time(&cur_time);
 	//string bSysName;
@@ -46,7 +42,7 @@ bool fullBackup() {
 	if ((bfr = fopen(backupSysName, "rb")) == NULL) {
 		bfw = fopen(backupSysName, "wb");
 		if (bfw == NULL) {
-			printf("BackupSys File error£¡");
+			printf("BackupSys File errorï¿½ï¿½");
 			return false;
 		}
 		bfr = fopen(backupSysName, "rb");
@@ -55,12 +51,12 @@ bool fullBackup() {
 	else {
 		bfw = fopen(backupSysName, "rb+");
 		if (bfw == NULL) {
-			printf("BackupSys File error£¡");
+			printf("BackupSys File errorï¿½ï¿½");
 			return false;
 		}
 	}
 	
-	//°Ñ±¸·ÝµÄ¿Õ¼ä³õÊ¼»¯
+	//ï¿½Ñ±ï¿½ï¿½ÝµÄ¿Õ¼ï¿½ï¿½Ê¼ï¿½ï¿½
 	char buffer[Disk_Size];
 	char temp[BLOCK_SIZE];
 	memset(buffer, '\0', sizeof(buffer));
@@ -88,7 +84,7 @@ bool fullBackup() {
 	//fseek(bfw, 0, SEEK_SET);
 	//fwrite(originbuf, sizeof(originbuf), 1, bfw);
 	
-	//Çå³ýÎ»Í¼±ê¼Ç
+	//ï¿½ï¿½ï¿½Î»Í¼ï¿½ï¿½ï¿½
 	char tmp_inodeBitmap[INODE_NUM];
 	memset(tmp_inodeBitmap, 0, sizeof(tmp_inodeBitmap));
 	for (int i = 0; i < INODE_NUM; i++) {
@@ -107,9 +103,9 @@ bool fullBackup() {
 	return true;
 }
 
-//ÔöÁ¿×ª´æ
+//ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½
 bool incrementalBackup() {
-	//´´½¨ÐÂµÄsysÎÄ¼þ
+	//ï¿½ï¿½ï¿½ï¿½ï¿½Âµï¿½sysï¿½Ä¼ï¿½
 	time_t cur_time;
 	char backupSysName[256] = { 0 };
 	time(&cur_time);
@@ -119,7 +115,7 @@ bool incrementalBackup() {
 	if ((bfr = fopen(backupSysName, "rb")) == NULL) {
 		bfw = fopen(backupSysName, "wb");
 		if (bfw == NULL) {
-			printf("BackupSys File error£¡");
+			printf("BackupSys File errorï¿½ï¿½");
 			return false;;
 		}
 		bfr = fopen(backupSysName, "rb");
@@ -128,15 +124,15 @@ bool incrementalBackup() {
 	else {
 		bfw = fopen(backupSysName, "rb+");
 		if (bfw == NULL) {
-			printf("BackupSys File error£¡");
+			printf("BackupSys File errorï¿½ï¿½");
 			return false;
 		}
 	}
 
-	//¶Á³öÉÏÒ»´ÎÔöÁ¿×ª´¢ºó×öÐÞ¸ÄµÄinode£¨Çø¼ä¸Ä±ä£©
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Þ¸Äµï¿½inodeï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä±ä£©
 	char new_modify_inodeBitmap[INODE_NUM];
 	memset(new_modify_inodeBitmap,0, sizeof(new_modify_inodeBitmap));
-	//¶ÔÃ¿Ò»¸öÐÞ¸Ä¹ýµÄÎÄ¼þ&È«²¿Ä¿Â¼ÔÚÎ»Í¼ÖÐ×ö±ê¼Ç
+	//ï¿½ï¿½Ã¿Ò»ï¿½ï¿½ï¿½Þ¸Ä¹ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½&È«ï¿½ï¿½Ä¿Â¼ï¿½ï¿½Î»Í¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	for (int i = 0; i < INODE_NUM; i++) {
 		inode tmp_inode;
 		fseek(fr, Inode_Start_Addr+i*sizeof(inode), SEEK_SET);
@@ -148,11 +144,11 @@ bool incrementalBackup() {
 			continue;
 		}
 	}
-	//ÔÚ±¸·ÝÎÄ¼þÖÐ¼ÇÂ¼Çø¼ä¸Ä±ä
+	//ï¿½Ú±ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½Ð¼ï¿½Â¼ï¿½ï¿½ï¿½ï¿½Ä±ï¿½
 	fseek(bfw, Backup_Start_Addr, SEEK_SET);
 	fwrite(new_modify_inodeBitmap, sizeof(new_modify_inodeBitmap), 1, bfw);
 
-	//¶Á³öÉÏÒ»´ÎµÄmodify_inodeBitmap
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½Îµï¿½modify_inodeBitmap
 	char modify_inodeBitmap[INODE_NUM];
 	memset(modify_inodeBitmap, 0, sizeof(modify_inodeBitmap));
 	fseek(fr, Modified_inodeBitmap_Start_Addr, SEEK_SET);
@@ -160,32 +156,32 @@ bool incrementalBackup() {
 	for (int i = 0; i < INODE_NUM; i++) {
 		modify_inodeBitmap[i] |= new_modify_inodeBitmap[i];
 	}
-	//¸üÐÂ£ºÔÚOSÖÐ¼ÇÂ¼modified inode bitmap
+	//ï¿½ï¿½ï¿½Â£ï¿½ï¿½ï¿½OSï¿½Ð¼ï¿½Â¼modified inode bitmap
 	fseek(fw, Modified_inodeBitmap_Start_Addr, SEEK_SET);
 	fwrite(modify_inodeBitmap, sizeof(modify_inodeBitmap), 1, fw);
 	
 
-	//È¥Ã¿Ò»¸ö±»ÐÞ¸ÄµÄinodeÀïÕÒ±»¶ÔÓ¦ÐÞ¸ÄµÄÖ±½Ó¿é£¨Çø¼ä¸Ä±ä£©
+	//È¥Ã¿Ò»ï¿½ï¿½ï¿½ï¿½ï¿½Þ¸Äµï¿½inodeï¿½ï¿½ï¿½Ò±ï¿½ï¿½ï¿½Ó¦ï¿½Þ¸Äµï¿½Ö±ï¿½Ó¿é£¨ï¿½ï¿½ï¿½ï¿½Ä±ä£©
 	int Cur_Addr=Backup_Block_Start_Addr;
 	for (int i = 0; i < INODE_NUM; i++) {
 		inode tmp_inode;
 		if (new_modify_inodeBitmap[i] == 1) {
 			char tmp[128];
 			memset(tmp, '\0', sizeof(tmp));
-			//¶ÁÐÞ¸Ä¹ýµÄinode
+			//ï¿½ï¿½ï¿½Þ¸Ä¹ï¿½ï¿½ï¿½inode
 			fseek(fr, Inode_Start_Addr+i*INODE_SIZE, SEEK_SET);//?
 			fread(&tmp_inode, sizeof(inode), 1, fr);
 			fflush(fr);
-			//½«ÐÞ¸Ä¹ýµÄinodeÐ´ÈëÔöÁ¿±¸·ÝÏµÍ³
+			//ï¿½ï¿½ï¿½Þ¸Ä¹ï¿½ï¿½ï¿½inodeÐ´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÏµÍ³
 			fseek(bfw, Cur_Addr, SEEK_SET);
 			fwrite(&tmp_inode, sizeof(inode), 1, bfw);
 			fflush(bfw);
 			Cur_Addr += sizeof(inode);
-			//ÕÒinodeÖ±½Ó¿é
+			//ï¿½ï¿½inodeÖ±ï¿½Ó¿ï¿½
 			//int tmp_i_dirBlock[10];
 			for (int j = 0; j < 10; j++) {
 				if (tmp_inode.i_dirBlock[j] != -1) {
-					//´æÖ±½Ó¿é
+					//ï¿½ï¿½Ö±ï¿½Ó¿ï¿½
 					char tmp_block[BLOCK_SIZE];
 					memset(tmp_block, '\0', sizeof(tmp_block));
 					int block_addr = tmp_inode.i_dirBlock[j];
@@ -210,21 +206,21 @@ bool incrementalBackup() {
 }
 
 bool recovery() {
-	//»ñÈ¡µ±Ç°ÎÄ¼þ¼ÐÏÂµÄËùÓÐÎÄ¼þ
+	//ï¿½ï¿½È¡ï¿½ï¿½Ç°ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½Âµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½
 	DIR* dir;
 	struct dirent* ent;
-	//»Ö¸´È«Á¿±¸·Ý
+	//ï¿½Ö¸ï¿½È«ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	if ((dir = opendir("./")) != NULL) {
 		while ((ent = readdir(dir)) != NULL) {
 			printf("%s\t", ent->d_name);
 			printf("\n");
 			if (strncmp(ent->d_name, "Full",4) == 0) {
 				printf("%s", ent->d_name);
-				//´ò¿ªÎÄ¼þ
+				//ï¿½ï¿½ï¿½Ä¼ï¿½
 				if ((bfr = fopen(ent->d_name, "rb")) == NULL) {
 					bfw = fopen(ent->d_name, "wb");
 					if (bfw == NULL) {
-						printf("Error£¡");
+						printf("Errorï¿½ï¿½");
 						return false;;
 					}
 					bfr = fopen(ent->d_name, "rb");
@@ -238,7 +234,7 @@ bool recovery() {
 					}
 				}
 				
-				//´Ó±¸·ÝµÄÎÄ¼þÖÐ¶Á
+				//ï¿½Ó±ï¿½ï¿½Ýµï¿½ï¿½Ä¼ï¿½ï¿½Ð¶ï¿½
 				//memset(buffer, '\0', sizeof(buffer));
 				//fseek(bfr, 0, SEEK_SET);
 				//fread(buffer, sizeof(buffer), 1, bfr);
@@ -273,8 +269,8 @@ bool recovery() {
 		}
 	}
 
-	//ÕÒËùÓÐÔöÁ¿×ª´¢
-	//Í³¼ÆÓÐ¶àÉÙ¸öÔöÁ¿×ª´¢
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½
+	//Í³ï¿½ï¿½ï¿½Ð¶ï¿½ï¿½Ù¸ï¿½ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½
 	vector<string> files;
 	int incre_backup_count = 0;
 	if ((dir = opendir("./")) != NULL) {
@@ -285,7 +281,7 @@ bool recovery() {
 			}
 		}
 	}
-	//°´ÐÞ¸ÄÊ±¼ä´ÓÔçµ½ÍíÅÅÐò£¨´ÓÐ¡µ½´ó£©
+	//ï¿½ï¿½ï¿½Þ¸ï¿½Ê±ï¿½ï¿½ï¿½ï¿½çµ½ï¿½ï¿½ï¿½ï¿½ï¿½ò£¨´ï¿½Ð¡ï¿½ï¿½ï¿½ï¿½
 	int size = files.size();
 	for (int m = 0; m < size - 1; ++m) {
 		for (int n = 0; n < size - 1; ++n) {
@@ -297,28 +293,28 @@ bool recovery() {
 		}
 	}
 
-	//´ÓÔçµ½Íí°´Ë³Ðò´ò¿ªÔöÁ¿×ª´¢µÄÎÄ¼þ
+	//ï¿½ï¿½ï¿½çµ½ï¿½ï¿½Ë³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½
 	for (int i = 0; i < incre_backup_count; i++) {
-		//´ò¿ª±¸·ÝÎÄ¼þ
+		//ï¿½ò¿ª±ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½
 		if ((bfr = fopen(files[i].c_str(), "rb")) == NULL) {
 			bfw = fopen(files[i].c_str(), "wb");
 			if (bfw == NULL) {
-				printf("±¸·ÝÎÄ¼þ´ò¿ªÊ§°Ü£¡");
+				printf("ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½Ê§ï¿½Ü£ï¿½");
 				return false;;
 			}
 			bfr = fopen(files[i].c_str(), "rb");
-			printf("±¸·ÝÎÄ¼þ´ò¿ª³É¹¦");
+			printf("ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ò¿ª³É¹ï¿½");
 		}
 		else {
 			bfw = fopen(files[i].c_str(), "rb+");
 			if (bfw == NULL) {
-				printf("±¸·ÝÎÄ¼þ´ò¿ªÊ§°Ü");
+				printf("ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½Ê§ï¿½ï¿½");
 				return false;
 			}
 		}
 
 		int Cur_Addr = 0;
-		//È¡±¸·ÝÎÄ¼þÖÐµÄinodeÎ»Í¼
+		//È¡ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½Ðµï¿½inodeÎ»Í¼
 		char tmp_bitmap[1024];
 		memset(tmp_bitmap, '\0', sizeof(tmp_bitmap));
 		fseek(bfr, Cur_Addr, SEEK_SET);
@@ -327,23 +323,23 @@ bool recovery() {
 		for (int k = 0; k < INODE_NUM; k++) {
 			if (tmp_bitmap[k] == 1) {
 				inode tmp;
-				//°Ñinode´ÓÔöÁ¿±¸·ÝÎÄ¼þÏµÍ³ÖÐ¶Á³ö
+				//ï¿½ï¿½inodeï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ÏµÍ³ï¿½Ð¶ï¿½ï¿½ï¿½
 				fseek(bfr, Cur_Addr, sizeof(inode));
 				fread(&tmp, sizeof(inode), 1, bfr);
 				Cur_Addr += sizeof(inode);
-				//½«inodeÐ´ÈëÔ­ÎÄ¼þÏµÍ³
+				//ï¿½ï¿½inodeÐ´ï¿½ï¿½Ô­ï¿½Ä¼ï¿½ÏµÍ³
 				fseek(fw, Inode_Start_Addr + k * sizeof(inode), SEEK_SET);
 				fwrite(&tmp, sizeof(inode), 1, fw);
-				//´¦ÀíÖ±½Ó¿é
+				//ï¿½ï¿½ï¿½ï¿½Ö±ï¿½Ó¿ï¿½
 				for (int i = 0; i < 10; i++) {
 					if (tmp.i_dirBlock[i] != -1) {
-						//°Ñ±¸·ÝÎÄ¼þÖÐµÄÖ±½Ó¿é¶Á³ö
+						//ï¿½Ñ±ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½Ðµï¿½Ö±ï¿½Ó¿ï¿½ï¿½ï¿½ï¿½
 						char tmp_block[512];
 						memset(tmp_block, '\0', sizeof(tmp_block));
 						fseek(bfr, Cur_Addr, SEEK_SET);
 						fread(&tmp_block, sizeof(tmp_block), 1, bfr);
 						Cur_Addr += sizeof(tmp_block);
-						//Ð´ÈëÔ´ÎÄ¼þ¶ÔÓ¦¿éµØÖ·
+						//Ð´ï¿½ï¿½Ô´ï¿½Ä¼ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½Ö·
 						fseek(fw, tmp.i_dirBlock[i], SEEK_SET);
 						fwrite(&tmp_block, sizeof(tmp_block), 1, fw);
 					}

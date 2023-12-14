@@ -1,8 +1,8 @@
 #pragma once
 #include<iostream>
-#include<stdio.h>
-#include<time.h>
-#include<string.h>
+#include<cstdio>
+#include<ctime>
+#include<cstring>
 #include"server.h"
 #include"function.h"
 
@@ -154,6 +154,7 @@ int fcache_alloc();
 void fcfree(int fcaddr);
 void safeFseek(FILE* file, long offset, int origin);
 size_t safeFwrite(const void* ptr, size_t size, size_t count, FILE* file);
+size_t safeFread(void* ptr, size_t size, size_t count, FILE* file);
 bool recursive_rmdir(Client&, int CHIAddr, char name[]);
 bool recursive_rmfile(Client&, int CHIAddr, char name[]);
 
