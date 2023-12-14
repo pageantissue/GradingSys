@@ -5,12 +5,13 @@
 #include<string.h>
 #include"os.h"
 #include"role.h"
+#include"snapshot.h"
 
-//ÌáÊ¾º¯Êı
+//æç¤ºå‡½æ•°
 void help();
-void cmd(char cmd[]);							//ÃüÁîĞĞº¯Êı(¶ş¼¶ÃüÁî´¦ÀíÖĞĞÄ£©
+void cmd(char cmd[]);							//å‘½ä»¤è¡Œå‡½æ•°(äºŒçº§å‘½ä»¤å¤„ç†ä¸­å¿ƒï¼‰
 
-//Ó¦ÓÃº¯Êı
+//åº”ç”¨å‡½æ•°
 bool cd_func(int CurAddr, char* str);
 bool mkdir_func(int CurAddr, char* str);
 bool rm_func(int CurAddr, char* str, char* s_type);

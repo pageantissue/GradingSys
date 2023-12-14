@@ -5,7 +5,8 @@
 #include"snapshot.h"
 #include"function.h"
 #include<limits>
-#include<unistd.h>
+#include <unistd.h>
+#include<dirent.h>
 
 
 const int Superblock_Start_Addr=0;     //44B:1block
@@ -13,7 +14,7 @@ const int InodeBitmap_Start_Addr = 1 * BLOCK_SIZE; //1024B:2block
 const int BlockBitmap_Start_Addr = InodeBitmap_Start_Addr + 2 * BLOCK_SIZE;//10240B:20block
 const int Inode_Start_Addr = BlockBitmap_Start_Addr + 20 * BLOCK_SIZE;//120<128: 换算成x个block
 const int Block_Start_Addr = Inode_Start_Addr + INODE_NUM / (BLOCK_SIZE / INODE_SIZE) * BLOCK_SIZE;//32*16=512  //num 1024 * size 128 / block_size 512 = x block
-const int Modified_inodeBitmap_Start_Addr = Block_Start_Addr + 2 * BLOCK_SIZE;      //用于增量转储的inode位图
+const int Modified_inodeBitmap_Start_Addr = Block_Start_Addr + BLOCK_NUM * BLOCK_SIZE;      //用于增量转储的inode位图
 
 const int Backup_Start_Addr = 0;
 const int Backup_Block_Start_Addr = Backup_Start_Addr + INODE_NUM;
@@ -49,7 +50,7 @@ FILE* bfr;
 time_t last_backup_time;
 
 char buffer[10000000] = { 0 };				//10M，缓存整个虚拟磁盘文件
-//extern const int count;
+
 using namespace std;
 
 
@@ -87,7 +88,7 @@ int main()
         printf("文件系统正在格式化\n");
 
         //系统格式化
-        if (!Format(count)) {
+        if (!Format()) {
             printf("格式化失败\n");
             return 0;
         }
@@ -130,7 +131,7 @@ int main()
         printf("是否需要格式化：[y/n]\n");
         char a = getchar();
         if (a == 'y') {
-            if (!Format(count)) {
+            if (!Format()) {
                 printf("格式化失败！\n");
                 return 0;
             }
@@ -144,7 +145,22 @@ int main()
         }
         printf("安装文件系统成功！\n");
     }
-    count = 0;  //记录操作次数
+    DIR* dir;
+    struct dirent* ent;
+    if ((dir = opendir("/home/wjy/projects/GradingSys/bin/x64/Debug")) != NULL) {
+        while ((ent = readdir(dir)) != NULL) {
+            if (strcmp(ent->d_name, "Full") == 0) {
+                string path = "/home/wjy/projects/GradingSys/bin/x64/Debug/" + (string)ent->d_name;
+                remove(path.c_str());
+                printf("Delete %s\n", ent->d_name);
+            }
+            else if (strcmp(ent->d_name, "Incre") == 0) {
+                string path = "/home/wjy/projects/GradingSys/bin/x64/Debug/" + (string)ent->d_name;
+                remove(path.c_str());
+                printf("Delete %s\n", ent->d_name);
+            }
+        }
+    }
     while (1) {
         if (isLogin) {
             char str[100];
@@ -161,7 +177,6 @@ int main()
             //scanf("%s",str);
             gets(str);
             cmd(str);
-            count++;
             printf("\n");
         }
         else {
