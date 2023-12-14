@@ -1896,7 +1896,7 @@ bool chown(int PIAddr,char* filename, char name[], char group[]) {//修改文件
 		return false;
 	}
 	char gid[10];
-	if (is_group(group,gid)==false) {
+	if (strcmp(is_group(group, gid), "-1") == 0) {
 		printf("组别不正确！请重新输入！\n");
 		return false;
 	}
@@ -1905,7 +1905,8 @@ bool chown(int PIAddr,char* filename, char name[], char group[]) {//修改文件
 	fseek(fr, PIAddr, SEEK_SET);
 	fread(&ino, sizeof(inode), 1, fr);
 	fflush(fr);
-	for (int i = 0; i < 10; ++i) {
+	for (int i = 0; i < 10; ++i)
+	{
 		DirItem ditem[DirItem_Size];
 		fseek(fr, ino.i_dirBlock[i], SEEK_SET);
 		fread(ditem, sizeof(ditem), 1, fr);

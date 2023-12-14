@@ -3,16 +3,21 @@
 #include<time.h>
 #include<string.h>
 #include<fstream>
+#include<unistd.h>
 #include"function.h"
 #include"os.h"
-#include"root.h"
+#include"role.h"
 using namespace std;
+
 bool add_users(char * namelist) { //root：批量创建教师及学生用户
 	//验证身份
 	if (strcmp(Cur_Group_Name, "root") != 0) {
 		printf("仅管理员可批量增删用户\n");
 		return false;
 	}
+
+	char new_buff[1024]; memset(new_buff, '\0', 1024);
+	sprintf(new_buff, "/home/g202130190273/projects/GradingSys/%s", namelist);
 	//备份信息
 	int pro_cur_dir_addr = Cur_Dir_Addr;
 	char pro_cur_dir_name[310];
@@ -20,9 +25,10 @@ bool add_users(char * namelist) { //root：批量创建教师及学生用户
 	strcpy(pro_cur_dir_name, Cur_Dir_Name);
 
 	//保存名单
-	ifstream fin(namelist);
+	ifstream fin(new_buff);
 	if (!fin.is_open()) {
-		cout << "无法打开名单" << endl;
+		char ms[] = "Cannot open name list!\n";
+		printf(ms);
 		Cur_Dir_Addr = pro_cur_dir_addr;
 		strcpy(Cur_Dir_Name, pro_cur_dir_name);
 		return false;
@@ -73,7 +79,7 @@ bool publish_task(char* lesson,char* filename) {//教师：发布本次作业任务
 	memset(buf, '\0', sizeof(buf));
 	ifstream fin(filename);
 	if (!fin.is_open()) {
-		cout << "无法打开名单" << endl;
+		cout << "无法打开文件" << endl;
 		Cur_Dir_Addr = pro_cur_dir_addr;
 		strcpy(Cur_Dir_Name, pro_cur_dir_name);
 		return false;
@@ -152,3 +158,158 @@ bool judge_hw(char* namelist, char* lesson, char* hwname) {//教师：评价本次作业
 	return true;
 }
 
+bool check_hw_content(char* teacher_name, char* lesson, char* hwname) {//教师和学生查看作业内容
+	//备份信息
+	int pro_cur_dir_addr = Cur_Dir_Addr;
+	char pro_cur_dir_name[310];
+	memset(pro_cur_dir_name, '\0', sizeof(pro_cur_dir_name));
+	strcpy(pro_cur_dir_name, Cur_Dir_Name);
+
+	//前往教师授课目录
+	gotoRoot();
+	cd(Cur_Dir_Addr, "home");
+	bool f = cd(Cur_Dir_Addr, teacher_name);
+	if (!f)
+	{
+		char ms[] = "Teacher does not exist!\n";
+		printf("%s\n", ms);
+		Cur_Dir_Addr = pro_cur_dir_addr;
+		strcpy(Cur_Dir_Name, pro_cur_dir_name);
+		return false;
+	}
+	f = cd(Cur_Dir_Addr, lesson);
+	if (!f)
+	{
+		char ms[] = "Lesson does not exist!\n";
+		printf("%s\n", ms);
+		Cur_Dir_Addr = pro_cur_dir_addr;
+		strcpy(Cur_Dir_Name, pro_cur_dir_name);
+		return false;
+	}
+	f = cat(Cur_Dir_Addr, hwname);
+	if (!f)
+	{
+		char ms[] = "Specific homework does not exist!\n";
+		printf("%s\n", ms);
+		Cur_Dir_Addr = pro_cur_dir_addr;
+		strcpy(Cur_Dir_Name, pro_cur_dir_name);
+		return false;
+	}
+	// 还原用户现场
+	Cur_Dir_Addr = pro_cur_dir_addr;
+	strcpy(Cur_Dir_Name, pro_cur_dir_name);
+	return true;
+}
+
+bool check_hw_score(char* teacher_name, char* lesson, char* hwname) {//教师学生查看作业分数
+	//备份信息
+	int pro_cur_dir_addr = Cur_Dir_Addr;
+	char pro_cur_dir_name[310];
+	memset(pro_cur_dir_name, '\0', sizeof(pro_cur_dir_name));
+	strcpy(pro_cur_dir_name, Cur_Dir_Name);
+
+	//前往指定目录
+	gotoRoot();
+	cd(Cur_Dir_Addr, "home");
+	bool f = cd(Cur_Dir_Addr, teacher_name);
+	if (!f)
+	{
+		char ms[] = "Teacher does not exist!\n";
+		printf("%s\n", ms);
+		Cur_Dir_Addr = pro_cur_dir_addr;
+		strcpy(Cur_Dir_Name, pro_cur_dir_name);
+		return false;
+	}
+	f = cd(Cur_Dir_Addr, lesson);
+	if (!f)
+	{
+		char ms[] = "Lesson does not exist!\n";
+		printf("%s\n", ms);
+		Cur_Dir_Addr = pro_cur_dir_addr;
+		strcpy(Cur_Dir_Name, pro_cur_dir_name);
+		return false;
+	}
+	char hw_score[FILE_NAME_MAX_SIZE]; 
+	memset(hw_score, '\0', FILE_NAME_MAX_SIZE);
+	sprintf(hw_score, "%s_score", hwname);
+	f = cd(Cur_Dir_Addr, hw_score);
+	if (!f)
+	{
+		char ms[] = "Specific homework does not exist!\n";
+		printf("%s\n", ms);
+		Cur_Dir_Addr = pro_cur_dir_addr;
+		strcpy(Cur_Dir_Name, pro_cur_dir_name);
+		return false;
+	}
+	// 还原用户现场
+	Cur_Dir_Addr = pro_cur_dir_addr;
+	strcpy(Cur_Dir_Name, pro_cur_dir_name);
+	return true;
+}
+
+bool submit_assignment(char* student_name, char* lesson, char* filename)
+{
+	//验证身份
+	if (strcmp(Cur_Group_Name, "student") != 0) {
+		char ms[] = "Only student could submit and upload his homework!\n";
+		printf(ms);
+		return false;
+	}
+
+	//备份信息
+	int pro_cur_dir_addr = Cur_Dir_Addr;
+	char pro_cur_dir_name[310];
+	memset(pro_cur_dir_name, '\0', sizeof(pro_cur_dir_name));
+	strcpy(pro_cur_dir_name, Cur_Dir_Name);
+
+	//前往指定目录
+	gotoRoot();
+	cd(Cur_Dir_Addr, "home");
+
+	//先判定是否存在该学生
+	bool f = cd(Cur_Dir_Addr, student_name);
+	if (!f)
+	{
+		char ms[] = "This student does not exist!\n";
+		printf("%s\n", ms);
+		Cur_Dir_Addr = pro_cur_dir_addr;
+		strcpy(Cur_Dir_Name, pro_cur_dir_name);
+		return false;
+	}
+
+	f = cd(Cur_Dir_Addr, lesson);
+	if (!f)
+	{
+		char ms[] = "Lesson does not exist!\n";
+		printf("%s\n", ms);
+		Cur_Dir_Addr = pro_cur_dir_addr;
+		strcpy(Cur_Dir_Name, pro_cur_dir_name);
+		return false;
+	}
+
+	// 读取作业内容
+	char buf[BLOCK_SIZE * 10];
+	string line;
+	memset(buf, '\0', sizeof(buf));
+	ifstream fin(filename);
+	if (!fin.is_open()) {
+		char ms[] = "Cannot open file!\n";
+		printf(ms);
+		Cur_Dir_Addr = pro_cur_dir_addr;
+		strcpy(Cur_Dir_Name, pro_cur_dir_name);
+		return false;
+	}
+	while (getline(fin, line)) {
+		strcat(buf, line.c_str());
+	}
+
+	//将作业内容复制到虚拟OS中
+	char dir_path[100];
+	sprintf(dir_path, "/home/%s/%s/%s_description", Cur_User_Name, lesson, filename);
+	echo_func(Cur_Dir_Addr, dir_path, ">", buf); //新建文件并提交作业
+
+	// 还原用户现场
+	Cur_Dir_Addr = pro_cur_dir_addr;
+	strcpy(Cur_Dir_Name, pro_cur_dir_name);
+	return true;
+}

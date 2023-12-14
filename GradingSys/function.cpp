@@ -5,6 +5,7 @@
 #include<string.h>
 #include<stdio.h>
 #include<iostream>
+#include"role.h"
 
 using namespace std;
 
@@ -372,6 +373,14 @@ void cmd(char cmd_str[]) {
 		cout << "退出成绩管理系统，拜拜！" << endl;
 		exit(0);
 	}
-
+	
+	if (strcmp(Cur_Group_Name, "root") == 0)
+	{
+		if (strcmp(com1, "batchadd") == 0)
+		{
+			sscanf(cmd_str, "%s%s", com1, com2);
+			add_users(com2);
+		}
+	}
 	return;
 }
