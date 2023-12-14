@@ -13,4 +13,7 @@
     <ClInclude Include="snapshot.h" />
     <ClInclude Include="role.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="Student_Course_Selection.txt" />
+  </ItemGroup>
 </Project>

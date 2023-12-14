@@ -1,28 +1,29 @@
 #include<iostream>
-#include<stdio.h>
-#include<time.h>
-#include<string.h>
+#include<cstdio>
+#include<cstring>
 #include<fstream>
 #include"function.h"
 #include"os.h"
 #include"role.h"
 using namespace std;
-bool add_users(char * namelist) { //root£ºÅúÁ¿´´½¨½ÌÊ¦¼°Ñ§ÉúÓÃ»§
-	//ÑéÖ¤Éí·İ
+
+bool add_users(char * namelist) {
 	if (strcmp(Cur_Group_Name, "root") != 0) {
-		printf("½ö¹ÜÀíÔ±¿ÉÅúÁ¿ÔöÉ¾ÓÃ»§\n");
+		printf("Only root could add users!\n");
 		return false;
 	}
-	//±¸·İĞÅÏ¢
+
+	char new_buff[1024]; memset(new_buff, '\0', 1024);
+	sprintf(new_buff, "/Users/sprungissue/CLionProjects/GradingSys/GradingSys/%s", namelist);
 	int pro_cur_dir_addr = Cur_Dir_Addr;
 	char pro_cur_dir_name[310];
 	memset(pro_cur_dir_name, '\0', sizeof(pro_cur_dir_name));
 	strcpy(pro_cur_dir_name, Cur_Dir_Name);
 
-	//±£´æÃûµ¥
-	ifstream fin(namelist);
+	ifstream fin(new_buff);
 	if (!fin.is_open()) {
-		cout << "ÎŞ·¨´ò¿ªÃûµ¥" << endl;
+		char ms[] = "Cannot open name list!\n";
+		printf(ms);
 		Cur_Dir_Addr = pro_cur_dir_addr;
 		strcpy(Cur_Dir_Name, pro_cur_dir_name);
 		return false;
@@ -36,16 +37,14 @@ bool add_users(char * namelist) { //root£ºÅúÁ¿´´½¨½ÌÊ¦¼°Ñ§ÉúÓÃ»§
 		sscanf(line.c_str(), "%s %s %s", rela.student, rela.lesson, rela.teacher);
 		relations[i++] = rela;
 	}
-
-	//¸ù¾İÃûµ¥´´½¨
-	//ÉèÖÃÃÜÂëÄ¬ÈÏÓëĞÕÃûÍ¬Ãû
 	for (int j = 0; j < i; j++) {
-		//´´½¨ÓÃ»§¼°ÆäÎÄ¼ş¼Ğ
 		strcpy(pwd, relations[j].student);
+
 		useradd(relations[j].student, pwd, "student");
 		strcpy(pwd, relations[j].teacher);
 		useradd(relations[j].teacher, pwd ,"teacher");
-		//ÔÚÆäÎÄ¼ş¼ĞÏÂ´´½¨¶ÔÓ¦¿Î³ÌÎÄ¼ş¼Ğ
+		//åœ¨å…¶æ–‡ä»¶å¤¹ä¸‹åˆ›å»ºå¯¹åº”è¯¾ç¨‹æ–‡ä»¶å¤¹
+
 		char dir_path[100];
 		sprintf(dir_path, "/home/%s/%s", relations[j].teacher, relations[j].lesson);
 		mkdir_func(Cur_Dir_Addr, dir_path);
@@ -53,33 +52,29 @@ bool add_users(char * namelist) { //root£ºÅúÁ¿´´½¨½ÌÊ¦¼°Ñ§ÉúÓÃ»§
 		mkdir_func(Cur_Dir_Addr, dir_path);
 	}
 
-	//»Ö¸´ÏÖ³¡
+	//æ¢å¤ç°åœº
 	Cur_Dir_Addr = pro_cur_dir_addr;
 	strcpy(Cur_Dir_Name, pro_cur_dir_name);
-	printf("ÒÑÅúÁ¿Ìí¼ÓÕË»§\n");
+	printf("å·²æ‰¹é‡æ·»åŠ è´¦æˆ·\n");
 	return true;
 }
 
-bool publish_task(char* lesson,char* filename) {//½ÌÊ¦£º·¢²¼±¾´Î×÷ÒµÈÎÎñ
-	//ÑéÖ¤Éí·İ
+bool publish_task(char* lesson,char* filename) {
 	if (strcmp(Cur_Group_Name, "teacher") != 0) {
-		printf("Ö»ÓĞÀÏÊ¦¿ÉÒÔ·¢²¼×÷Òµ!\n");
+		printf("Only teacher could publish tasks!\n");
 		return false;
 	}
-
-	//±¸·İĞÅÏ¢
 	int pro_cur_dir_addr = Cur_Dir_Addr;
 	char pro_cur_dir_name[310];
 	memset(pro_cur_dir_name, '\0', sizeof(pro_cur_dir_name));
 	strcpy(pro_cur_dir_name, Cur_Dir_Name);
 
-	//¶ÁÈ¡fileĞÅÏ¢
 	char buf[BLOCK_SIZE * 10];
 	string line;
 	memset(buf, '\0', sizeof(buf));
 	ifstream fin(filename);
 	if (!fin.is_open()) {
-		cout << "ÎŞ·¨´ò¿ªÈÎÎñÄÚÈİ" << endl;
+		cout << "File Open Failure!" << endl;
 		Cur_Dir_Addr = pro_cur_dir_addr;
 		strcpy(Cur_Dir_Name, pro_cur_dir_name);
 		return false;
@@ -88,40 +83,36 @@ bool publish_task(char* lesson,char* filename) {//½ÌÊ¦£º·¢²¼±¾´Î×÷ÒµÈÎÎñ
 		strcat(buf, line.c_str());
 	}
 
-	//½«file¸´ÖÆµ½ĞéÄâOSÖĞ
+	//å°†fileå¤åˆ¶åˆ°è™šæ‹ŸOSä¸­
 	char* p = strstr(filename, ".");
 	p = '\0';
 	char dir_path[100];
 	sprintf(dir_path, "/home/%s/%s/%s_description", Cur_User_Name, lesson, filename);
-	echo_func(Cur_Dir_Addr, dir_path, ">", buf); //ĞÂ½¨taskÎÄ¼ş²¢·¢²¼
+	echo_func(Cur_Dir_Addr, dir_path, ">", buf); 
 
 	return true;
 }
 
-bool judge_hw(char* namelist, char* lesson, char* hwname) {//½ÌÊ¦£ºÆÀ¼Û±¾´Î×÷Òµ
-	//ÑéÖ¤Éí·İ
+bool judge_hw(char* namelist, char* lesson, char* hwname) {
 	if (strcmp(Cur_Group_Name, "teacher") != 0) {
-		printf("Ö»ÓĞÀÏÊ¦¿ÉÒÔµãÆÀ×÷Òµ!\n");
+		printf("Only teacher could judge assignments!\n");
 		return false;
 	}
-
-	//±¸·İĞÅÏ¢
 	int pro_cur_dir_addr = Cur_Dir_Addr;
 	char pro_cur_dir_name[310];
 	memset(pro_cur_dir_name, '\0', sizeof(pro_cur_dir_name));
 	strcpy(pro_cur_dir_name, Cur_Dir_Name);
 
-	//ĞÂ½¨±¾´Î×÷ÒµÆÀ¼ÛÎÄµµ( sname : mark)
+	//æ–°å»ºæœ¬æ¬¡ä½œä¸šè¯„ä»·æ–‡æ¡£( sname : mark)
 	char* p = strstr(hwname, ".");
 	p = '\0';
 	char score_path[310];
 	sprintf(score_path, "/home/%s/%s/%s_score", Cur_Group_Name, lesson, hwname);
 	touch_func(Cur_Dir_Addr, score_path, "");
 
-	//±£´æÃûµ¥
 	ifstream fin(namelist);
 	if (!fin.is_open()) {
-		cout << "ÎŞ·¨´ò¿ªÃûµ¥" << endl;
+		cout << "File Open Failed!" << endl;
 		Cur_Dir_Addr = pro_cur_dir_addr;
 		strcpy(Cur_Dir_Name, pro_cur_dir_name);
 		return false;
@@ -136,13 +127,12 @@ bool judge_hw(char* namelist, char* lesson, char* hwname) {//½ÌÊ¦£ºÆÀ¼Û±¾´Î×÷Òµ
 		relations[i++] = rela;
 	}
 
-	//²é¿´×÷Òµ²¢´ò·Ö
 	char buf[BLOCK_SIZE * 10];
 	memset(buf, '\0', sizeof(buf));
 	for (int j = 0; j < i; ++j) {
-		//ÊÇÕâ¸öÀÏÊ¦£¬¶øÇÒÊÇÕâÃÅ¿Î
+		//æ˜¯è¿™ä¸ªè€å¸ˆï¼Œè€Œä¸”æ˜¯è¿™é—¨è¯¾
 		if ((strcmp(relations[j].teacher, Cur_User_Name) == 0) && (strcmp(relations[j].lesson, lesson) == 0)) {
-			//½øÈëÑ§ÉúÎÄ¼ş¼Ğ£¬²é¿´Ñ§ÉúÎÄ¼ş
+			//è¿›å…¥å­¦ç”Ÿæ–‡ä»¶å¤¹ï¼ŒæŸ¥çœ‹å­¦ç”Ÿæ–‡ä»¶
 			char hw_path[310], s_buf[310];
 			double score = 0;
 			memset(hw_path, '\0', sizeof(hw_path));
@@ -150,8 +140,8 @@ bool judge_hw(char* namelist, char* lesson, char* hwname) {//½ÌÊ¦£ºÆÀ¼Û±¾´Î×÷Òµ
 
 			sprintf(hw_path, "/home/%s/%s", relations[j].student, relations[j].lesson);
 			if (cd_func(Cur_Dir_Addr, hw_path)) {
-				cat(Cur_Dir_Addr, hwname);//Êä³öÑ§ÉúµÄ×÷ÒµÎÄ¼şÄÚÈİ
-				printf("Please mark this assignment: ");//½ÌÊ¦¸ù¾İÑ§Éú×÷Òµ´ò·Ö( uname:score)
+				cat(Cur_Dir_Addr, hwname);//è¾“å‡ºå­¦ç”Ÿçš„ä½œä¸šæ–‡ä»¶å†…å®¹
+				printf("Please mark this assignment: ");//æ•™å¸ˆæ ¹æ®å­¦ç”Ÿä½œä¸šæ‰“åˆ†( uname:score)
 				scanf("%.2d", score);
 			}
 			else {
@@ -163,12 +153,152 @@ bool judge_hw(char* namelist, char* lesson, char* hwname) {//½ÌÊ¦£ºÆÀ¼Û±¾´Î×÷Òµ
 		}
 	}
 
-	//½«³É¼¨´æÈëÎÄµµ
 	echo_func(Cur_Dir_Addr, score_path, ">", buf);
 
-	//»Ö¸´ÏÖ³¡
+	//æ¢å¤ç°åœº
 	Cur_Dir_Addr = pro_cur_dir_addr;
 	strcpy(Cur_Dir_Name, pro_cur_dir_name);
 	return true;
 }
 
+bool check_hw_content(char* teacher_name, char* lesson, char* hwname) {
+	int pro_cur_dir_addr = Cur_Dir_Addr;
+	char pro_cur_dir_name[310];
+	memset(pro_cur_dir_name, '\0', sizeof(pro_cur_dir_name));
+	strcpy(pro_cur_dir_name, Cur_Dir_Name);
+	gotoRoot();
+	cd(Cur_Dir_Addr, "home");
+	bool f = cd(Cur_Dir_Addr, teacher_name);
+	if (!f)
+	{
+		char ms[] = "Teacher does not exist!\n";
+		printf("%s\n", ms);
+		Cur_Dir_Addr = pro_cur_dir_addr;
+		strcpy(Cur_Dir_Name, pro_cur_dir_name);
+		return false;
+	}
+	f = cd(Cur_Dir_Addr, lesson);
+	if (!f)
+	{
+		char ms[] = "Lesson does not exist!\n";
+		printf("%s\n", ms);
+		Cur_Dir_Addr = pro_cur_dir_addr;
+		strcpy(Cur_Dir_Name, pro_cur_dir_name);
+		return false;
+	}
+	f = cat(Cur_Dir_Addr, hwname);
+	if (!f)
+	{
+		char ms[] = "Specific homework does not exist!\n";
+		printf("%s\n", ms);
+		Cur_Dir_Addr = pro_cur_dir_addr;
+		strcpy(Cur_Dir_Name, pro_cur_dir_name);
+		return false;
+	}
+	Cur_Dir_Addr = pro_cur_dir_addr;
+	strcpy(Cur_Dir_Name, pro_cur_dir_name);
+	return true;
+}
+
+bool check_hw_score(char* teacher_name, char* lesson, char* hwname) {
+	int pro_cur_dir_addr = Cur_Dir_Addr;
+	char pro_cur_dir_name[310];
+	memset(pro_cur_dir_name, '\0', sizeof(pro_cur_dir_name));
+	strcpy(pro_cur_dir_name, Cur_Dir_Name);
+
+	gotoRoot();
+	cd(Cur_Dir_Addr, "home");
+	bool f = cd(Cur_Dir_Addr, teacher_name);
+	if (!f)
+	{
+		char ms[] = "Teacher does not exist!\n";
+		printf("%s\n", ms);
+		Cur_Dir_Addr = pro_cur_dir_addr;
+		strcpy(Cur_Dir_Name, pro_cur_dir_name);
+		return false;
+	}
+	f = cd(Cur_Dir_Addr, lesson);
+	if (!f)
+	{
+		char ms[] = "Lesson does not exist!\n";
+		printf("%s\n", ms);
+		Cur_Dir_Addr = pro_cur_dir_addr;
+		strcpy(Cur_Dir_Name, pro_cur_dir_name);
+		return false;
+	}
+	char hw_score[FILE_NAME_MAX_SIZE]; 
+	memset(hw_score, '\0', FILE_NAME_MAX_SIZE);
+	sprintf(hw_score, "%s_score", hwname);
+	f = cd(Cur_Dir_Addr, hw_score);
+	if (!f)
+	{
+		char ms[] = "Specific homework does not exist!\n";
+		printf("%s\n", ms);
+		Cur_Dir_Addr = pro_cur_dir_addr;
+		strcpy(Cur_Dir_Name, pro_cur_dir_name);
+		return false;
+	}
+	Cur_Dir_Addr = pro_cur_dir_addr;
+	strcpy(Cur_Dir_Name, pro_cur_dir_name);
+	return true;
+}
+
+bool submit_assignment(char* student_name, char* lesson, char* filename)
+{
+	if (strcmp(Cur_Group_Name, "student") != 0) {
+		char ms[] = "Only student could submit and upload his homework!\n";
+		printf(ms);
+		return false;
+	}
+	int pro_cur_dir_addr = Cur_Dir_Addr;
+	char pro_cur_dir_name[310];
+	memset(pro_cur_dir_name, '\0', sizeof(pro_cur_dir_name));
+	strcpy(pro_cur_dir_name, Cur_Dir_Name);
+
+	//å‰é”Ÿæ–¤æ‹·æŒ‡é”Ÿæ–¤æ‹·ç›®å½•
+	gotoRoot();
+	cd(Cur_Dir_Addr, "home");
+
+	bool f = cd(Cur_Dir_Addr, student_name);
+	if (!f)
+	{
+		char ms[] = "This student does not exist!\n";
+		printf("%s\n", ms);
+		Cur_Dir_Addr = pro_cur_dir_addr;
+		strcpy(Cur_Dir_Name, pro_cur_dir_name);
+		return false;
+	}
+
+	f = cd(Cur_Dir_Addr, lesson);
+	if (!f)
+	{
+		char ms[] = "Lesson does not exist!\n";
+		printf("%s\n", ms);
+		Cur_Dir_Addr = pro_cur_dir_addr;
+		strcpy(Cur_Dir_Name, pro_cur_dir_name);
+		return false;
+	}
+
+	char buf[BLOCK_SIZE * 10];
+	string line;
+	memset(buf, '\0', sizeof(buf));
+	ifstream fin(filename);
+	if (!fin.is_open()) {
+		char ms[] = "Cannot open file!\n";
+		printf(ms);
+		Cur_Dir_Addr = pro_cur_dir_addr;
+		strcpy(Cur_Dir_Name, pro_cur_dir_name);
+		return false;
+	}
+	while (getline(fin, line)) {
+		strcat(buf, line.c_str());
+	}
+
+	char dir_path[100];
+	sprintf(dir_path, "/home/%s/%s/%s_description", Cur_User_Name, lesson, filename);
+	echo_func(Cur_Dir_Addr, dir_path, ">", buf);
+
+	Cur_Dir_Addr = pro_cur_dir_addr;
+	strcpy(Cur_Dir_Name, pro_cur_dir_name);
+	return true;
+}
