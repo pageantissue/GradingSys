@@ -1,290 +1,24 @@
+
 #include"os.h"
 #include"function.h"
+#include<cstring>
+#include<cstdio>
+#include"role.h"
 #include<iomanip>
 #include<time.h>
 #include<string.h>
 #include<stdio.h>
 #include<iostream>
+#include"role.h"
 
 using namespace std;
-
-void help() {
-	cout.setf(ios::left); //设置对齐方式为left 
-	cout.width(30); //设置宽度，不足用空格填充 
-	cout << "ls" << "Display the current directory listing" << endl;	//列出当前目录清单(ls/ls -l)
-	cout.width(30);
-	cout << "cd" << "Enter the specific directory " << endl;		//前往指定目录(cd home)
-	cout.width(30);
-	cout << "gotoRoot" << "Return to the root directory " << endl;		//返回根目录
-	cout.width(30);
-	cout << "mkdir" << "Create directory" << endl;					//创建目录
-	cout.width(30);
-	cout << "rm" << "Delete directory or file" << endl;					//删除目录或文件
-	cout.width(30);
-	cout << "touch" << "Create a blank file" << endl;			//创建空文件
-	cout.width(30);
-	cout << "echo" << "Create a non-empty file" << endl;		//新增/重写/续写
-	cout.width(30);
-	cout << "chmod" << "Modify the access right" << endl;    //修改文件权限
-	cout.width(30);
-	//cat，chown
-
-	cout << "useradd" << "Add user" << endl;		//新增用户
-	cout.width(30);
-	cout << "userdel" << "Delete user" << endl;		//删除用户
-	cout.width(30);
-	cout << "groupadd" << "Add group" << endl;		
-	cout.width(30);
-	cout << "groupdel" << "Delete group" << endl;	
-	cout.width(30);
-	cout << "passwd" << "Modify the password" << endl;	
-	cout.width(30);
-	cout << "logout" << "Logout the account" << endl;		//退出账号
-	cout.width(30);
-	//usergrpadd,userfrpdel,密码修改，
-
-
-	cout << "snapshot" << "Back up the system" << endl;			//备份系统
-	cout.width(30);
-	//备份系统&恢复系统
-
-	cout << "exit" << "Exit the system" << endl;		//退出系统
-}
-
-bool cd_func(int CurAddr, char* str) {
-	//cd至任一绝对路径or相对路径
-	//保存现场（失败恢复）
-	int pro_cur_dir_addr = Cur_Dir_Addr;
-	char pro_cur_dir_name[310];
-	strcpy(pro_cur_dir_name, Cur_Dir_Name);
-	int flag = 1;
-
-	//查看cd类型：绝对路径or相对路径
-	if (strcmp(str, "/") == 0) {//前往根目录
-		gotoRoot();
-		return true;
-	}
-	if (str[0] == '/') {	//绝对路径
-		gotoRoot();
-		str += 1;
-	}
-	while (strlen(str) != 0) {
-		char name[sizeof(str)];
-		int i = 0;
-		memset(name, '\0', sizeof(name));
-		while (((*str) != '/') && (strlen(str) != 0)) {
-			name[i++] = str[0];
-			str += 1;
-		}
-		if ((*str) == '/') str += 1;
-		if (strlen(name) != 0) {
-			if (cd(Cur_Dir_Addr, name) == false) {
-				flag = 0;
-				break;
-			}
-		}
-		else {
-			break;
-		}
-	}
-
-	//判断是否成功
-	if (flag == 0) {//失败，恢复现场
-		Cur_Dir_Addr = pro_cur_dir_addr;
-		strcpy(Cur_Dir_Name, pro_cur_dir_name);
-		return false;
-	}
-	return true;
-}
-bool mkdir_func(int CurAddr, char* str) {//在任意目录下创建目录
-	//绝对,相对,直接创建
-	char* p = strrchr(str, '/');
-	if (p == NULL) {	//直接创建
-		if (mkdir(CurAddr, str)) { return true; }
-		else { return false; }
-	}
-	else {
-		char name[File_Max_Size];
-		memset(name, '\0', sizeof(name));
-		p++;
-		strcpy(name, p);
-		*p = '\0';
-		if (cd_func(CurAddr, str)) {
-			if (mkdir(Cur_Dir_Addr, name))
-				return true;
-		}
-		return false;
-	}
-}
-bool rm_func(int CurAddr, char* str, char* s_type) {//在任意目录下删除
-	//文件类型
-	int type = -1;
-	if (strcmp(s_type, "-rf") == 0) {
-		type = 1;
-	}
-	else if (strcmp(s_type, "-f") == 0) {
-		type = 0;
-	}
-	else {
-		printf("无法确认文件删除类型，请重新输入！\n");
-		return false;
-	}
-
-	//绝对,相对,直接创建
-	char* p = strrchr(str, '/');
-	if (p == NULL) {	//直接删除
-		if (rm(CurAddr, str, type))	return true;
-		return false;
-	}
-	else {
-		char name[File_Max_Size];
-		memset(name, '\0', sizeof(name));
-		p++;
-		strcpy(name, p);
-		*p = '\0';
-		if (cd_func(CurAddr, str)) {
-			if (rm(Cur_Dir_Addr, name, type))
-				return true;
-		}
-		return false;
-	}
-}
-bool touch_func(int CurAddr, char* str, char* buf) {//在任意目录下创建文件
-	//绝对,相对,直接创建
-	char* p = strrchr(str, '/');
-	if (p == NULL) {	//直接创建
-		if (mkfile(CurAddr, str, buf))	return true;
-		return false;
-	}
-	else {
-		char name[File_Max_Size];
-		memset(name, '\0', sizeof(name));
-		p++;
-		strcpy(name, p);
-		*p = '\0';
-		if (cd_func(CurAddr, str)) {
-			if (mkfile(Cur_Dir_Addr, name, buf))
-				return true;
-		}
-		return false;
-	}
-}
-bool echo_func(int CurAddr, char* str, char* s_type, char* buf) {//在任意目录下创建or覆盖写入or追加
-	//判断类型 0：覆盖写入 1：追加
-	int type = -1;
-	if (strcmp(s_type, ">") == 0) {
-		type = 0;
-	}
-	else if (strcmp(s_type, ">>") == 0) {
-		type = 1;
-	}
-	else {
-		printf("echo输入格式错误，请输入正确格式!\n");
-		return false;
-	}
-
-	//寻找直接地址
-	char* p = strrchr(str, '/');
-	char name[File_Max_Size];
-	memset(name, '\0', sizeof(name));
-	if (p != NULL) {
-		p++;
-		strcpy(name, p);
-		*p = '\0';
-		if (cd_func(CurAddr, str) == false) {
-			return false;
-		}
-	}
-	else {
-		strcpy(name, str);
-	}
-
-	//类型执行
-	if (echo(Cur_Dir_Addr, name, type, buf))	return true;
-	return false;
-}
-bool chmod_func(int CurAddr, char* pmode, char* str) {
-	//寻找直接地址
-	char* p = strrchr(str, '/');
-	char name[File_Max_Size];
-	memset(name, '\0', sizeof(name));
-	if (p != NULL) {
-		p++;
-		strcpy(name, p);
-		*p = '\0';
-		if (cd_func(CurAddr, str) == false) {
-			return false;
-		}
-	}
-	else {
-		strcpy(name, str);
-	}
-
-	//类型执行
-	if (chmod(CurAddr, name, pmode))	return true;
-	return false;
-}
-bool chown_func(int CurAddr, char* u_g, char* str) {
-	//寻找直接地址
-	char* p = strrchr(str, '/');
-	char file[File_Max_Size];
-	memset(file, '\0', sizeof(file));
-	if (p != NULL) {
-		p++;
-		strcpy(file, p);
-		*p = '\0';
-		if (cd_func(CurAddr, str) == false) {
-			return false;
-		}
-	}
-	else {
-		strcpy(file, str);
-	}
-
-	//获取用户和用户组
-	p = strstr(u_g, ":");
-	char name[20], group[20];
-	memset(name, '\0', strlen(name));
-	memset(group, '\0', strlen(group));
-	if (p == NULL) {
-		strcpy(name, u_g);
-	}
-	else {
-		strncpy(name, u_g, p - u_g);
-		p += 1;
-		strcpy(group, p);
-	}
-	if (chown(CurAddr, file, name, group))	return true;
-	return false;
-}
-bool passwd_func(char* username) {
-	if ((strcmp(Cur_Group_Name, "root") != 0) && (strlen(username) != 0)) {
-		printf("普通用户无法修改其他用户密码\n");
-		return false;
-	}
-
-	char pwd[100];
-	printf("Changing password for user %s\n", Cur_User_Name);
-	printf("New password: ");
-	gets(pwd);
-	char re_pwd[100];
-	printf("Retype new password:");
-	gets(re_pwd);
-
-	if (strcmp(pwd, re_pwd) == 0) {
-		if (passwd(username, pwd) == 0) {
-			return true;
-		}
-	}
-	return false;
-}
 
 void cmd(char cmd_str[]) {
 	char com1[100];
 	char com2[100];
 	char com3[100];
 	sscanf(cmd_str, "%s", com1);
-	//一级传来com1和com2
+	//通用格式命令
 	if (strcmp(com1, "help") == 0) {
 		help();
 	}
@@ -341,7 +75,7 @@ void cmd(char cmd_str[]) {
 			return;
 		}
 		inPasswd(passwd);
-		useradd(user, group, passwd);
+		useradd(user,passwd, group);
 	}
 	else if (strcmp(com1, "userdel") == 0) {
 		sscanf(cmd_str, "%s%s", com1, com2);
@@ -366,12 +100,316 @@ void cmd(char cmd_str[]) {
 	else if (strcmp(com1, "logout") == 0) {
 		logout();
 	}
-
 	//备份系统&恢复系统
 	else if (strcmp(com1, "exit") == 0) {
 		cout << "退出成绩管理系统，拜拜！" << endl;
 		exit(0);
 	}
 
+	//root组特有
+	if (strcmp(Cur_Group_Name, "root") == 0) {
+		if (strcmp(com1, "batchadd") == 0) {
+			sscanf(cmd_str, "%s", com1);
+			add_users(STUDENT_COURSE_LIST);
+		}
+	}
+	
+	//teacher组特有
+	if (strcmp(Cur_Group_Name, "teacher") == 0) {
+		if (strcmp(com1, "publish_task") == 0) {
+			sscanf(cmd_str, "%s%s%s", com1, com2, com3);
+			publish_task(com2, com3);
+		}
+		else if (strcmp(com1, "judge_hw") == 0) {
+			sscanf(cmd_str, "%s%s%s", com1, com2, com3);
+			judge_hw(STUDENT_COURSE_LIST, com2, com3);
+		}
+	}
+  
+  //student组特有
+	if (strcmp(Cur_Group_Name, "student") == 0) {
+		char com4[100];
+		if (strcmp(com1, "checkhw") == 0) //check desription
+		{
+			sscanf(cmd_str, "%s%s%s%s", com1, com2, com3, com4);
+			printf("Here!! teacher name is %s, lesson is %s, hwname is %s\n", com2, com3, com4);
+			check_hw_content(com2, com3, com4);
+		}
+		else if (strcmp(com1, "checkhwscore") == 0)
+		{
+			// checkhwscore teacher lesson hw
+			sscanf(cmd_str, "%s%s%s%s", com1, com2, com3, com4);
+			printf("Here!! teacher name is %s, lesson is %s, hwname is %s\n", com2, com3, com4);
+			check_hw_score(com2, com3, com4);
+		}
+		else if (strcmp(com1, "submitmyhw") == 0)
+		{
+			// submit lesson hw
+			sscanf(cmd_str, "%s%s%s", com1, com2, com3);
+			printf("Here!! student name is %s, lesson is %s, hwname is %s\n", Cur_Dir_Name, com2, com3);
+			//          submit_assignment(Cur_User_Name, com3, com4);
+			submit_assignment(Cur_Dir_Name, com2, com3);
+
+		}
+	}
+
 	return;
+}
+
+void help() {
+	cout.setf(ios::left);
+	cout.width(30);
+	cout << "ls" << "Display the current directory listing" << endl;
+	cout.width(30);
+	cout << "cd" << "Enter the specific directory " << endl;
+	cout.width(30);
+	cout << "gotoRoot" << "Return to the root directory " << endl;
+	cout.width(30);
+	cout << "mkdir" << "Create directory" << endl;	
+	cout.width(30);
+	cout << "rm" << "Delete directory or file" << endl;		
+	cout.width(30);
+	cout << "touch" << "Create a blank file" << endl;
+	cout.width(30);
+	cout << "echo" << "Create a non-empty file" << endl;
+	cout.width(30);
+	cout << "chmod" << "Modify the access right" << endl;
+	cout.width(30);
+	//catchown
+
+	cout << "useradd" << "Add user" << endl;
+	cout.width(30);
+	cout << "userdel" << "Delete user" << endl;
+	cout.width(30);
+	cout << "groupadd" << "Add group" << endl;		
+	cout.width(30);
+	cout << "groupdel" << "Delete group" << endl;	
+	cout.width(30);
+	cout << "passwd" << "Modify the password" << endl;	
+	cout.width(30);
+	cout << "logout" << "Logout the account" << endl;
+	cout.width(30);
+	//usergrpadd,userfrpdel,
+
+
+
+	cout << "snapshot" << "Back up the system" << endl;	
+	cout.width(30);
+
+	cout << "exit" << "Exit the system" << endl;	
+}
+bool cd_func(int CurAddr, char* str) {
+	int pro_cur_dir_addr = Cur_Dir_Addr;
+	char pro_cur_dir_name[310];
+	strcpy(pro_cur_dir_name, Cur_Dir_Name);
+	int flag = 1;
+
+	if (strcmp(str, "/") == 0) {
+		gotoRoot();
+		return true;
+	}
+	if (str[0] == '/') {
+		gotoRoot();
+		str += 1;
+	}
+	char name[strlen(str) + 1];
+	while (strlen(str) != 0) {
+		int i = 0;
+		memset(name, '\0', sizeof(name));
+		while (((*str) != '/') && (strlen(str) != 0)) {
+			name[i++] = str[0];
+			str += 1;
+		}
+		if ((*str) == '/') str += 1;
+		if (strlen(name) != 0) {
+			if (cd(Cur_Dir_Addr, name) == false) {
+				flag = 0;
+				break;
+			}
+		}
+		else {
+			break;
+		}
+	}
+
+	if (flag == 0) {
+		Cur_Dir_Addr = pro_cur_dir_addr;
+		strcpy(Cur_Dir_Name, pro_cur_dir_name);
+		return false;
+	}
+	return true;
+}
+bool mkdir_func(int CurAddr, char* str) {
+	char* p = strrchr(str, '/');
+	if (p == NULL) {
+		if (mkdir(CurAddr, str)) { return true; }
+		else { return false; }
+	}
+	else {
+		char name[File_Max_Size];
+		memset(name, '\0', sizeof(name));
+		p++;
+		strcpy(name, p);
+		*p = '\0';
+		if (cd_func(CurAddr, str)) {
+			if (mkdir(Cur_Dir_Addr, name))
+				return true;
+		}
+		return false;
+	}
+}
+bool rm_func(int CurAddr, char* str, char* s_type) {
+	int type = -1;
+	if (strcmp(s_type, "-rf") == 0) {
+		type = 1;
+	}
+	else if (strcmp(s_type, "-f") == 0) {
+		type = 0;
+	}
+	else {
+		printf("Invalid command! Please try again!\n");
+		return false;
+	}
+
+	char* p = strrchr(str, '/');
+	if (p == NULL) {
+		if (rm(CurAddr, str, type))	return true;
+		return false;
+	}
+	else {
+		char name[File_Max_Size];
+		memset(name, '\0', sizeof(name));
+		p++;
+		strcpy(name, p);
+		*p = '\0';
+		if (cd_func(CurAddr, str)) {
+			if (rm(Cur_Dir_Addr, name, type))
+				return true;
+		}
+		return false;
+	}
+}
+bool touch_func(int CurAddr, char* str, char* buf) {
+	char* p = strrchr(str, '/');
+	if (p == NULL) {
+		if (mkfile(CurAddr, str, buf))	return true;
+		return false;
+	}
+	else {
+		char name[File_Max_Size];
+		memset(name, '\0', sizeof(name));
+		p++;
+		strcpy(name, p);
+		*p = '\0';
+		if (cd_func(CurAddr, str)) {
+			if (mkfile(Cur_Dir_Addr, name, buf))
+				return true;
+		}
+		return false;
+	}
+}
+bool echo_func(int CurAddr, char* str, char* s_type, char* buf) {//目录麓or写or追
+	//卸 0写 1追
+	int type = -1;
+	if (strcmp(s_type, ">") == 0) {
+		type = 0;
+	}
+	else if (strcmp(s_type, ">>") == 0) {
+		type = 1;
+	}
+	else {
+		printf("echo式确式!\n");
+		return false;
+	}
+
+	char* p = strrchr(str, '/');
+	char name[File_Max_Size];
+	memset(name, '\0', sizeof(name));
+	if (p != NULL) {
+		p++;
+		strcpy(name, p);
+		*p = '\0';
+		if (cd_func(CurAddr, str) == false) {
+			return false;
+		}
+	}
+	else {
+		strcpy(name, str);
+	}
+
+	//执
+	if (echo(Cur_Dir_Addr, name, type, buf))	return true;
+	return false;
+}
+bool chmod_func(int CurAddr, char* pmode, char* str) {
+	char* p = strrchr(str, '/');
+	char name[File_Max_Size];
+	memset(name, '\0', sizeof(name));
+	if (p != NULL) {
+		p++;
+		strcpy(name, p);
+		*p = '\0';
+		if (cd_func(CurAddr, str) == false) {
+			return false;
+		}
+	}
+	else {
+		strcpy(name, str);
+	}
+
+	//执
+	if (chmod(CurAddr, name, pmode))	return true;
+	return false;
+}
+bool chown_func(int CurAddr, char* u_g, char* str) {
+	char* p = strrchr(str, '/');
+	char file[File_Max_Size];
+	memset(file, '\0', sizeof(file));
+	if (p != NULL) {
+		p++;
+		strcpy(file, p);
+		*p = '\0';
+		if (cd_func(CurAddr, str) == false) {
+			return false;
+		}
+	}
+	else {
+		strcpy(file, str);
+	}
+
+	p = strstr(u_g, ":");
+	char name[20], group[20];
+	memset(name, '\0', strlen(name));
+	memset(group, '\0', strlen(group));
+	if (p == NULL) {
+		strcpy(name, u_g);
+	}
+	else {
+		strncpy(name, u_g, p - u_g);
+		p += 1;
+		strcpy(group, p);
+	}
+	if (chown(CurAddr, file, name, group))	return true;
+	return false;
+}
+bool passwd_func(char* username) {
+	if ((strcmp(Cur_Group_Name, "root") != 0) && (strlen(username) != 0)) {
+		printf("Only root can change user's password!\n");
+		return false;
+	}
+
+	char pwd[100];
+	printf("Changing password for user %s\n", Cur_User_Name);
+	printf("New password: ");
+	gets(pwd);
+	char re_pwd[100];
+	printf("Retype new password:");
+	gets(re_pwd);
+
+	if (strcmp(pwd, re_pwd) == 0) {
+		if (passwd(username, pwd) == 0) {
+			return true;
+		}
+	}
+	return false;
 }

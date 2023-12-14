@@ -30,6 +30,7 @@
 #define DIR_DEF_PERMISSION	0755			//目录默认权限 owner：全部 group,other:读执行
 
 #define GRADE_SYS_NAME "grading_sys.sys"	//文件系统名
+#define STUDENT_COURSE_LIST "Student_Course_Selection.txt" //学生选课名单（name:lesson:teacher)
 
 
 struct SuperBlock {
@@ -116,7 +117,6 @@ extern char buffer[10000000];				//10M，缓存整个虚拟磁盘文件
 //大类函数
 bool Format(int count);								//文件系统格式化
 bool Install();								//安装文件系统
-//bool mkdir(int PIAddr, char name[],int count);
 bool mkdir(int PIAddr, char name[]);
 bool mkfile(int PIAddr, char name[], char buf[]);
 bool rm(int PIAddr, char name[],int type);
@@ -124,7 +124,7 @@ bool addfile(inode fileinode, int CHIaddr, char buf[]);
 bool writefile(inode fileinode, int CHIaddr, char buf[]);
 bool echo(int PIAddr, char name[], int type, char* buf);
 bool chmod(int PIAddr, char name[], char* pmode);
-bool cd(int PIAddr, char str[]);
+bool cd(int PIAddr, char* name);
 void gotoRoot();
 void ls(char str[]);
 
