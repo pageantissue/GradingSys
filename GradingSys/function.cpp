@@ -1,10 +1,7 @@
 #include"os.h"
 #include"function.h"
-#include<iomanip>
-#include<time.h>
-#include<string.h>
-#include<stdio.h>
-#include<iostream>
+#include<cstring>
+#include<cstdio>
 #include<mutex>
 std::mutex workPrt;
 using namespace std;
@@ -369,7 +366,7 @@ void cmd(Client& client)
 	if (strcmp(client.Cur_Group_Name, "root") == 0) {
 		if (strcmp(com1, "batchadd") == 0) {
 			sscanf(cmd_str, "%s", com1);
-			add_users(client, STUDENT_COURSE_LIST);
+			add_users(sys, STUDENT_COURSE_LIST);
 		}
 		//备份系统&恢复系统
 		else if (strcmp(com1, "fullbackup") == 0) {

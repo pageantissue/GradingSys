@@ -1517,7 +1517,6 @@ bool check(Client& client, char username[], char passwd[]) {//核验身份登录
 			strcpy(buf, temp);
 		}
 	}
-    printf("username is: %s, passwd is %s\n", username, passwd);
 	char* p = strstr(buf, username);
 	if (p == NULL) {
 		//printf("该用户不存在。请创建用户后重新登陆.\n");
