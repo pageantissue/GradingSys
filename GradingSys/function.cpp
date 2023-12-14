@@ -11,7 +11,12 @@ using namespace std;
 
 void help(Client & client)
 {
-	char help[] = "help";
+	char help[10]; memset(help, '\0', 10);
+	if (strcmp(client.Cur_Group_Name, "student") == 0)
+		strcpy(help, "help1");
+	else if (strcmp(client.Cur_Group_Name, "teacher") == 0)
+		strcpy(help, "help2");
+	else strcpy(help, "help");
 	send(client.client_sock, help, strlen(help), 0);
 }
 

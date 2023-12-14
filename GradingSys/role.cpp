@@ -75,14 +75,16 @@ bool publish_task(Client& client, char* lesson, char* filename) {//ok
 	memset(pro_cur_dir_name, '\0', sizeof(pro_cur_dir_name));
 	strcpy(pro_cur_dir_name, client.Cur_Dir_Name);
 
-	char buf[BLOCK_SIZE * 10];
-	string line;
+	int buff_size = BLOCK_SIZE * 10;
+	char buf[buff_size];
 	memset(buf, '\0', sizeof(buf));
-    char new_buff[1024];
-    memset(new_buff, '\0', 1024);
-	sprintf(new_buff, "../../../%s.txt", filename);
+    char new_buff[buff_size];
+    memset(new_buff, '\0', buff_size);
+	strcpy(new_buff, "Please enter the description of the task to be assigned!\r");
+	send(client.client_sock, new_buff, strlen(new_buff), 0);
+	//sprintf(new_buff, "../../../%s.txt", filename);
     //sprintf(new_buff, "/Users/sprungissue/CLionProjects/GradingSys/GradingSys/%s.txt", filename);
-	ifstream fin(new_buff);
+	/*ifstream fin(new_buff);
 	if (!fin.is_open()) {
 		cout << "File Open Failure!" << endl;
 		client.Cur_Dir_Addr = pro_cur_dir_addr;
@@ -91,8 +93,12 @@ bool publish_task(Client& client, char* lesson, char* filename) {//ok
 	}
 	while (getline(fin, line)) {
 		strcat(buf, line.c_str());
-	}
-
+	}*/
+	memset(client.buffer, '\0', sizeof(client.buffer));
+	recv(client.client_sock, client.buffer, sizeof(client.buffer), 0);
+	char temp[buff_size]; memset(temp, '\0', buff_size); strcpy(temp, client.buffer);
+	temp[strlen(client.buffer)] = '\0';
+	strcpy(buf, temp);
 	//将file复制到虚拟OS中
 //	char* p = strstr(filename, ".");
 //	*p = '\0';
@@ -263,7 +269,8 @@ bool check_hw_score(Client& client, char* lesson, char* hwname)
     cd(client, client.Cur_Dir_Addr, "home");
     char new_buff[1024];
     memset(new_buff, '\0', 1024);
-    sprintf(new_buff, "/Users/sprungissue/CLionProjects/GradingSys/GradingSys/%s", STUDENT_COURSE_LIST);
+    //sprintf(new_buff, "/Users/sprungissue/CLionProjects/GradingSys/GradingSys/%s", STUDENT_COURSE_LIST);
+	sprintf(new_buff, "../../../%s", STUDENT_COURSE_LIST);
     ifstream fin(new_buff);
     if (!fin.is_open()) {
         cout << "File Open Failed!" << endl;
@@ -348,25 +355,47 @@ bool submit_assignment(Client& client, char* student_name, char* lesson, char* f
 		strcpy(client.Cur_Dir_Name, pro_cur_dir_name);
 		return false;
 	}
-
-	char buf[BLOCK_SIZE * 10];
-	string line;
-	memset(buf, '\0', sizeof(buf));
-    char new_buff[100];
-    memset(new_buff, '\0', 100);
+	int buff_size = BLOCK_SIZE * 10;
+	char buf[buff_size];
+	//string line;
+	//memset(buf, '\0', sizeof(buf));
+	//char new_buff[100];
+	//memset(new_buff, '\0', 100);
 	//sprintf(new_buff, "../../../%s.txt", filename);
-    sprintf(new_buff, "/Users/sprungissue/CLionProjects/GradingSys/GradingSys/%s.txt", filename);
-	ifstream fin(new_buff);
+	//sprintf(new_buff, "/Users/sprungissue/CLionProjects/GradingSys/GradingSys/%s.txt", filename);
+	//ifstream fin(new_buff);
+	//if (!fin.is_open()) {
+	//	char ms[] = "Cannot open file!\n";
+	//	printf(ms);
+	//	client.Cur_Dir_Addr = pro_cur_dir_addr;
+	//	strcpy(client.Cur_Dir_Name, pro_cur_dir_name);
+	//	return false;
+	//}
+	//while (getline(fin, line)) {
+	//	strcat(buf, line.c_str());
+	//}
+	memset(buf, '\0', sizeof(buf));
+	char new_buff[buff_size];
+	memset(new_buff, '\0', buff_size);
+	strcpy(new_buff, "Please enter your homework content!\r");
+	send(client.client_sock, new_buff, strlen(new_buff), 0);
+	//sprintf(new_buff, "../../../%s.txt", filename);
+	//sprintf(new_buff, "/Users/sprungissue/CLionProjects/GradingSys/GradingSys/%s.txt", filename);
+	/*ifstream fin(new_buff);
 	if (!fin.is_open()) {
-		char ms[] = "Cannot open file!\n";
-		printf(ms);
+		cout << "File Open Failure!" << endl;
 		client.Cur_Dir_Addr = pro_cur_dir_addr;
 		strcpy(client.Cur_Dir_Name, pro_cur_dir_name);
 		return false;
 	}
 	while (getline(fin, line)) {
 		strcat(buf, line.c_str());
-	}
+	}*/
+	memset(client.buffer, '\0', sizeof(client.buffer));
+	recv(client.client_sock, client.buffer, sizeof(client.buffer), 0);
+	char temp[buff_size]; memset(temp, '\0', buff_size); strcpy(temp, client.buffer);
+	temp[strlen(client.buffer)] = '\0';
+	strcpy(buf, temp);
 
 	char dir_path[100];
 	sprintf(dir_path, "/home/%s/%s/%s_%s", client.Cur_User_Name, lesson, filename, client.Cur_User_Name);
