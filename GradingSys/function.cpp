@@ -19,7 +19,7 @@ void help(Client & client)
 
 bool cd_func(Client& client, int CurAddr, char* str) {
 	int pro_cur_dir_addr = client.Cur_Dir_Addr;
-	char pro_cur_dir_name[310];
+	char pro_cur_dir_name[310]; memset(pro_cur_dir_name, '\0', 310);
 	strcpy(pro_cur_dir_name, client.Cur_Dir_Name);
 	int flag = 1;
 
@@ -46,9 +46,6 @@ bool cd_func(Client& client, int CurAddr, char* str) {
 				flag = 0;
 				break;
 			}
-		}
-		else {
-			break;
 		}
 	}
 
