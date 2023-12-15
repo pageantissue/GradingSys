@@ -8,7 +8,8 @@
 #include"role.h"
 using namespace std;
 
-bool add_users(Client& client, char * namelist) {
+bool add_users(Client& client, char * namelist)
+{
 	if (strcmp(client.Cur_Group_Name, "root") != 0) {
 		//printf("Only root could add users!\n");
 		char ms[] = "Only root could add users!\n";
@@ -17,8 +18,8 @@ bool add_users(Client& client, char * namelist) {
 	}
 
 	char new_buff[1024]; memset(new_buff, '\0', 1024);
-//	sprintf(new_buff, "../../../%s", namelist);
-    sprintf(new_buff, "/Users/sprungissue/CLionProjects/GradingSys/GradingSys/%s", namelist);
+	sprintf(new_buff, "../../../%s", namelist);
+    //sprintf(new_buff, "/Users/sprungissue/CLionProjects/GradingSys/GradingSys/%s", namelist);
 	int pro_cur_dir_addr = client.Cur_Dir_Addr;
 	char pro_cur_dir_name[310];
 	memset(pro_cur_dir_name, '\0', sizeof(pro_cur_dir_name));
@@ -43,13 +44,12 @@ bool add_users(Client& client, char * namelist) {
 	}
 	for (int j = 0; j < i; j++) {
 		strcpy(pwd, relations[j].student);
-
 		useradd(client, relations[j].student, pwd, "student");
 		strcpy(pwd, relations[j].teacher);
 		useradd(client, relations[j].teacher, pwd ,"teacher");
 		//在其文件夹下创建对应课程文件夹
 
-		char dir_path[100];
+		char dir_path[100]; memset(dir_path, '\0', 100);
 		sprintf(dir_path, "/home/%s/%s", relations[j].teacher, relations[j].lesson);
 		mkdir_func(client, client.Cur_Dir_Addr, dir_path);
 		sprintf(dir_path, "/home/%s/%s", relations[j].student, relations[j].lesson);
@@ -106,13 +106,14 @@ bool publish_task(Client& client, char* lesson, char* filename) {//ok
 //	*p = '\0';
 	char dir_path[100];
 	sprintf(dir_path, "/home/%s/%s/%s_description", client.Cur_User_Name, lesson, filename);
+	//printf("Here!!!! dirpath is %s\nbuf is %s\n", dir_path, buf);
 	echo_func(client, client.Cur_Dir_Addr, dir_path, ">", buf);
 
     //恢复现场
     client.Cur_Dir_Addr = pro_cur_dir_addr;
     strcpy(client.Cur_Dir_Name, pro_cur_dir_name);
     char ms[] = "Successfully published task!\n";
-
+	send(client.client_sock, ms, strlen(ms), 0);
 	return true;
 }
 
@@ -133,8 +134,8 @@ bool judge_hw(Client& client, char* namelist, char* lesson, char* hwname) {
 //	*p = '\0';
     char new_buff[100];
     memset(new_buff, '\0', 100);
-//	sprintf(new_buff, "../../../%s", namelist);
-    sprintf(new_buff, "/Users/sprungissue/CLionProjects/GradingSys/GradingSys/%s", namelist);
+	sprintf(new_buff, "../../../%s", namelist);
+    //sprintf(new_buff, "/Users/sprungissue/CLionProjects/GradingSys/GradingSys/%s", namelist);
 
 	ifstream fin(new_buff);
 	if (!fin.is_open()) {
@@ -208,8 +209,8 @@ bool check_hw_content(Client& client, char* lesson, char* hwname)
 	cd(client, client.Cur_Dir_Addr, "home");
     char new_buff[1024];
     memset(new_buff, '\0', 1024);
-//	sprintf(new_buff, "../../../%s", STUDENT_COURSE_LIST);
-    sprintf(new_buff, "/Users/sprungissue/CLionProjects/GradingSys/GradingSys/%s", STUDENT_COURSE_LIST);
+	sprintf(new_buff, "../../../%s", STUDENT_COURSE_LIST);
+    //sprintf(new_buff, "/Users/sprungissue/CLionProjects/GradingSys/GradingSys/%s", STUDENT_COURSE_LIST);
     ifstream fin(new_buff);
     if (!fin.is_open()) {
         cout << "File Open Failed!" << endl;
@@ -271,8 +272,8 @@ bool check_hw_score(Client& client, char* lesson, char* hwname)
     cd(client, client.Cur_Dir_Addr, "home");
     char new_buff[1024];
     memset(new_buff, '\0', 1024);
-    sprintf(new_buff, "/Users/sprungissue/CLionProjects/GradingSys/GradingSys/%s", STUDENT_COURSE_LIST);
-//	sprintf(new_buff, "../../../%s", STUDENT_COURSE_LIST);
+    //sprintf(new_buff, "/Users/sprungissue/CLionProjects/GradingSys/GradingSys/%s", STUDENT_COURSE_LIST);
+	sprintf(new_buff, "../../../%s", STUDENT_COURSE_LIST);
     ifstream fin(new_buff);
     if (!fin.is_open()) {
         cout << "File Open Failed!" << endl;

@@ -105,7 +105,8 @@ bool Format() { //ok
 	mkdir(sys, sys.Cur_Dir_Addr, "etc");
 	cd(sys, sys.Cur_Dir_Addr, "etc");
 
-	char buf[1000] = { 0 };
+	char buf[1000] = { 0 }; memset(buf, '\0', 1000);
+
 	sprintf(buf, "root:%d:%d\n", nextUID++, nextGID);//root:uid-0,gid-0
 	mkfile(sys, sys.Cur_Dir_Addr, "passwd", buf);
 
@@ -1101,6 +1102,7 @@ void bfree(int baddr) {
 	safeFseek(fw, Superblock_Start_Addr, SEEK_SET);
 	safeFwrite(superblock, sizeof(superblock), 1, fw);
 }
+bool fcache_bitmap[FCACHE_NUM];
 int fcache_alloc() {
 	//1 cache + 1 ditem
 	int baddr = -1;
@@ -1291,9 +1293,13 @@ bool useradd(Client& client, char username[], char passwd[], char group[]) {	//�
 	char a[10];
 	char *gid= is_group(client, group, a);
 	if (strcmp(gid,"-1")==0) {
+		
 		//printf("用户组别不正确，请重新输入");
+		//printf("gid in server is %s\n", gid);
 		char ms[] = "Invalid group entered, please try again!\n";
 		send(client.client_sock, ms, strlen(ms), 0);
+		sys.Cur_Dir_Addr = pro_cur_dir_addr;
+		strcpy(sys.Cur_Dir_Name, pro_cur_dir_name);
 		return false;
 	}
 	int g = atoi(gid);
@@ -2159,6 +2165,14 @@ char* is_group(Client& client, char* group,char *gid) {
 }
 bool chown(Client& client, int PIAddr,char* filename, char name[], char group[]) {//修改文件所属用户和用户组
 	//判断
+	//保护现场并更改信息
+	int pro_cur_dir_addr = client.Cur_Dir_Addr;
+	char pro_cur_dir_name[310], pro_cur_user_name[110], pro_cur_group_name[110], pro_cur_user_dir_name[310];
+	strcpy(pro_cur_dir_name, client.Cur_Dir_Name);
+	strcpy(pro_cur_user_name, client.Cur_User_Name);
+	strcpy(pro_cur_group_name, client.Cur_Group_Name);
+	strcpy(pro_cur_user_dir_name, client.Cur_User_Dir_Name);
+	
 	if (strlen(filename) > FILENAME_MAX) {
 		char ms[] = "Your filename exceeds the max length supported!\n";
 		send(client.client_sock, ms, strlen(ms), 0);
@@ -2173,8 +2187,11 @@ bool chown(Client& client, int PIAddr,char* filename, char name[], char group[])
 	char gid[10];
 	if (strcmp(is_group(client, group, gid), "-1") == 0) {
 		//printf("组别不正确！请重新输入！\n");
+		//printf("In server group is %s, gid is %s\n", group, gid);
 		char ms[] = "Invalid group entered! Please try again!\n";
 		send(client.client_sock, ms, strlen(ms), 0);
+		sys.Cur_Dir_Addr = pro_cur_dir_addr;
+		strcpy(sys.Cur_Dir_Name, pro_cur_dir_name);
 		return false;
 	}
 

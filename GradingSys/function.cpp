@@ -329,7 +329,7 @@ void cmd(Client& client)
 			return;
 		}
 		inPasswd(client, passwd);
-		useradd(client, user, group, passwd);
+		useradd(client, user, passwd, group);
 	}
 	else if (strcmp(com1, "userdel") == 0) {
 		sscanf(cmd_str, "%s%s", com1, com2);

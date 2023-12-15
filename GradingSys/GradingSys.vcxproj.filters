@@ -16,7 +16,7 @@
     <ClInclude Include="role.h" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="Student_Course_Selection.txt" />
     <Text Include="HW1.txt" />
+    <Text Include="Student_Course_Selection.txt" />
   </ItemGroup>
 </Project>

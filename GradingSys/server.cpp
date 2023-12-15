@@ -125,7 +125,7 @@ void handleClient(Client& client)
             else
             {
                 char output_buffer[BUF_SIZE];
-                snprintf(output_buffer, BUF_SIZE, "[%s@%s %s]# ", Cur_Host_Name, client.Cur_User_Name, client.Cur_Dir_Name + strlen(client.Cur_User_Dir_Name));
+                snprintf(output_buffer, BUF_SIZE, "[%s@%s ~%s]# ", Cur_Host_Name, client.Cur_User_Name, client.Cur_Dir_Name + strlen(client.Cur_User_Dir_Name));
                 //[Linux@yhl ~/app]
                 send(client_sock, output_buffer, strlen(output_buffer), 0);
             }
