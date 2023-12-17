@@ -238,6 +238,7 @@ bool judge_hw(Client& client, char* namelist, char* lesson, char* hwname) {
             memset(save_path, '\0', 100);
             sprintf(save_path, "/home/%s/%s/%s_score", client.Cur_User_Name, lesson, myname);
 			printf("Here save_path is %s\n", save_path);
+			gotoRoot(client); cd(client, client.Cur_Dir_Addr, save_path);
             echo_func(client, client.Cur_Dir_Addr, save_path, ">",  buf);
         }
     }
