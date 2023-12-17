@@ -151,9 +151,8 @@ bool cat_hw_content(Client& client, int PIAddr, char name[], char HW[], char sna
 								safeFread(content, sizeof(content), 1, fr);
 								//printf("%s\n", content);
 								char sendbuff[5120]; memset(sendbuff, '\0', sizeof(sendbuff));
-								sprintf(sendbuff, "%s from student %s:\n %s\n\n Please mark this assignment: ", HW, sname, content);
+								sprintf(sendbuff, "%s from student %s:\n%s\n\n", HW, sname, content);
 								send(client.client_sock, sendbuff, strlen(sendbuff), 0);
-								std::this_thread::sleep_for(std::chrono::milliseconds(200));
 							}
 						}
 					}
@@ -212,35 +211,38 @@ bool judge_hw(Client& client, char* namelist, char* lesson, char* hwname)
 			char buf[BLOCK_SIZE * 10];
             memset(buf, '\0', sizeof(buf));
             //进入学生文件夹，查看学生文件
-            char hw_path[310];
-            //double score = 0;
+            char hw_path[310];  //double score = 0;
 			char score[10]; memset(score, '\0', 10); strcpy(score, "0.00");
             memset(hw_path, '\0', sizeof(hw_path));
             sprintf(hw_path, "/home/%s/%s", relations[j].student, relations[j].lesson);
-			printf("here hw_path is %s\n", hw_path);
+			//printf("here hw_path is %s\n", hw_path);
 			char myname[100];
 			memset(myname, '\0', 100);
 			sprintf(myname, "%s_%s", hwname, relations[j].student);
-            if (cat_hw_content(client, client.Cur_Dir_Addr, myname, hwname, relations[j].student)) { //输出学生的作业文件内容
-				//如果找到了作业，打分
-				memset(score, '\0', sizeof(score));
-				recv(client.client_sock, score, sizeof(score), 0);
-            } 
-			else
+			if (cd_func(client, client.Cur_Dir_Addr, hw_path))
 			{
-                //printf("%s doesn't hand out the homework!\n", relations[j].student);
-				char ms[100]; memset(ms, '\0', 100);
-				sprintf(ms, "%s doesn't hand out the homework! Automatically set its grade to 0!\n", relations[j].student);
-				send(client.client_sock, ms, strlen(ms), 0);
-            }
-            sprintf(buf, "%s: %s\n", relations[j].student, score);
-            char save_path[100];
-            memset(save_path, '\0', 100);
-            sprintf(save_path, "/home/%s/%s/%s_score", client.Cur_User_Name, lesson, myname);
-			printf("Here save_path is %s\n", save_path);
-            echo_func(client, client.Cur_Dir_Addr, save_path, ">",  buf);
-			client.Cur_Dir_Addr = pro_cur_dir_addr;
-			strcpy(client.Cur_Dir_Name, pro_cur_dir_name);
+				if (cat_hw_content(client, client.Cur_Dir_Addr, myname, hwname, relations[j].student)) {//输出学生的作业文件内容
+					//如果找到了作业，打分
+					//printf("Please mark this assignment: ");//教师根据学生作业打分( uname:score)
+					char ms[] = "Please mark this assignment:\n ";
+					send(client.client_sock, ms, strlen(ms), 0);
+					memset(client.buffer, '\0', sizeof(client.buffer));
+					recv(client.client_sock, client.buffer, sizeof(client.buffer), 0);
+					strcpy(score, client.buffer);
+				}
+				else {
+					//printf("%s doesn't hand out the homework!\n", relations[j].student);
+					char ms[100]; memset(ms, '\0', 100);
+					sprintf(ms, "%s doesn't hand out the homework!\n", relations[j].student);
+					send(client.client_sock, ms, strlen(ms), 0);
+				}
+				sprintf(buf, "%s: %s\n", relations[j].student, score);
+				char save_path[60];
+				memset(save_path, '\0', 100);
+				sprintf(save_path, "/home/%s/%s/%s_score", client.Cur_User_Name, lesson, myname);
+				printf("client.Cur_Dir_Addr is %s\n, save path is %s\n", client.Cur_Dir_Addr, save_path);
+				echo_func(client, client.Cur_Dir_Addr, save_path, ">", buf);
+			}
         }
     }
 
