@@ -14,6 +14,7 @@ std::vector<Client> allClients;
 void Welcome(Client& client)
 {
     int client_sock = client.client_sock;
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
     char buff[] = "GradingSys Greeting!\n";
     send(client_sock, buff, strlen(buff), 0);
 }
@@ -115,7 +116,7 @@ void handleClient(Client& client)
         if (client.islogin)
         {
             char* p;
-            if ((p = strstr(client.Cur_Dir_Name, client.Cur_User_Dir_Name)) == NULL)	//��ǰ�Ƿ����û�Ŀ¼��
+            if ((p = strstr(client.Cur_Dir_Name, client.Cur_User_Dir_Name)) == NULL)
             {
                 char output_buffer[BUF_SIZE];
                 snprintf(output_buffer, BUF_SIZE, "[%s@%s %s]# ", Cur_Host_Name, client.Cur_User_Name, client.Cur_Dir_Name);
@@ -133,9 +134,10 @@ void handleClient(Client& client)
             int len = recv(client_sock, client.buffer, sizeof(client.buffer), 0);
             if (strcmp(client.buffer, "exit\n") == 0 || len <= 0)
             {
-                printf("Client %d has logged out the system!\n", client_sock);
+                printf("---------------------------------------\n%s %s has logged out our system!\n", client.Cur_Group_Name, client.Cur_User_Name);
                 break;
             }
+            printf("Receievd command from group -%s user -%s: %s\n", client.Cur_Group_Name, client.Cur_User_Name, client.buffer);
             cmd(client);
         }
         else
@@ -143,10 +145,12 @@ void handleClient(Client& client)
             char buff[] = "Welcome to GradingSysOS! Login first, please!\n";
             send(client_sock, buff, strlen(buff), 0);
             while (!login(client));
+            printf("\n%s %s has logged into our system!\n--------------------------------------\n", client.Cur_Group_Name, client.Cur_User_Name);
             strcpy(buff, "Successfully logged into our system!\n");
             send(client_sock, buff, strlen(buff), 0);
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
             help(client);
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
         }
     }
 }

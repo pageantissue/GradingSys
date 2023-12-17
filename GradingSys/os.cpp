@@ -4,6 +4,7 @@
 #include<ctime>
 #include<cstring>
 #include<cstdio>
+#include<thread>
 #include<cstdlib>
 
 using namespace std;
@@ -315,7 +316,7 @@ bool mkfile(Client& client, int PIAddr, char name[],char buf[]) {	//文件创建
 	if (strcmp(client.Cur_User_Name, parino.i_uname) == 0) {
 		role = 6;
 	}
-	if ((((parino.inode_mode >> role >> 1) & 1 == 0)) || (strcmp(client.Cur_User_Name, "root") != 0)) {
+	if ((((parino.inode_mode >> role >> 1) & 1 == 0)) && (strcmp(client.Cur_User_Name, "root") != 0)) {
 		char ms[] = "Permission denied (Not Previldged), cannot create new directory.\n";
 		send(client.client_sock, ms, strlen(ms), 0);
 		return false;
@@ -386,7 +387,7 @@ bool mkfile(Client& client, int PIAddr, char name[],char buf[]) {	//文件创建
 	safeFseek(fw, PIAddr, SEEK_SET);
 	safeFwrite(&parino, sizeof(parino), 1, fw);
 	time(&parino.file_modified_time);
-
+	
 	DirItem paritem[DirItem_Size];
 	safeFseek(fr, parino.i_dirBlock[bpos], SEEK_SET);
 	safeFread(paritem, sizeof(paritem), 1, fr);
@@ -412,6 +413,8 @@ bool mkfile(Client& client, int PIAddr, char name[],char buf[]) {	//文件创建
 	chiino.inode_file_size =0;
 	safeFseek(fw, chiiaddr, SEEK_SET);
 	safeFwrite(&chiino, sizeof(inode), 1, fw);
+
+	//printf("before chiino!!!!\nchiino inode name is %s\ncha\n", chiino.i_uname);
 
 	writefile(chiino, chiiaddr, buf);//将buf信息写入(新开）
 	
@@ -600,7 +603,7 @@ bool recursive_rmfile(Client& client, int CHIAddr, char name[]) {	//删除当前
 		}
 	}
 	ino.inode_file_count = 0;
-	ino.inode_file_size =0;
+	ino.inode_file_size = 0;
 	ifree(CHIAddr);
 	return true;
 }
@@ -628,9 +631,11 @@ bool cat(Client& client, int PIAddr, char name[]) {	//查看文件内容
 								safeFread(content, sizeof(content), 1, fr);
 								//printf("%s\n", content);
 								char sendbuff[strlen(content) + 1];
+								memset(sendbuff, '\0', sizeof(sendbuff));
 								strcpy(sendbuff, content);
-								sendbuff[strlen(content)] = '\n';
+								sendbuff[strlen(content)] = '\0';
 								send(client.client_sock, sendbuff, strlen(sendbuff), 0);
+								std::this_thread::sleep_for(std::chrono::milliseconds(200));
 							}	
 						}
 					}
@@ -641,8 +646,6 @@ bool cat(Client& client, int PIAddr, char name[]) {	//查看文件内容
 	}
 
 	//printf("未找到该文件\n");
-	char ms[] = "File not found!\n";
-	send(client.client_sock, ms, strlen(ms), 0);
 	return false;
 	
 }
@@ -849,7 +852,7 @@ bool cd(Client& client, int PIAddr, char name[]) {//切换目录
 					safeFread(&chiino, sizeof(inode), 1, fr);
 					fflush(fr);
 
-					if ((((chiino.inode_mode >> role) & 1) == 1) ||(strcmp(client.Cur_Group_Name,"root")==0)){	//是否有执行权限
+					if ((((chiino.inode_mode >> role) & 1) == 1) || (strcmp(client.Cur_Group_Name,"root")==0)){	//是否有执行权限
 						if (strcmp(client.Cur_Dir_Name, "/") != 0) {
 							strcat(client.Cur_Dir_Name, "/");
 						}
@@ -2163,7 +2166,7 @@ char* is_group(Client& client, char* group,char *gid) {
 	strcpy(client.Cur_Dir_Name, pro_cur_dir_name);
 	return gid;
 }
-bool chown(Client& client, int PIAddr,char* filename, char name[], char group[]) {//修改文件所属用户和用户组
+bool chown(Client& client, int PIAddr, char* filename, char name[], char group[]) {//修改文件所属用户和用户组
 	//判断
 	//保护现场并更改信息
 	int pro_cur_dir_addr = client.Cur_Dir_Addr;

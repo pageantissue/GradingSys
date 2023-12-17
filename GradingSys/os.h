@@ -143,7 +143,7 @@ void gotoRoot(Client&);
 void ls(Client&, char str[]);
 
 bool cat(Client&, int PIAddr, char name[]);
-bool chown(Client&, int PIAddr, char* pmode, char name[], char group[]);
+bool chown(Client& client, int PIAddr, char* filename, char name[], char group[]);
 
 //工具函数
 int ialloc();

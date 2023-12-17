@@ -364,6 +364,8 @@ void cmd(Client& client)
 		if (strcmp(com1, "batchadd") == 0) {
 			sscanf(cmd_str, "%s", com1);
 			add_users(sys, STUDENT_COURSE_LIST);
+			char ms[] = "Batch add users done!\n";
+			send(client.client_sock, ms, strlen(ms), 0);
 		}
 		//备份系统&恢复系统
 		else if (strcmp(com1, "fullbackup") == 0) {
@@ -379,6 +381,12 @@ void cmd(Client& client)
 	
 	//teacher组特有
 	if (strcmp(client.Cur_Group_Name, "teacher") == 0) {
+		if (strcmp(com1, "check_hw_content") == 0) //check desription
+		{
+			// check lesson hw
+			sscanf(cmd_str, "%s%s%s", com1, com2, com3);
+			check_hw_content(client, com2, com3);
+		}
 		if (strcmp(com1, "publish_task") == 0) {
 			sscanf(cmd_str, "%s%s%s", com1, com2, com3);
 			publish_task(client, com2, com3);

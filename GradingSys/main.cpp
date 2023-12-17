@@ -83,7 +83,7 @@ int main()
             perror("Connect Error");
             return -1;
         }
-        printf("Client %d Connected Successful\n", client.client_sock);
+        //printf("Client %d Connected Successful\n", client.client_sock);
         if (fork() == 0)
         {
             // 子进程

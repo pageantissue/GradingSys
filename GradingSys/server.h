@@ -19,12 +19,13 @@ struct Client
 {
     int client_sock;
     int ptr = -1;
-    bool islogin;
-    int Cur_Dir_Addr;                           //��ǰĿ¼
-    char Cur_Dir_Name[310];                     //��ǰĿ¼��
-    char Cur_User_Name[110];                    //��ǰ��½�û���
-    char Cur_Group_Name[110];                   //��ǰ��½�û�����
-    char Cur_User_Dir_Name[310];                //��ǰ��½�û�Ŀ¼��		
+    bool islogin = false;
+    bool tosend = true;
+    int Cur_Dir_Addr;
+    char Cur_Dir_Name[310];
+    char Cur_User_Name[110];
+    char Cur_Group_Name[110];
+    char Cur_User_Dir_Name[310];
 
     char buffer[BUF_SIZE];
     struct sockaddr_in client_addr;
