@@ -145,7 +145,7 @@ void handleClient(Client& client)
             char buff[] = "Welcome to GradingSysOS! Login first, please!\n";
             send(client_sock, buff, strlen(buff), 0);
             while (!login(client));
-            printf("\n%s %s has logged into our system!\n--------------------------------------\n", client.Cur_Group_Name, client.Cur_User_Name);
+            printf("\n%s %s has logged into our system!\n---------------------------------------\n", client.Cur_Group_Name, client.Cur_User_Name);
             strcpy(buff, "Successfully logged into our system!\n");
             send(client_sock, buff, strlen(buff), 0);
             std::this_thread::sleep_for(std::chrono::milliseconds(500));

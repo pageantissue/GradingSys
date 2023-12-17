@@ -165,7 +165,8 @@ bool cat_hw_content(Client& client, int PIAddr, char name[], char HW[], char sna
 	return false;
 }
 
-bool judge_hw(Client& client, char* namelist, char* lesson, char* hwname) {
+bool judge_hw(Client& client, char* namelist, char* lesson, char* hwname)
+{
 	if (strcmp(client.Cur_Group_Name, "teacher") != 0) {
 		//printf("Only teacher could judge assignments!\n");
 		char ms[] = "Only teacher could judge assignments!\n";
@@ -177,6 +178,8 @@ bool judge_hw(Client& client, char* namelist, char* lesson, char* hwname) {
 	memset(pro_cur_dir_name, '\0', sizeof(pro_cur_dir_name));
 	strcpy(pro_cur_dir_name, client.Cur_Dir_Name);
 
+	gotoRoot(client);
+	cd(client, client.Cur_Dir_Addr, "home");
 	//新建本次作业评价文档( sname : mark)
 //	char* p = strstr(hwname, ".");
 //	*p = '\0';
@@ -201,12 +204,12 @@ bool judge_hw(Client& client, char* namelist, char* lesson, char* hwname) {
 		sscanf(line.c_str(), "%s %s %s", rela.student, rela.lesson, rela.teacher);
 		relations[i++] = rela;
 	}
-
-	for (int j = 0; j < i; ++j) {
+	for (int j = 0; j < i; ++j)
+	{
         //是这个老师，而且是这门课
         if ((strcmp(relations[j].teacher, client.Cur_User_Name) == 0) && (strcmp(relations[j].lesson, lesson) == 0))
         {
-            char buf[BLOCK_SIZE * 10];
+			char buf[BLOCK_SIZE * 10];
             memset(buf, '\0', sizeof(buf));
             //进入学生文件夹，查看学生文件
             char hw_path[310];
@@ -218,12 +221,9 @@ bool judge_hw(Client& client, char* namelist, char* lesson, char* hwname) {
 			char myname[100];
 			memset(myname, '\0', 100);
 			sprintf(myname, "%s_%s", hwname, relations[j].student);
-            if (cd_func(client, client.Cur_Dir_Addr, hw_path))
-            {
+            if (cat_hw_content(client, client.Cur_Dir_Addr, myname, hwname, relations[j].student)) { //输出学生的作业文件内容
 				//如果找到了作业，打分
-				cat_hw_content(client, client.Cur_Dir_Addr, myname, hwname, relations[j].student);//输出学生的作业文件内容
-				std::this_thread::sleep_for(std::chrono::milliseconds(200));
-				memset(client.buffer, '\0', sizeof(client.buffer));
+				memset(score, '\0', sizeof(score));
 				recv(client.client_sock, score, sizeof(score), 0);
             } 
 			else
@@ -238,8 +238,9 @@ bool judge_hw(Client& client, char* namelist, char* lesson, char* hwname) {
             memset(save_path, '\0', 100);
             sprintf(save_path, "/home/%s/%s/%s_score", client.Cur_User_Name, lesson, myname);
 			printf("Here save_path is %s\n", save_path);
-			gotoRoot(client); cd(client, client.Cur_Dir_Addr, save_path);
             echo_func(client, client.Cur_Dir_Addr, save_path, ">",  buf);
+			client.Cur_Dir_Addr = pro_cur_dir_addr;
+			strcpy(client.Cur_Dir_Name, pro_cur_dir_name);
         }
     }
 
@@ -287,7 +288,6 @@ bool check_hw_content(Client& client, char* lesson, char* hwname)
             char hw_path[310], s_buf[310];
             memset(hw_path, '\0', sizeof(hw_path));
             memset(s_buf, '\0', sizeof(s_buf));
-
             sprintf(hw_path, "/home/%s/%s", relations[j].teacher, relations[j].lesson);
             if (cd_func(client, client.Cur_Dir_Addr, hw_path))
             {
@@ -311,6 +311,9 @@ bool check_hw_content(Client& client, char* lesson, char* hwname)
             }
         }
     }
+	client.Cur_Dir_Addr = pro_cur_dir_addr;
+	strcpy(client.Cur_Dir_Name, pro_cur_dir_name);
+	return false;
 }
 
 bool check_hw_score(Client& client, char* lesson, char* hwname)
