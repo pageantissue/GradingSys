@@ -9,7 +9,6 @@
 using namespace std;
 
 Client sys;
-std::vector<Client> allClients;
 
 void Welcome(Client& client)
 {
@@ -153,4 +152,9 @@ void handleClient(Client& client)
             std::this_thread::sleep_for(std::chrono::milliseconds(500));
         }
     }
+}
+
+Initializer::Initializer()
+{
+    Initialize();
 }

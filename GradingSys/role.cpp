@@ -177,8 +177,6 @@ bool judge_hw(Client& client, char* namelist, char* lesson, char* hwname)
 	memset(pro_cur_dir_name, '\0', sizeof(pro_cur_dir_name));
 	strcpy(pro_cur_dir_name, client.Cur_Dir_Name);
 
-	gotoRoot(client);
-	cd(client, client.Cur_Dir_Addr, "home");
 	//新建本次作业评价文档( sname : mark)
 //	char* p = strstr(hwname, ".");
 //	*p = '\0';
@@ -186,7 +184,6 @@ bool judge_hw(Client& client, char* namelist, char* lesson, char* hwname)
     memset(new_buff, '\0', 100);
 	sprintf(new_buff, "../../../%s", namelist);
     //sprintf(new_buff, "/Users/sprungissue/CLionProjects/GradingSys/GradingSys/%s", namelist);
-
 	std::ifstream fin(new_buff);
 	if (!fin.is_open()) {
 		std::cout << "File Open Failed!" << std::endl;
@@ -216,11 +213,12 @@ bool judge_hw(Client& client, char* namelist, char* lesson, char* hwname)
             memset(hw_path, '\0', sizeof(hw_path));
             sprintf(hw_path, "/home/%s/%s", relations[j].student, relations[j].lesson);
 			//printf("here hw_path is %s\n", hw_path);
-			char myname[100];
-			memset(myname, '\0', 100);
-			sprintf(myname, "%s_%s", hwname, relations[j].student);
+			
 			if (cd_func(client, client.Cur_Dir_Addr, hw_path))
 			{
+				char myname[100];
+				memset(myname, '\0', 100);
+				sprintf(myname, "%s_%s", hwname, relations[j].student);
 				if (cat_hw_content(client, client.Cur_Dir_Addr, myname, hwname, relations[j].student)) {//输出学生的作业文件内容
 					//如果找到了作业，打分
 					//printf("Please mark this assignment: ");//教师根据学生作业打分( uname:score)
@@ -237,10 +235,9 @@ bool judge_hw(Client& client, char* namelist, char* lesson, char* hwname)
 					send(client.client_sock, ms, strlen(ms), 0);
 				}
 				sprintf(buf, "%s: %s\n", relations[j].student, score);
-				char save_path[60];
+				char save_path[100];
 				memset(save_path, '\0', 100);
 				sprintf(save_path, "/home/%s/%s/%s_score", client.Cur_User_Name, lesson, myname);
-				printf("client.Cur_Dir_Addr is %s\n, save path is %s\n", client.Cur_Dir_Addr, save_path);
 				echo_func(client, client.Cur_Dir_Addr, save_path, ">", buf);
 			}
         }

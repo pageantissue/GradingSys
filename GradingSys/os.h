@@ -90,42 +90,45 @@ struct FCache {
 	int baddr[FIRST_CACHE_BLOCK_SIZE];	//128*4=512B
 };
 
-extern SuperBlock* superblock;
-extern const int Superblock_Start_Addr;		//超级块偏移地址,占一个block
-extern const int InodeBitmap_Start_Addr;		//inode位图 偏移地址，占两个磁盘块，最多监控1024个inode的状态
-extern const int BlockBitmap_Start_Addr;		//block位图 偏移地址，占二十个磁盘块，最多监控 10240 个磁盘块（5120KB）的状态
-extern const int FCacheBitmap_Start_Addr;		//FCache位图 偏移地址，占两个磁盘块，最多监控1024个FCache
-extern const int Inode_Start_Addr;			//inode节点区 偏移地址，占 INODE_NUM/(BLOCK_SIZE/INODE_SIZE) 个磁盘块
-extern const int Block_Start_Addr;			//block数据区 偏移地址 ，占 INODE_NUM 个磁盘块
-extern const int FCache_Start_Addr;			//FCache数据区 偏移地址，占FCache_NUM个磁盘块
-extern const int Modified_inodeBitmap_Start_Addr;		//逻辑转储
-extern const int File_Max_Size;				//单个文件最大大小
-extern const int Disk_Size;					//虚拟磁盘文件大小
+extern const int Superblock_Start_Addr;					//44B:1block
+extern const int InodeBitmap_Start_Addr;				//1024B:2block
+extern const int BlockBitmap_Start_Addr;				//10240B:20block
+extern const int Inode_Start_Addr;						//120<128: 换算成x个block
+extern const int Block_Start_Addr;						//32*16=512  //num 1024 * size 128 / block_size 512 = x block
+extern const int Modified_inodeBitmap_Start_Addr;       //用于增量转储的inode位图
+extern const int FCacheBitmap_Start_Addr;				//用于存储一级缓存块的block bitmap
+extern const int FCache_Start_Addr;						//1024B:20B 一级缓存block数量为1024个
 
+extern const int Backup_Start_Addr;
+extern const int Backup_Block_Start_Addr;
 
-//全局变量声明
-extern char Cur_Host_Name[110];				//当前主机名
-extern int Root_Dir_Addr;					//根目录inode地址
+extern const int Disk_Size;//增加板块
+extern const int File_Max_Size;
 
-extern int nextUID;							//下一个要分配的用户标识号
-extern int nextGID;							//下一个要分配的用户组标识号
+extern const int Start_Addr;
 
-extern bool isLogin;						//是否有用户登陆
+extern int Root_Dir_Addr;							//根目录inode地址
+extern char Cur_Host_Name[110];					//当前主机名
 
-extern FILE* fw;							//虚拟磁盘文件 写文件指针
-extern FILE* fr;							//虚拟磁盘文件 读文件指针
-extern SuperBlock* superblock;				//超级块指针
-extern bool inode_bitmap[INODE_NUM];		//inode位图
-extern bool block_bitmap[BLOCK_NUM];		//磁盘块位图
-extern bool modified_inode_bitmap[INODE_NUM];
-extern bool fcache_bitmap[FCACHE_NUM];
+extern int nextUID;								//下一个要分配的用户标识号
+extern int nextGID;								//下一个要分配的用户组标识号
+
+extern bool isLogin; 								//是否有用户登陆
+
+extern FILE* fw;									//虚拟磁盘文件 写文件指针
+extern FILE* fr;									//虚拟磁盘文件 读文件指针
+extern SuperBlock* superblock;	//超级块指针
+extern bool inode_bitmap[INODE_NUM];				//inode位图
+extern bool block_bitmap[BLOCK_NUM];				//磁盘块位图
+extern bool modified_inode_bitmap[INODE_NUM];      //增量转储 0:未被修改；1:已修改
+extern FILE* bfw;
+extern FILE* bfr;
+
+extern time_t last_backup_time;
 
 extern char buffer[10000000];				//10M，缓存整个虚拟磁盘文件
 extern Client sys;							//系统初始化用对象
 extern std::vector<Client> allClients;      //整个系统登录的用户
-
-
-
 
 //大类函数
 bool Format();								//文件系统格式化

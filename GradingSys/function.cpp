@@ -3,6 +3,7 @@
 #include<cstring>
 #include<cstdio>
 #include<mutex>
+#include"role.h"
 std::mutex workPrt;
 using namespace std;
 

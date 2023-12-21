@@ -34,5 +34,11 @@ struct Client
 
 void Welcome(Client&);
 void handleClient(Client&);
-int Initialize();
-bool ever_logging();
+
+class Initializer {
+public:
+    Initializer(); // 构造函数中初始化文件系统
+};
+
+extern int Initialize();
+extern bool ever_logging();

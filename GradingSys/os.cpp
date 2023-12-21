@@ -6,7 +6,6 @@
 #include<cstdio>
 #include<thread>
 #include<cstdlib>
-
 using namespace std;
 
 
@@ -51,10 +50,6 @@ bool Format() { //ok
 	safeFwrite(modified_inode_bitmap, sizeof(modified_inode_bitmap), 1, fw);
 	//inode和block板块暂时不需要内容
 	fflush(fw);//将上面内容放入fw中
-
-	memset(fcache_bitmap, 0, sizeof(fcache_bitmap));
-	safeFseek(fw, FCacheBitmap_Start_Addr, SEEK_SET);
-	safeFwrite(fcache_bitmap, sizeof(fcache_bitmap), 1, fw);
 
 	//创建根目录
 	int iaddr = ialloc();
